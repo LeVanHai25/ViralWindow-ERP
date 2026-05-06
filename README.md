@@ -12,7 +12,14 @@
 *   **Quản lý Tiến độ (Production):** Theo dõi tiến độ gia công, lắp đặt tại xưởng và công trình.
 *   **Quản lý Thu Chi:** Theo dõi công nợ, dòng tiền.
 
-## 🛠 Cài đặt và Chạy ứng dụng (Local Setup)
+## 🌐 Trải nghiệm trực tuyến (Live Demo)
+Bạn có thể xem và trải nghiệm trực tiếp hệ thống đang được vận hành trên server Render tại đường link dưới đây (không cần tải code hay cài đặt):
+
+👉 **[Truy cập hệ thống ViralWindow](https://viralwindow.onrender.com/login.html)**
+
+*(Lưu ý: Vì server backend được deploy miễn phí trên Render, lần truy cập API đầu tiên có thể mất khoảng 30-50 giây để server khởi động lại. Các thao tác sau đó sẽ hoạt động với tốc độ bình thường).*
+
+## 🛠 Cài đặt và Chạy ứng dụng tại máy (Local Setup)
 
 ### Yêu cầu hệ thống:
 *   [Node.js](https://nodejs.org/) (Khuyến nghị bản LTS)
