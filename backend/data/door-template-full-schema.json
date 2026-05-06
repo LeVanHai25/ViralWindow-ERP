@@ -1,0 +1,302 @@
+{
+  "meta": {
+    "template_code": "D1",
+    "template_name": "Cửa đi 2 cánh mở quay + fix trên",
+    "category": "door",
+    "family": "door_out",
+    "aluminum_system_code": "XINGFA_55",
+    "default_width": 1800,
+    "default_height": 2600,
+    "default_h1": 2250,
+    "default_clearance": 7,
+    "default_glass_type": "6",
+    "default_quantity": 1,
+    "description": "Cửa đi 2 cánh mở quay ngoài với panel fix trên"
+  },
+  "panel_tree": {
+    "direction": "horizontal",
+    "split": true,
+    "ratio": [4, 1],
+    "children": [
+      {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "turn-left",
+            "glass": "CLEAR_6"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "turn-right",
+            "glass": "CLEAR_6"
+          }
+        ]
+      },
+      {
+        "type": "leaf",
+        "id": "F1",
+        "role": "fixed",
+        "openType": "fixed",
+        "glass": "CLEAR_6"
+      }
+    ]
+  },
+  "bom_profiles": [
+    {
+      "profile_name": "Khung bao cửa đi 100",
+      "position": "Ngang trên",
+      "profile_code": "C38019",
+      "cutting_angle": "45-45",
+      "quantity": 1,
+      "length_mm": 1800,
+      "item_type": "frame",
+      "formula": "B"
+    },
+    {
+      "profile_name": "Khung bao cửa đi 100",
+      "position": "Đứng",
+      "profile_code": "C38019",
+      "cutting_angle": "90-45-90",
+      "quantity": 2,
+      "length_mm": 2600,
+      "item_type": "frame",
+      "formula": "H"
+    },
+    {
+      "profile_name": "XF- Đố chia khung mở quay",
+      "position": "Ngang",
+      "profile_code": "C3313",
+      "cutting_angle": "90-90",
+      "quantity": 1,
+      "length_mm": 1728,
+      "item_type": "mullion",
+      "formula": "B - 72"
+    },
+    {
+      "profile_name": "XF- Canh mo ngoai ban to 145",
+      "position": "Ngang trên",
+      "profile_code": "C112592",
+      "cutting_angle": "45-45",
+      "quantity": 2,
+      "length_mm": 597,
+      "item_type": "sash",
+      "formula": "(B - 72) / 2 - 267"
+    },
+    {
+      "profile_name": "XF- Canh mo ngoai ban to 145",
+      "position": "Đứng",
+      "profile_code": "C112592",
+      "cutting_angle": "90-45-90",
+      "quantity": 4,
+      "length_mm": 1971,
+      "item_type": "sash",
+      "formula": "H1 - 279"
+    },
+    {
+      "profile_name": "XF- Nẹp cánh, vách",
+      "position": "Ngang",
+      "profile_code": "C3295",
+      "cutting_angle": "90-90",
+      "quantity": 2,
+      "length_mm": 597,
+      "item_type": "bead",
+      "formula": "(B - 72) / 2 - 267"
+    },
+    {
+      "profile_name": "XF- Nẹp cánh, vách",
+      "position": "Đứng",
+      "profile_code": "C3295",
+      "cutting_angle": "90-90",
+      "quantity": 4,
+      "length_mm": 1971,
+      "item_type": "bead",
+      "formula": "H1 - 279"
+    },
+    {
+      "profile_name": "XF- Ốp chân cánh",
+      "position": "Ngang",
+      "profile_code": "C22900",
+      "cutting_angle": "90-90",
+      "quantity": 2,
+      "length_mm": 597,
+      "item_type": "bead",
+      "formula": "(B - 72) / 2 - 267"
+    },
+    {
+      "profile_name": "XF- Đố động cửa đi và cửa số",
+      "position": "Ngang",
+      "profile_code": "C22903",
+      "cutting_angle": "90-90",
+      "quantity": 1,
+      "length_mm": 1728,
+      "item_type": "mullion",
+      "formula": "B - 72"
+    },
+    {
+      "profile_name": "XF- Nẹp vách liền cửa",
+      "position": "Ngang",
+      "profile_code": "C3296",
+      "cutting_angle": "90-90",
+      "quantity": 1,
+      "length_mm": 1698,
+      "item_type": "bead",
+      "formula": "B - 102"
+    },
+    {
+      "profile_name": "XF- Nẹp vách liền cửa",
+      "position": "Đứng",
+      "profile_code": "C3296",
+      "cutting_angle": "90-90",
+      "quantity": 2,
+      "length_mm": 277,
+      "item_type": "bead",
+      "formula": "H - H1 - 73"
+    }
+  ],
+  "bom_glass": [
+    {
+      "glass_type": "6",
+      "width_mm": 597,
+      "height_mm": 1971,
+      "quantity": 2,
+      "area_m2": 2.3508065,
+      "position": "cánh",
+      "panel_id": "K1,K2"
+    },
+    {
+      "glass_type": "6",
+      "width_mm": 1698,
+      "height_mm": 277,
+      "quantity": 1,
+      "area_m2": 0.469497,
+      "position": "vách",
+      "panel_id": "F1"
+    }
+  ],
+  "bom_hardware": [
+    {
+      "accessory_name": "Bản lề 3D",
+      "accessory_code": "BL3D-001",
+      "quantity": 6,
+      "unit": "bộ",
+      "position": "cánh",
+      "panel_id": "K1,K2"
+    },
+    {
+      "accessory_name": "Khóa đa điểm",
+      "accessory_code": "KD-001",
+      "quantity": 2,
+      "unit": "bộ",
+      "position": "cánh",
+      "panel_id": "K1,K2"
+    },
+    {
+      "accessory_name": "Tay nắm H",
+      "accessory_code": "TN-H-001",
+      "quantity": 2,
+      "unit": "cái",
+      "position": "cánh",
+      "panel_id": "K1,K2"
+    },
+    {
+      "accessory_name": "Gioăng cao su",
+      "accessory_code": "GCS-001",
+      "quantity": 1,
+      "unit": "mét",
+      "position": "toàn bộ",
+      "formula": "(B + H) * 2"
+    }
+  ],
+  "preview_image": "/templates/D1.png",
+  "cutting_formulas": {
+    "B": "width_mm",
+    "H": "height_mm",
+    "H1": "height_mm - 350",
+    "clearance": "7"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

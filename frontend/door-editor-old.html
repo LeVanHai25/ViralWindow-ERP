@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiết kế cửa 2D - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/success-notification.css">
+    <script src="js/success-notification.js"></script>
+    <style>
+        #drawingCanvas {
+            border: 1px solid #ddd;
+            cursor: crosshair;
+        }
+        .toolbar-btn {
+            transition: all 0.2s;
+        }
+        .toolbar-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .toolbar-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <script src="js/vw-modal.js"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- HEADER -->
+    <div class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="goBack()" class="text-gray-600 hover:text-gray-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900" id="editorTitle">Thiết kế cửa 2D</h1>
+                    <p class="text-sm text-gray-500" id="editorSubtitle">Vẽ và chỉnh sửa cửa nhôm kính</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="centerCanvas()" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600">
+                    Căn giữa
+                </button>
+                <button onclick="exportImage()" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600">
+                    Xuất hình
+                </button>
+                <button onclick="saveDrawing()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+                    Lưu hình
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-[calc(100vh-80px)]">
+        <!-- LEFT SIDEBAR - TOOLBAR -->
+        <div class="w-64 bg-white shadow-sm border-r border-gray-200 overflow-y-auto p-4">
+            <h2 class="font-bold text-gray-900 mb-4">Công cụ</h2>
+            
+            <!-- Nhóm: Tạo mới -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Tạo mới</h3>
+                <button onclick="newDrawing()" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2">
+                    Tạo mới cửa
+                </button>
+            </div>
+
+            <!-- Nhóm: Cửa sổ mở quay -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Cửa sổ mở quay</h3>
+                <button onclick="loadTemplate('window_swing_1')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    1 cánh trái
+                </button>
+                <button onclick="loadTemplate('window_swing_2')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    2 cánh
+                </button>
+                <button onclick="loadTemplate('window_swing_4')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    4 cánh
+                </button>
+            </div>
+
+            <!-- Nhóm: Cửa đi mở quay -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Cửa đi mở quay</h3>
+                <button onclick="loadTemplate('door_swing_1')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    1 cánh trái
+                </button>
+                <button onclick="loadTemplate('door_swing_2')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    2 cánh
+                </button>
+                <button onclick="loadTemplate('door_swing_4')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    4 cánh
+                </button>
+            </div>
+
+            <!-- Nhóm: Cửa lùa -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Cửa lùa / trượt</h3>
+                <button onclick="loadTemplate('door_sliding_2')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    2 cánh
+                </button>
+                <button onclick="loadTemplate('door_sliding_4')" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2 text-left">
+                    4 cánh
+                </button>
+            </div>
+
+            <!-- Nhóm: Công cụ vẽ -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Công cụ</h3>
+                <button onclick="addMullion()" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2">
+                    Tách khung / Chia đố
+                </button>
+                <button onclick="changeGlassColor()" class="toolbar-btn w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium mb-2">
+                    Đổi màu kính
+                </button>
+            </div>
+
+            <!-- Nhóm: Kích thước -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Kích thước</h3>
+                <div class="space-y-2">
+                    <div>
+                        <label class="text-xs text-gray-600">Rộng (B) mm</label>
+                        <input type="number" id="inputWidth" value="1200" min="300" max="5000" step="10"
+                               onchange="updateDimensions()"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">Cao (H) mm</label>
+                        <input type="number" id="inputHeight" value="2400" min="500" max="5000" step="10"
+                               onchange="updateDimensions()"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CANVAS AREA -->
+        <div class="flex-1 flex flex-col bg-gray-50">
+            <div class="flex-1 p-6 overflow-auto">
+                <div class="bg-white rounded-lg shadow-md p-4 inline-block">
+                    <canvas id="drawingCanvas" width="800" height="1000"></canvas>
+                </div>
+            </div>
+
+            <!-- CALCULATED DIMENSIONS PANEL -->
+            <div class="bg-white border-t border-gray-200 p-4">
+                <h3 class="font-semibold text-gray-900 mb-3">Kích thước đã tính</h3>
+                <div class="grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                        <label class="text-gray-600">H tổng:</label>
+                        <span id="calcH" class="font-medium ml-2">2400</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">B tổng:</label>
+                        <span id="calcB" class="font-medium ml-2">1200</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">K1:</label>
+                        <span id="calcK1" class="font-medium ml-2">-</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">K2:</label>
+                        <span id="calcK2" class="font-medium ml-2">-</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">K3:</label>
+                        <span id="calcK3" class="font-medium ml-2">-</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">K4:</label>
+                        <span id="calcK4" class="font-medium ml-2">-</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">Kính rộng:</label>
+                        <span id="calcGlassW" class="font-medium ml-2">-</span> mm
+                    </div>
+                    <div>
+                        <label class="text-gray-600">Kính cao:</label>
+                        <span id="calcGlassH" class="font-medium ml-2">-</span> mm
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR - PROPERTIES -->
+        <div class="w-80 bg-white shadow-sm border-l border-gray-200 overflow-y-auto p-4">
+            <h2 class="font-bold text-gray-900 mb-4">Thuộc tính</h2>
+            
+            <!-- Hệ nhôm -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hệ nhôm</label>
+                <select id="selectAluminumSystem" onchange="updateDrawing()" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">-- Chọn hệ nhôm --</option>
+                </select>
+            </div>
+
+            <!-- Màu kính -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Màu kính</label>
+                <div class="flex gap-2">
+                    <button onclick="setGlassColor('#87CEEB')" class="w-10 h-10 bg-blue-200 rounded border-2 border-gray-300"></button>
+                    <button onclick="setGlassColor('#E0F2FE')" class="w-10 h-10 bg-blue-100 rounded border-2 border-gray-300"></button>
+                    <button onclick="setGlassColor('#F0F9FF')" class="w-10 h-10 bg-blue-50 rounded border-2 border-gray-300"></button>
+                    <button onclick="setGlassColor('#FFFFFF')" class="w-10 h-10 bg-white rounded border-2 border-gray-300"></button>
+                </div>
+            </div>
+
+            <!-- Thông tin cửa -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tên cửa</label>
+                <input type="text" id="inputDoorName" value="Cửa" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ký hiệu</label>
+                <input type="text" id="inputDoorCode" value="D1" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let currentProjectId = null;
+        let currentDoorId = null;
+        let canvas, ctx;
+        let currentTemplate = null;
+        let doorData = {
+            width: 1200,
+            height: 2400,
+            panels: 1,
+            glassColor: '#87CEEB',
+            aluminumSystem: null
+        };
+
+        // Initialize
+        function init() {
+            // Get project ID and door ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentProjectId = urlParams.get('projectId');
+            currentDoorId = urlParams.get('doorId');
+
+            // Setup canvas
+            canvas = document.getElementById('drawingCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Load aluminum systems
+            loadAluminumSystems();
+            
+            // Load existing door if doorId provided
+            if (currentDoorId) {
+                loadDoorDrawing(currentDoorId);
+            } else {
+                // Default: draw simple door
+                renderDoor();
+            }
+        }
+
+        // Load aluminum systems
+        async function loadAluminumSystems() {
+            try {
+                const response = await fetch(`${API_BASE}/aluminum-systems`);
+                const result = await response.json();
+                if (result.success) {
+                    const select = document.getElementById('selectAluminumSystem');
+                    result.data.forEach(system => {
+                        const option = document.createElement('option');
+                        option.value = system.id;
+                        option.textContent = `${system.name} (${system.brand})`;
+                        if (system.brand === 'ViralWindow') {
+                            option.selected = true;
+                            doorData.aluminumSystem = system;
+                        }
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading aluminum systems:', error);
+            }
+        }
+
+        // Render door on canvas
+        function renderDoor() {
+            if (!ctx) return;
+            
+            const { width, height, panels, glassColor } = doorData;
+            const scale = Math.min(canvas.width / (width + 200), canvas.height / (height + 200));
+            const offsetX = (canvas.width - width * scale) / 2;
+            const offsetY = (canvas.height - height * scale) / 2;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw frame
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 3 * scale;
+            ctx.strokeRect(offsetX, offsetY, width * scale, height * scale);
+
+            // Draw panels
+            const panelWidth = width / panels;
+            for (let i = 0; i < panels; i++) {
+                const x = offsetX + i * panelWidth * scale;
+                const y = offsetY;
+                const w = panelWidth * scale;
+                const h = height * scale;
+
+                // Panel frame
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 2 * scale;
+                ctx.strokeRect(x, y, w, h);
+
+                // Glass
+                ctx.fillStyle = glassColor;
+                ctx.globalAlpha = 0.3;
+                ctx.fillRect(x + 20 * scale, y + 20 * scale, w - 40 * scale, h - 40 * scale);
+                ctx.globalAlpha = 1.0;
+
+                // Glass border
+                ctx.strokeStyle = '#4A90E2';
+                ctx.lineWidth = 1 * scale;
+                ctx.strokeRect(x + 20 * scale, y + 20 * scale, w - 40 * scale, h - 40 * scale);
+
+                // Handle
+                ctx.fillStyle = '#666666';
+                ctx.beginPath();
+                ctx.arc(x + w - 50 * scale, y + h / 2, 15 * scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Opening direction (diagonal line)
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 2 * scale;
+                ctx.beginPath();
+                ctx.moveTo(x + 30 * scale, y + 30 * scale);
+                ctx.lineTo(x + w - 30 * scale, y + h - 30 * scale);
+                ctx.stroke();
+            }
+
+            // Draw dimensions
+            drawDimensions(offsetX, offsetY, width * scale, height * scale, scale);
+
+            // Update calculated dimensions
+            updateCalculatedDimensions();
+        }
+
+        // Draw dimensions
+        function drawDimensions(x, y, w, h, scale) {
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1 * scale;
+            ctx.font = `${12 * scale}px Arial`;
+            ctx.fillStyle = '#000000';
+
+            // Width dimension (B)
+            const dimY = y + h + 30 * scale;
+            ctx.beginPath();
+            ctx.moveTo(x, dimY);
+            ctx.lineTo(x + w, dimY);
+            ctx.moveTo(x, dimY - 5 * scale);
+            ctx.lineTo(x, dimY + 5 * scale);
+            ctx.moveTo(x + w, dimY - 5 * scale);
+            ctx.lineTo(x + w, dimY + 5 * scale);
+            ctx.stroke();
+            ctx.fillText(`B: ${doorData.width}mm`, x + w / 2 - 30 * scale, dimY + 15 * scale);
+
+            // Height dimension (H)
+            const dimX = x + w + 30 * scale;
+            ctx.beginPath();
+            ctx.moveTo(dimX, y);
+            ctx.lineTo(dimX, y + h);
+            ctx.moveTo(dimX - 5 * scale, y);
+            ctx.lineTo(dimX + 5 * scale, y);
+            ctx.moveTo(dimX - 5 * scale, y + h);
+            ctx.lineTo(dimX + 5 * scale, y + h);
+            ctx.stroke();
+            ctx.save();
+            ctx.translate(dimX + 15 * scale, y + h / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(`H: ${doorData.height}mm`, 0, 0);
+            ctx.restore();
+        }
+
+        // Update dimensions
+        function updateDimensions() {
+            doorData.width = parseInt(document.getElementById('inputWidth').value) || 1200;
+            doorData.height = parseInt(document.getElementById('inputHeight').value) || 2400;
+            renderDoor();
+        }
+
+        // Update calculated dimensions display
+        function updateCalculatedDimensions() {
+            document.getElementById('calcH').textContent = doorData.height;
+            document.getElementById('calcB').textContent = doorData.width;
+            
+            // Calculate glass dimensions (with deduction)
+            const glassDeduction = 40; // Default deduction
+            const glassW = doorData.width - glassDeduction * 2;
+            const glassH = doorData.height - glassDeduction * 2;
+            
+            document.getElementById('calcGlassW').textContent = glassW;
+            document.getElementById('calcGlassH').textContent = glassH;
+            
+            // Calculate K1, K2, K3, K4 (example values)
+            document.getElementById('calcK1').textContent = doorData.width / 2;
+            document.getElementById('calcK2').textContent = 50;
+            document.getElementById('calcK3').textContent = doorData.height - 50;
+            document.getElementById('calcK4').textContent = doorData.width / 2;
+        }
+
+        // Load template
+        async function loadTemplate(templateCode) {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates?code=${templateCode}`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    currentTemplate = result.data[0];
+                    
+                    // Update door data from template
+                    if (currentTemplate.structure_json) {
+                        const structure = currentTemplate.structure_json;
+                        doorData.panels = structure.panels || 1;
+                    }
+                    
+                    renderDoor();
+                } else {
+                    // Fallback: create simple template
+                    createSimpleTemplate(templateCode);
+                }
+            } catch (error) {
+                console.error('Error loading template:', error);
+                createSimpleTemplate(templateCode);
+            }
+        }
+
+        // Create simple template
+        function createSimpleTemplate(code) {
+            if (code.includes('swing_1')) {
+                doorData.panels = 1;
+            } else if (code.includes('swing_2')) {
+                doorData.panels = 2;
+            } else if (code.includes('swing_4')) {
+                doorData.panels = 4;
+            } else if (code.includes('sliding_2')) {
+                doorData.panels = 2;
+            } else if (code.includes('sliding_4')) {
+                doorData.panels = 4;
+            }
+            renderDoor();
+        }
+
+        // New drawing
+        function newDrawing() {
+            VWModal.confirm('Tạo bản vẽ mới', 'Bạn có chắc muốn tạo bản vẽ mới? Dữ liệu hiện tại sẽ bị xóa.').then(confirmed => {
+                if (confirmed) {
+                    doorData = {
+                        width: 1200,
+                        height: 2400,
+                        panels: 1,
+                        glassColor: '#87CEEB',
+                        aluminumSystem: null
+                    };
+                    document.getElementById('inputWidth').value = 1200;
+                    document.getElementById('inputHeight').value = 2400;
+                    currentTemplate = null;
+                    renderDoor();
+                }
+            });
+        }
+
+        // Set glass color
+        function setGlassColor(color) {
+            doorData.glassColor = color;
+            renderDoor();
+        }
+
+        function changeGlassColor() {
+            const color = prompt('Nhập mã màu (ví dụ: #87CEEB):', doorData.glassColor);
+            if (color) {
+                setGlassColor(color);
+            }
+        }
+
+        // Center canvas
+        function centerCanvas() {
+            renderDoor();
+        }
+
+        // Export image
+        function exportImage() {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `door-${Date.now()}.png`;
+            link.href = dataURL;
+            link.click();
+        }
+
+        // Save drawing
+        async function saveDrawing() {
+            if (!currentProjectId) {
+                alert('Vui lòng chọn dự án trước!');
+                return;
+            }
+
+            try {
+                const drawingData = {
+                    project_id: currentProjectId,
+                    door_design_id: currentDoorId,
+                    template_id: currentTemplate?.id || null,
+                    template_code: currentTemplate?.code || document.getElementById('inputDoorCode').value,
+                    width_mm: doorData.width,
+                    height_mm: doorData.height,
+                    params_json: {
+                        K1: parseInt(document.getElementById('calcK1').textContent) || 0,
+                        K2: parseInt(document.getElementById('calcK2').textContent) || 0,
+                        K3: parseInt(document.getElementById('calcK3').textContent) || 0,
+                        K4: parseInt(document.getElementById('calcK4').textContent) || 0
+                    },
+                    calculated_dimensions: {
+                        glass_width: parseInt(document.getElementById('calcGlassW').textContent) || 0,
+                        glass_height: parseInt(document.getElementById('calcGlassH').textContent) || 0
+                    },
+                    svg_data: canvasToSVG(),
+                    image_data: canvas.toDataURL('image/png')
+                };
+
+                const endpoint = currentDoorId 
+                    ? `${API_BASE}/door-drawings/${currentDoorId}`
+                    : `${API_BASE}/door-drawings`;
+                
+                const method = currentDoorId ? 'PUT' : 'POST';
+
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(drawingData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Lưu bản vẽ thành công!');
+                    if (result.data && result.data.id) {
+                        currentDoorId = result.data.id;
+                    }
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể lưu bản vẽ'));
+                }
+            } catch (error) {
+                console.error('Error saving drawing:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // Load door drawing
+        async function loadDoorDrawing(doorId) {
+            try {
+                const response = await fetch(`${API_BASE}/door-drawings/${doorId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const drawing = result.data;
+                    doorData.width = drawing.width_mm || 1200;
+                    doorData.height = drawing.height_mm || 2400;
+                    
+                    document.getElementById('inputWidth').value = doorData.width;
+                    document.getElementById('inputHeight').value = doorData.height;
+                    
+                    if (drawing.image_data) {
+                        // Load image
+                        const img = new Image();
+                        img.onload = function() {
+                            ctx.drawImage(img, 0, 0);
+                        };
+                        img.src = drawing.image_data;
+                    } else {
+                        renderDoor();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading drawing:', error);
+            }
+        }
+
+        // Convert canvas to SVG
+        function canvasToSVG() {
+            // Simple SVG representation
+            const { width, height, panels, glassColor } = doorData;
+            let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+            
+            // Frame
+            svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="none" stroke="#333" stroke-width="3"/>`;
+            
+            // Panels
+            const panelWidth = width / panels;
+            for (let i = 0; i < panels; i++) {
+                const x = i * panelWidth;
+                svg += `<rect x="${x}" y="0" width="${panelWidth}" height="${height}" fill="none" stroke="#666" stroke-width="2"/>`;
+                svg += `<rect x="${x + 20}" y="20" width="${panelWidth - 40}" height="${height - 40}" fill="${glassColor}" opacity="0.3" stroke="#4A90E2" stroke-width="1"/>`;
+            }
+            
+            svg += `</svg>`;
+            return svg;
+        }
+
+        // Update drawing
+        function updateDrawing() {
+            const systemId = document.getElementById('selectAluminumSystem').value;
+            if (systemId) {
+                // Update aluminum system
+                doorData.aluminumSystem = { id: systemId };
+            }
+            renderDoor();
+        }
+
+        // Go back
+        function goBack() {
+            if (currentProjectId) {
+                window.location.href = `design-new.html?projectId=${currentProjectId}`;
+            } else {
+                window.location.href = 'projects.html';
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
+
+
+

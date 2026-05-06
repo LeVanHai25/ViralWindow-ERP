@@ -1,0 +1,351 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Tài chính - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="finance-date-range-picker.js"></script>
+    <style>
+        /* Modern gradient background - đồng bộ với phần mềm */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Filter bar modern */
+        .filter-bar-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Button modern */
+        .btn-modern {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <script src="js/vw-modal.js"></script>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="bg-white shadow p-5 flex justify-between items-center header-gradient backdrop-blur-sm" style="background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: relative; z-index: 1000;">
+        <div class="flex items-center gap-4">
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước" class="icon-square bg-white text-blue-600 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Báo cáo Tài chính</h1>
+                <p class="text-blue-100 text-sm">Các báo cáo tài chính chi tiết</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- REPORT TYPES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all hover:transform hover:-translate-y-1" onclick="loadReport('income-expense')">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-gray-900">Báo cáo Thu Chi</h3>
+                <p class="text-sm text-gray-500">Tổng hợp thu chi theo kỳ</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all hover:transform hover:-translate-y-1" onclick="loadReport('debt')">
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-gray-900">Báo cáo Công nợ</h3>
+                <p class="text-sm text-gray-500">Chi tiết công nợ phải thu/trả</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all hover:transform hover:-translate-y-1" onclick="loadReport('profit-loss')">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-gray-900">Báo cáo Lãi Lỗ</h3>
+                <p class="text-sm text-gray-500">Lãi lỗ theo dự án</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all hover:transform hover:-translate-y-1" onclick="loadReport('material-cost')">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-gray-900">Chi phí Vật tư</h3>
+                <p class="text-sm text-gray-500">Chi phí vật tư theo dự án</p>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filter-bar-modern p-5 mb-6 fade-in" id="reportFilters" style="display: none;">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian</label>
+                    <div id="dateRangePicker"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Dự án</label>
+                    <select id="reportProject" class="form-select w-full">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="generateReport()" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all btn-modern">
+                        Tạo báo cáo
+                    </button>
+                    <button onclick="exportReport()" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all btn-modern">
+                        Excel
+                    </button>
+                    <button onclick="exportPDF()" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all btn-modern">
+                        PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORT CONTENT -->
+        <div id="reportContent" class="hidden">
+            <div class="data-table">
+                <div id="reportTable">
+                    <!-- Report table will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="finance-common.js"></script>
+    <script>
+        let currentReportType = null;
+        let dateRangePicker = null;
+
+        // Load report
+        function loadReport(type) {
+            currentReportType = type;
+            const filtersDiv = document.getElementById('reportFilters');
+            filtersDiv.style.display = 'block';
+            document.getElementById('reportContent').classList.remove('hidden');
+            
+            // Initialize date range picker if not exists
+            if (!dateRangePicker) {
+                dateRangePicker = new DateRangePicker('dateRangePicker', {
+                    defaultRange: 'month',
+                    onRangeChange: function(range) {
+                        // Auto generate report when range changes
+                        // generateReport();
+                    }
+                });
+            }
+            
+            generateReport();
+        }
+
+        // Generate report
+        async function generateReport() {
+            const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
+            const projectId = document.getElementById('reportProject').value;
+
+            if (!range.startDate || !range.endDate) {
+                showAlert('Vui lòng chọn khoảng thời gian');
+                return;
+            }
+
+            try {
+                let reportData = null;
+                
+                switch (currentReportType) {
+                    case 'income-expense':
+                        reportData = await generateIncomeExpenseReport(range.startDate, range.endDate, projectId);
+                        break;
+                    case 'debt':
+                        reportData = await generateDebtReport(range.startDate, range.endDate, projectId);
+                        break;
+                    case 'profit-loss':
+                        reportData = await generateProfitLossReport(range.startDate, range.endDate, projectId);
+                        break;
+                    case 'material-cost':
+                        reportData = await generateMaterialCostReport(range.startDate, range.endDate, projectId);
+                        break;
+                }
+
+                if (reportData) {
+                    displayReport(reportData);
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                showAlert('Lỗi khi tạo báo cáo');
+            }
+        }
+
+        // Generate income-expense report
+        async function generateIncomeExpenseReport(startDate, endDate, projectId) {
+            const params = new URLSearchParams();
+            params.append('startDate', startDate);
+            params.append('endDate', endDate);
+            if (projectId) params.append('projectId', projectId);
+
+            const res = await fetch(`${API_BASE}/financial/statistics?${params}`);
+            const data = await res.json();
+            
+            if (data.success) {
+                return {
+                    title: 'Báo cáo Thu Chi',
+                    headers: ['Khoản mục', 'Số tiền'],
+                    rows: [
+                        ['Tổng thu', formatCurrency(data.data.total_revenue || 0)],
+                        ['Tổng chi', formatCurrency(data.data.total_expense || 0)],
+                        ['Lãi/Lỗ', formatCurrency((data.data.total_revenue || 0) - (data.data.total_expense || 0))]
+                    ]
+                };
+            }
+            return null;
+        }
+
+        // Generate debt report
+        async function generateDebtReport(startDate, endDate, projectId) {
+            const params = new URLSearchParams();
+            if (projectId) params.append('projectId', projectId);
+
+            const res = await fetch(`${API_BASE}/debts?${params}`);
+            const data = await res.json();
+            
+            if (data.success) {
+                return {
+                    title: 'Báo cáo Công nợ',
+                    headers: ['Loại', 'Khách hàng/NCC', 'Dự án', 'Tổng tiền', 'Đã trả', 'Còn lại', 'Hạn thanh toán'],
+                    rows: data.data.map(d => [
+                        d.debt_type === 'receivable' ? 'Phải thu' : 'Phải trả',
+                        d.customer_name || d.supplier || 'N/A',
+                        d.project_name || 'N/A',
+                        formatCurrency(d.total_amount),
+                        formatCurrency(d.paid_amount || 0),
+                        formatCurrency(d.remaining_amount || 0),
+                        d.due_date ? formatDate(d.due_date) : 'N/A'
+                    ])
+                };
+            }
+            return null;
+        }
+
+        // Generate profit-loss report
+        async function generateProfitLossReport(startDate, endDate, projectId) {
+            // Similar to finance-cost-profit.html logic
+            return {
+                title: 'Báo cáo Lãi Lỗ',
+                headers: ['Dự án', 'Doanh thu', 'Chi phí', 'Lãi/Lỗ', '%'],
+                rows: []
+            };
+        }
+
+        // Generate material cost report
+        async function generateMaterialCostReport(startDate, endDate, projectId) {
+            // TODO: Implement material cost report
+            return {
+                title: 'Báo cáo Chi phí Vật tư',
+                headers: ['Dự án', 'Vật tư', 'Số lượng', 'Đơn giá', 'Thành tiền'],
+                rows: []
+            };
+        }
+
+        // Display report
+        function displayReport(reportData) {
+            const table = document.getElementById('reportTable');
+            table.innerHTML = `
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-4">${reportData.title}</h2>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                ${reportData.headers.map(h => `<th>${h}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${reportData.rows.map(row => `
+                                <tr>
+                                    ${row.map(cell => `<td>${cell}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Export report
+        function exportReport() {
+            showAlert('Chức năng xuất Excel đang được phát triển');
+        }
+
+        // Export PDF
+        function exportPDF() {
+            showAlert('Chức năng xuất PDF đang được phát triển');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadProjects(document.getElementById('reportProject'));
+        });
+    </script>
+</body>
+</html>
+
+

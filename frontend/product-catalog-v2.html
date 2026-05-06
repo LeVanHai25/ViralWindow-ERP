@@ -1,0 +1,1809 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục sản phẩm - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/products-data.js"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn .count {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .tab-btn.active .count {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        /* ===== VIEW TOGGLE ===== */
+        .view-toggle { display:flex; gap:4px; }
+        .view-toggle button {
+            padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px;
+            background: white; cursor: pointer; color: #64748b; font-size: 14px;
+            transition: all 0.2s;
+        }
+        .view-toggle button.active {
+            background: #4f46e5; border-color: #4f46e5; color: white;
+        }
+
+        /* ===== CARD GRID ===== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        #tableView { display: none; }
+
+        /* ===== PRODUCT CARD (NEW COMPACT DESIGN) ===== */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(99,102,241,0.15);
+            border-color: #818cf8;
+        }
+        /* Thumbnail area */
+        .product-card .card-thumb {
+            height: 110px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .product-card .card-thumb .thumb-icon {
+            opacity: 0.25;
+            color: #4f46e5;
+        }
+        .product-card .card-thumb .thumb-icon svg {
+            width: 56px; height: 56px;
+        }
+        .product-card .card-thumb .group-badge {
+            position: absolute; top: 8px; left: 8px;
+            display: flex; gap: 4px;
+        }
+        .product-card .card-body {
+            padding: 14px 16px;
+            flex: 1; display: flex; flex-direction: column; gap: 8px;
+        }
+        .product-card .card-code {
+            font-weight: 700; color: #4f46e5; font-size: 15px;
+        }
+        .product-card .card-name {
+            font-size: 13px; color: #334155; line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .product-card .card-price-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: auto;
+        }
+        .product-card .card-price-label {
+            font-size: 11px; color: #94a3b8;
+        }
+        .product-card .card-price-value {
+            font-size: 14px; font-weight: 700; color: #059669;
+        }
+        .product-card .card-accessories {
+            display: flex; gap: 4px; flex-wrap: wrap;
+        }
+        .product-card .acc-pill {
+            background: #ecfdf5; color: #065f46;
+            border: 1px solid #6ee7b7;
+            padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+        }
+        /* Card Actions */
+        .product-card .card-actions {
+            display: flex; gap: 0; border-top: 1px solid #f1f5f9;
+        }
+        .product-card .card-actions button {
+            flex: 1; padding: 10px 0; border: none; cursor: pointer;
+            font-size: 12px; font-weight: 600; transition: background 0.15s;
+        }
+        .product-card .btn-detail {
+            background: #f0f9ff; color: #0369a1;
+            border-right: 1px solid #f1f5f9 !important;
+        }
+        .product-card .btn-detail:hover { background: #e0f2fe; }
+        .product-card .btn-edit-card { background: #eef2ff; color: #4338ca; border-right: 1px solid #f1f5f9 !important; }
+        .product-card .btn-edit-card:hover { background: #e0e7ff; }
+        .product-card .btn-del-card { background: #fff5f5; color: #dc2626; }
+        .product-card .btn-del-card:hover { background: #fee2e2; }
+
+        /* ===== DETAIL MODAL (WIDE) ===== */
+        .detail-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.6);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; padding: 20px;
+        }
+        .detail-overlay.show { display: flex; }
+        .detail-modal {
+            background: white; border-radius: 20px;
+            width: 100%; max-width: 900px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+        }
+        .detail-modal-header {
+            padding: 20px 28px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white; border-radius: 20px 20px 0 0;
+        }
+        .detail-modal-header h2 { font-size: 18px; font-weight: 700; margin: 0; }
+        .detail-modal-header .dm-close {
+            background: rgba(255,255,255,0.2); border: none;
+            color: white; width: 32px; height: 32px; border-radius: 50%;
+            font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .detail-modal-body {
+            display: grid; grid-template-columns: 260px 1fr;
+            overflow: hidden; flex: 1;
+        }
+        .detail-left {
+            background: linear-gradient(180deg, #eef2ff, #f5f3ff);
+            padding: 24px; border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+        .detail-right {
+            padding: 24px; overflow-y: auto;
+        }
+        .detail-right h3 {
+            font-size: 13px; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin: 0 0 12px; padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        /* Price table inside modal */
+        .price-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+        .price-matrix .pm-cell {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 6px; padding: 6px 8px; text-align: center;
+        }
+        .price-matrix .pm-cell .pm-size { font-size: 10px; color: #94a3b8; }
+        .price-matrix .pm-cell .pm-price { font-size: 12px; font-weight: 700; color: #059669; }
+        .price-matrix .pm-cell.pm-empty { opacity: 0.4; }
+
+        .product-card .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-edit {
+            padding: 6px 12px;
+            background: #dbeafe;
+            color: #1e40af;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: #fee2e2;
+            color: #991b1b;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .simple-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .simple-table th {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .simple-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .simple-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .simple-table .price {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        /* Groups Table Special Styling */
+        .groups-table thead tr {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+        }
+
+        .groups-table thead th {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 14px 12px !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .groups-table tbody tr:hover {
+            background: #ede9fe !important;
+        }
+
+        /* Glass Table Special Styling */
+        .glass-table thead tr {
+            background: linear-gradient(135deg, #0369a1, #0284c7) !important;
+        }
+
+        .glass-table thead th {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 14px 12px !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .glass-table tbody tr:hover {
+            background: #e0f2fe !important;
+        }
+
+        /* Materials Table Special Styling */
+        .materials-table thead tr {
+            background: linear-gradient(135deg, #9333ea, #a855f7) !important;
+        }
+
+        .materials-table thead th {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 14px 12px !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .materials-table tbody tr:hover {
+            background: #f3e8ff !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #818cf8;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-save {
+            padding: 10px 20px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <span class="text-xl font-bold">VW</span>
+                </div>
+                <span class="text-xl font-bold" id="companyName">VIRALWINDOW</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">U</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800"> Danh mục sản phẩm</h1>
+                <p class="text-gray-500 text-sm">Quản lý sản phẩm trong công ty</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="products" onclick="switchTab('products')">
+                Sản phẩm cửa <span class="count" id="countProducts">0</span>
+            </button>
+            <button class="tab-btn" data-tab="groups" onclick="switchTab('groups')">
+                Nhóm SP <span class="count" id="countGroups">0</span>
+            </button>
+            <button class="tab-btn" data-tab="glass" onclick="switchTab('glass')">
+                Bảng kính <span class="count" id="countGlass">0</span>
+            </button>
+            <button class="tab-btn" data-tab="materials" onclick="switchTab('materials')">
+                Vật tư <span class="count" id="countMaterials">0</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Products -->
+        <div class="tab-content active" id="tab-products">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchProducts"
+                    placeholder=" 🔍︎ Tìm theo mã, tên sản phẩm..." oninput="filterProducts()">
+                <select class="filter-select" id="filterProductGroup" onchange="filterProducts()" 
+                    style="min-width:200px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);border:2px solid #818cf8;font-weight:600">
+                    <option value="">Tất cả Nhóm SP</option>
+                </select>
+                <select class="filter-select" id="sortProducts" onchange="filterProducts()">
+                    <option value="code">Sắp xếp theo Mã</option>
+                    <option value="name">Sắp xếp theo Tên</option>
+                    <option value="price">Sắp xếp theo Giá</option>
+                </select>
+                <div class="view-toggle">
+                    <button id="btnGrid" class="active" onclick="setView('grid')" title="Dạng thẻ">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;display:block">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                    </button>
+                    <button id="btnTable" onclick="setView('table')" title="Dạng bảng">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;display:block">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+                <button class="btn-primary" onclick="openModal('product')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Thêm sản phẩm</button>
+            </div>
+            <div class="card-grid" id="productsGrid"></div>
+            <!-- TABLE VIEW (hidden by default) -->
+            <div id="tableView">
+                <table class="simple-table" style="margin-top:0">
+                    <thead><tr>
+                        <th style="width:50px;text-align:center">STT</th>
+                        <th style="width:120px">Mã SP</th>
+                        <th>Tên sản phẩm</th>
+                        <th style="width:160px">Nhóm</th>
+                        <th style="width:140px;text-align:right">Giá cơ sở (0-0.25m²)</th>
+                        <th style="width:160px;text-align:center">Thao tác</th>
+                    </tr></thead>
+                    <tbody id="productsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 2: Groups -->
+        <div class="tab-content" id="tab-groups">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchGroups" placeholder="🔍︎ Tìm nhóm sản phẩm..."
+                    oninput="filterGroups()">
+                <select class="filter-select" id="filterGroupCode" onchange="filterGroups()"
+                    style="min-width:150px;background:linear-gradient(135deg,#c4b5fd,#e9d5ff);border:2px solid #8b5cf6;font-weight:600">
+                    <option value="">Tất cả Mã nhóm</option>
+                    <option value="VRA">VRA</option>
+                    <option value="VRE">VRE</option>
+                    <option value="CHOP">CHOP</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('group')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+
+                    Thêm nhóm</button>
+            </div>
+            <table class="simple-table groups-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;text-align:center">STT</th>
+                        <th style="width:120px;text-align:center">Mã nhóm</th>
+                        <th style="text-align:left">Tên nhóm</th>
+                        <th style="width:180px;text-align:center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="groupsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Tab 3: Glass -->
+        <div class="tab-content" id="tab-glass">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchGlass" placeholder="🔍︎ Tìm loại kính..."
+                    oninput="filterGlass()">
+                <select class="filter-select" id="sortGlass" onchange="filterGlass()">
+                    <option value="id">Sắp xếp theo STT</option>
+                    <option value="name">Sắp xếp theo Tên</option>
+                    <option value="price">Sắp xếp theo Giá</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('glass')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Thêm kính</button>
+            </div>
+            <table class="simple-table glass-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;text-align:center">STT</th>
+                        <th style="width:15%;text-align:left">Tên kính</th>
+                        <th style="width:80px;text-align:center">Mã kính</th>
+                        <th style="width:25%;text-align:left">Chủng loại kính</th>
+                        <th style="width:80px;text-align:center">Cấu tạo</th>
+                        <th style="width:120px;text-align:right">Chênh kính áp dụng</th>
+                        <th style="width:15%;text-align:left">Ghi chú</th>
+                        <th style="width:130px;text-align:center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="glassTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Tab 4: Materials -->
+        <div class="tab-content" id="tab-materials">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchMaterials" placeholder="🔍︎ Tìm vật tư..."
+                    oninput="filterMaterials()">
+                <select class="filter-select" id="sortMaterials" onchange="filterMaterials()">
+                    <option value="name">Sắp xếp theo Tên</option>
+                    <option value="price">Sắp xếp theo Giá</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('material')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Thêm vật tư</button>
+            </div>
+            <table class="simple-table materials-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;text-align:center">STT</th>
+                        <th style="text-align:left">Vật tư</th>
+                        <th style="width:150px;text-align:right">Giá (VND)</th>
+                        <th style="width:180px;text-align:center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="materialsTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div class="detail-overlay" id="detailOverlay" onclick="closeDetailModal(event)">
+        <div class="detail-modal" onclick="event.stopPropagation()">
+            <div class="detail-modal-header">
+                <div>
+                    <div id="detailCode" style="font-size:13px;opacity:0.8;margin-bottom:2px"></div>
+                    <h2 id="detailTitle">Chi tiết sản phẩm</h2>
+                </div>
+                <button class="dm-close" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div class="detail-modal-body">
+                <div class="detail-left">
+                    <!-- Thumbnail -->
+                    <div style="width:100%;height:150px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;opacity:0.3;color:#4f46e5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:80px;height:80px">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M12 3v18"/>
+                        </svg>
+                    </div>
+                    <!-- Badges -->
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" id="detailBadges"></div>
+                    <!-- Meta info -->
+                    <div id="detailMeta" style="font-size:13px;line-height:1.8;color:#334155"></div>
+                    <!-- Accessories -->
+                    <div id="detailAccSection" style="margin-top:16px"></div>
+                </div>
+                <div class="detail-right">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        Bảng giá theo diện tích (VND/m²)
+                    </h3>
+                    <div class="price-matrix" id="detailPriceMatrix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit/Add Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm mới</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn-save" onclick="saveItem()">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // SIZE COLUMNS từ Excel (đầy đủ 51 columns)
+        const SIZE_COLUMNS = [
+            '0-0.25', '0.25-0.5', '0.5-0.75', '0.75-1', '1-1.25', '1.25-1.5', '1.5-1.75', '1.75-2', '2-2.25', '2.25-2.5',
+            '2.5-2.75', '2.75-3', '3-3.25', '3.25-3.5', '3.5-3.75', '3.75-4', '4-4.25', '4.25-4.5', '4.5-4.75', '4.75-5',
+            '5-5.25', '5.25-5.5', '5.5-5.75', '5.75-6', '6-6.25', '6.25-6.5', '6.5-6.75', '6.75-7', '7-7.25', '7.25-7.5',
+            '7.5-7.75', '7.75-8', '8-8.25', '8.25-8.5', '8.5-8.75', '8.75-9', '9-9.25', '9.25-9.5', '9.5-9.75', '9.75-10',
+            '10-10.25', '10.25-10.5', '10.5-10.75', '10.75-11', '11-11.25', '11.25-11.5', '11.5-12', '12-12.5', '12.5-13', '13-14', '14-15'
+        ];
+
+        // Data arrays - loaded from API
+        let groups = [];
+        let products = [];
+        let glasses = [];
+        let materials = [];
+
+        const API_BASE = window.API_BASE || '/api';
+
+        // ============================================
+        // API LOADING FUNCTIONS
+        // ============================================
+        async function loadGroupsFromAPI() {
+            try {
+                const res = await fetch(`${API_BASE}/product-catalog/groups`);
+                const result = await res.json();
+                if (result.success) {
+                    groups = result.data;
+                    filterGroups();
+                    populateProductGroupFilter();
+                }
+            } catch (e) { console.error('Error loading groups:', e); }
+        }
+
+        function populateProductGroupFilter() {
+            const select = document.getElementById('filterProductGroup');
+            if (!select) return;
+            const currentVal = select.value;
+            
+            let html = '<option value="">Tất cả Nhóm SP</option>';
+            // Sắp xếp nhóm theo mã, sau đó là tên
+            const sorted = [...groups].sort((a,b) => {
+                if(a.code !== b.code) return a.code.localeCompare(b.code);
+                return a.name.localeCompare(b.name);
+            });
+            
+            sorted.forEach(g => {
+                html += `<option value="${g.name}">${g.code} - ${g.name}</option>`;
+            });
+            select.innerHTML = html;
+            // Phục hồi giá trị cũ nếu có
+            if(Array.from(select.options).some(opt => opt.value === currentVal)) {
+                select.value = currentVal;
+            }
+        }
+
+        async function loadGlassFromAPI() {
+            try {
+                const res = await fetch(`${API_BASE}/glass-items`);
+                const result = await res.json();
+                if (result.success) {
+                    glasses = result.data.map(g => ({
+                        id: g.id, code: g.code || '', name: g.name, glass_type: g.glass_type || '', structure: g.structure || '', price: g.price || 0, notes: g.notes || ''
+                    }));
+                    filterGlass();
+                }
+            } catch (e) { console.error('Error loading glass:', e); }
+        }
+
+        async function loadMaterialsFromAPI() {
+            try {
+                const token = sessionStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/catalog-materials`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const result = await res.json();
+                if (result.success) {
+                    materials = (result.data || []).map(m => ({
+                        id: m.id, name: m.name, price: m.sale_price || m.price || 0
+                    }));
+                    filterMaterials();
+                }
+            } catch (e) { console.error('Error loading materials:', e); }
+        }
+
+        async function loadProductsFromAPI() {
+            try {
+                const res = await fetch(`${API_BASE}/product-catalog/products`);
+                const result = await res.json();
+                if (result.success && result.data.length > 0) {
+                    products = result.data.map(p => ({
+                        id: p.id, code: p.code, groupCode: p.group_code, groupName: p.group_name,
+                        name: p.name, accessory: p.accessory, accessoryPrice: p.accessory_price,
+                        accessories: p.accessories || [],
+                        prices: p.prices || {}
+                    }));
+                } else {
+                    // Fallback to hardcoded PRODUCTS_DATA
+                    products = typeof PRODUCTS_DATA !== 'undefined' ? PRODUCTS_DATA : [];
+                }
+                filterProducts();
+            } catch (e) {
+                products = typeof PRODUCTS_DATA !== 'undefined' ? PRODUCTS_DATA : [];
+                filterProducts();
+            }
+        }
+
+        let currentModal = null;
+        let editingId = null;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function updateCounts() {
+            document.getElementById('countProducts').textContent = products.length;
+            document.getElementById('countGroups').textContent = groups.length;
+            document.getElementById('countGlass').textContent = glasses.length;
+            document.getElementById('countMaterials').textContent = materials.length;
+        }
+
+
+        // GROUPS
+        function filterGroups() {
+            const search = document.getElementById('searchGroups').value.toLowerCase();
+            const codeFilter = document.getElementById('filterGroupCode').value;
+            let filtered = groups.filter(g => {
+                const matchSearch = g.code.toLowerCase().includes(search) || g.name.toLowerCase().includes(search);
+                const matchCode = !codeFilter || g.code === codeFilter;
+                return matchSearch && matchCode;
+            });
+            renderGroups(filtered);
+        }
+
+        function renderGroups(data) {
+            document.getElementById('groupsTable').innerHTML = data.map((g, i) => `
+        <tr style="background:${i % 2 === 0 ? '#faf5ff' : '#ffffff'}">
+            <td style="text-align:center;font-weight:600;color:#6b7280">${i + 1}</td>
+            <td style="text-align:center">
+                <span style="background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:white;padding:6px 14px;border-radius:8px;font-weight:700;font-size:13px;box-shadow:0 2px 4px rgba(139,92,246,0.3)">${g.code}</span>
+            </td>
+            <td style="padding-left:16px">
+                <span style="background:linear-gradient(135deg,#fef08a,#fde047);color:#713f12;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500">${g.name}</span>
+            </td>
+            <td style="text-align:center">
+                <button onclick="editItem('group', ${g.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;margin-right:8px;box-shadow:0 2px 4px rgba(59,130,246,0.3)">Sửa</button>
+                <button onclick="deleteItem('group', ${g.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 4px rgba(239,68,68,0.3)">Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        // PRODUCTS
+        function filterProducts() {
+            const search = document.getElementById('searchProducts').value.toLowerCase();
+            const sort = document.getElementById('sortProducts').value;
+            const groupFilter = document.getElementById('filterProductGroup') ? document.getElementById('filterProductGroup').value : '';
+
+            let filtered = products.filter(p => {
+                const matchSearch = p.code.toLowerCase().includes(search) || p.name.toLowerCase().includes(search);
+                const matchGroup = !groupFilter || p.groupName === groupFilter;
+                return matchSearch && matchGroup;
+            });
+
+            filtered.sort((a, b) => {
+                if (sort === 'code') return a.code.localeCompare(b.code);
+                if (sort === 'name') return a.name.localeCompare(b.name);
+                if (sort === 'price') return (a.prices['0-0.25'] || 0) - (b.prices['0-0.25'] || 0);
+                return 0;
+            });
+
+            renderProducts(filtered);
+        }
+
+        let currentView = 'grid';
+
+        function setView(mode) {
+            currentView = mode;
+            document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+            document.getElementById('btnTable').classList.toggle('active', mode === 'table');
+            document.getElementById('productsGrid').style.display = mode === 'grid' ? '' : 'none';
+            document.getElementById('tableView').style.display = mode === 'table' ? '' : 'none';
+        }
+
+        function renderProducts(data) {
+            const grid = document.getElementById('productsGrid');
+            if (!data.length) {
+                grid.innerHTML = '<div class="empty-state"><p>Không có sản phẩm nào</p></div>';
+                document.getElementById('productsTableBody').innerHTML = '';
+                return;
+            }
+
+            // --- GRID VIEW: Compact card without price matrix ---
+            grid.innerHTML = data.map(p => {
+                const firstPrice = p.prices && p.prices['0-0.25'] ? p.prices['0-0.25'] : null;
+                const accs = p.accessories && p.accessories.length > 0 ? p.accessories : (p.accessory ? [{name: p.accessory}] : []);
+                const accPills = accs.map(a => `<span class="acc-pill">${a.name}</span>`).join('');
+                return `
+                <div class="product-card" onclick="openDetailModal(${p.id})">
+                    <div class="card-thumb">
+                        <span class="thumb-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M12 3v18"/></svg></span>
+                        <div class="group-badge">
+                            <span style="background:#c4b5fd;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700">${p.groupCode || ''}</span>
+                            <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${p.groupName || ''}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-code">${p.code}</div>
+                        <div class="card-name">${(p.name || '').split('\n')[0]}</div>
+                        ${accPills ? `<div class="card-accessories">${accPills}</div>` : ''}
+                        <div class="card-price-row">
+                            <span class="card-price-label">Giá từ:</span>
+                            <span class="card-price-value">${firstPrice ? formatMoney(firstPrice) + '/m²' : '---'}</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-detail" onclick="event.stopPropagation();openDetailModal(${p.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>Chi tiết
+                        </button>
+                        <button class="btn-edit-card" onclick="event.stopPropagation();editItem('product',${p.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Sửa
+                        </button>
+                        <button class="btn-del-card" onclick="event.stopPropagation();deleteItem('product',${p.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Xóa
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            renderProductsTable(data);
+        }
+
+        function renderProductsTable(data) {
+            document.getElementById('productsTableBody').innerHTML = data.map((p, i) => {
+                const firstPrice = p.prices && p.prices['0-0.25'] ? p.prices['0-0.25'] : null;
+                return `<tr style="background:${i%2===0?'#f8fafc':'white'}">
+                    <td style="text-align:center;color:#94a3b8;font-weight:600">${i+1}</td>
+                    <td><span style="font-weight:700;color:#4f46e5">${p.code}</span></td>
+                    <td style="font-size:13px;color:#334155">${(p.name||'').split('\n')[0]}</td>
+                    <td>
+                        <span style="background:#c4b5fd;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:4px">${p.groupCode||''}</span>
+                        <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:11px">${p.groupName||''}</span>
+                    </td>
+                    <td style="text-align:right;font-weight:700;color:#059669;padding-right:16px">${firstPrice ? formatMoney(firstPrice) : '---'}</td>
+                    <td style="text-align:center">
+                        <button onclick="openDetailModal(${p.id})" style="background:#dbeafe;color:#1d4ed8;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Chi tiết</button>
+                        <button onclick="editItem('product',${p.id})" style="background:#ede9fe;color:#5b21b6;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Sửa</button>
+                        <button onclick="deleteItem('product',${p.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Xóa</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openDetailModal(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+
+            document.getElementById('detailCode').textContent = p.code;
+            document.getElementById('detailTitle').textContent = (p.name || '').split('\n')[0];
+
+            // Badges
+            document.getElementById('detailBadges').innerHTML = `
+                <span style="background:linear-gradient(135deg,#c4b5fd,#8b5cf6);color:white;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700">${p.groupCode || ''}</span>
+                <span style="background:linear-gradient(135deg,#fef08a,#fbbf24);color:#713f12;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600">${p.groupName || ''}</span>`;
+
+            // Full name / description
+            const lines = (p.name || '').split('\n').filter(Boolean);
+            document.getElementById('detailMeta').innerHTML = lines.map(l => `<div style="padding:2px 0;border-bottom:1px solid #f1f5f9">${l}</div>`).join('');
+
+            // Accessories
+            const accs = p.accessories && p.accessories.length > 0 ? p.accessories : (p.accessory ? [{name:p.accessory, price:p.accessoryPrice}] : []);
+            if (accs.length > 0) {
+                document.getElementById('detailAccSection').innerHTML = `
+                    <div style="font-size:11px;font-weight:700;color:#065f46;text-transform:uppercase;margin-bottom:8px">Tùy chọn Phụ kiện</div>
+                    ${accs.map(a => `<div style="display:flex;justify-content:space-between;padding:6px 10px;background:#ecfdf5;border-radius:6px;margin-bottom:4px">
+                        <span style="background:#059669;color:white;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:600">${a.name}</span>
+                        <span style="color:#047857;font-weight:700;font-size:13px">${a.price ? formatMoney(a.price) : '---'}</span>
+                    </div>`).join('')}`;
+            } else {
+                document.getElementById('detailAccSection').innerHTML = '';
+            }
+
+            // Price matrix
+            document.getElementById('detailPriceMatrix').innerHTML = SIZE_COLUMNS.map(size => {
+                const val = p.prices && p.prices[size];
+                return `<div class="pm-cell ${!val ? 'pm-empty' : ''}">
+                    <div class="pm-size">${size}m²</div>
+                    <div class="pm-price">${val ? formatMoney(val) : '—'}</div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('detailOverlay').classList.add('show');
+        }
+
+        function closeDetailModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('detailOverlay').classList.remove('show');
+        }
+
+        // GLASS
+        function filterGlass() {
+            const search = document.getElementById('searchGlass').value.toLowerCase();
+            const sort = document.getElementById('sortGlass').value;
+            let filtered = glasses.filter(g => g.name.toLowerCase().includes(search) || g.code.toLowerCase().includes(search) || g.glass_type.toLowerCase().includes(search) || g.notes.toLowerCase().includes(search));
+            filtered.sort((a, b) => {
+                if (sort === 'id') return a.id - b.id;
+                if (sort === 'price') return a.price - b.price;
+                return a.name.localeCompare(b.name);
+            });
+            renderGlass(filtered);
+        }
+
+        function renderGlass(data) {
+            document.getElementById('glassTable').innerHTML = data.map((g, i) => `
+        <tr style="background:${i % 2 === 0 ? '#f0f9ff' : '#ffffff'}">
+            <td style="text-align:center;font-weight:600;color:#6b7280">${i + 1}</td>
+            <td style="padding:8px 10px;font-size:12px;color:#1e3a5f;font-weight:500">${g.name}</td>
+            <td style="text-align:center">
+                <span style="background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:white;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600">${g.code || '—'}</span>
+            </td>
+            <td style="padding:8px 10px;font-size:12px;color:#475569">${g.glass_type || '—'}</td>
+            <td style="text-align:center">
+                <span style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0369a1;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500">${g.structure || '—'}</span>
+            </td>
+            <td style="text-align:right;padding-right:12px">
+                <span style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;padding:4px 10px;border-radius:6px;font-weight:600;font-size:12px">${g.price ? formatMoney(g.price) : '—'}</span>
+            </td>
+            <td style="padding:8px 10px;font-size:11px;color:#64748b">${g.notes || '—'}</td>
+            <td style="text-align:center">
+                <button onclick="editItem('glass', ${g.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;margin-right:4px">Sửa</button>
+                <button onclick="deleteItem('glass', ${g.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer">Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        // MATERIALS
+        function filterMaterials() {
+            const search = document.getElementById('searchMaterials').value.toLowerCase();
+            const sort = document.getElementById('sortMaterials').value;
+            let filtered = materials.filter(m => m.name.toLowerCase().includes(search));
+            filtered.sort((a, b) => sort === 'price' ? a.price - b.price : a.name.localeCompare(b.name));
+            renderMaterials(filtered);
+        }
+
+        function renderMaterials(data) {
+            document.getElementById('materialsTable').innerHTML = data.map((m, i) => `
+        <tr style="background:${i % 2 === 0 ? '#faf5ff' : '#ffffff'}">
+            <td style="text-align:center;font-weight:600;color:#6b7280">${i + 1}</td>
+            <td style="padding:12px 16px;font-size:14px;color:#1e3a5f">${m.name}</td>
+            <td style="text-align:right;padding-right:16px">
+                <span style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;padding:5px 12px;border-radius:6px;font-weight:600;font-size:12px">${formatMoney(m.price)}</span>
+            </td>
+            <td style="text-align:center">
+                <button onclick="editItem('material', ${m.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;margin-right:8px">Sửa</button>
+                <button onclick="deleteItem('material', ${m.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        // Robust number parser for Vietnamese/International formats
+        function parseLocalPrice(val) {
+            if (typeof val !== 'string') val = String(val || '');
+            // Remove spaces and currency symbol
+            let clean = val.replace(/\s/g, '').replace(/đ/g, '').replace(/VND/g, '');
+            if (!clean) return 0;
+            // If it has a comma and a dot, comma is likely decimal (VN)
+            if (clean.includes(',') && clean.includes('.')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            } else if (clean.includes(',')) {
+                // If only comma, check context: more than 2 digits after comma likely thousand separator
+                // but for simple cases let's assume comma is decimal if it's the only one
+                // Actually, in many cases in this app, comma is decimal.
+                clean = clean.replace(',', '.');
+            }
+            const result = parseFloat(clean);
+            return isNaN(result) ? 0 : result;
+        }
+
+        // ACCESSORY MANAGEMENT
+        function addAccessoryRow(name = '', price = 0) {
+            const container = document.getElementById('accessoryList');
+            if (!container) return;
+            const div = document.createElement('div');
+            div.className = 'accessory-row';
+            div.style.display = 'grid';
+            div.style.gridTemplateColumns = '2fr 1fr auto';
+            div.style.gap = '8px';
+            div.style.marginBottom = '8px';
+
+            // Format price for display (remove decimals if .00)
+            let displayPrice = price;
+            if (typeof price === 'number') {
+                displayPrice = price.toString().replace(/\.00$/, '');
+            }
+
+            div.innerHTML = `
+                <input type="text" class="acc-name" value="${name}" placeholder="Tên hãng phụ kiện..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+                <input type="text" class="acc-price" value="${displayPrice}" placeholder="Giá..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px" oninput="this.value = this.value.replace(/[^0-9,.]/g, '')">
+                <button onclick="this.parentElement.remove()" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:18px">&times;</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // MODAL - ĐÃ XÓA Phụ kiện và Loại cửa
+        function openModal(type, id = null) {
+            currentModal = type;
+            editingId = id;
+            document.getElementById('modalTitle').textContent = id ? 'Chỉnh sửa' : 'Thêm mới';
+
+            let html = '';
+            if (type === 'product') {
+                const item = id ? products.find(p => p.id === id) : { prices: {} };
+                const groupOptions = groups.map(g =>
+                    `<option value="${g.id}" ${item.groupCode === g.code && item.groupName === g.name ? 'selected' : ''}>${g.code} - ${g.name}</option>`
+                ).join('');
+                html = `
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px">
+                <div class="form-group"><label>Mã sản phẩm</label><input type="text" id="formCode" value="${item.code || ''}"></div>
+                <div class="form-group">
+                    <label style="color:#5b21b6">Chọn nhóm sản phẩm</label>
+                    <select id="formGroupId" style="padding:10px 14px;border:2px solid #c4b5fd;border-radius:8px;font-size:14px;background:#faf5ff">
+                        <option value="">-- Chọn nhóm --</option>
+                        ${groupOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label>Tên sản phẩm</label><textarea id="formName" rows="4" placeholder="Chi tiết sản phẩm với specs...">${item.name || ''}</textarea></div>
+            <div class="form-group" style="margin-top:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <label style="color:#059669;font-weight:700">Danh sách Phụ kiện có sẵn</label>
+                    <button onclick="addAccessoryRow()" style="background:#059669;color:white;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Thêm phụ kiện</button>
+                </div>
+                <div id="accessoryList" style="background:#ecfdf5;padding:12px;border-radius:8px;border:1px dashed #059669">
+                    <!-- Accessory rows added here -->
+                </div>
+            </div>
+            <p class="text-sm font-semibold mb-2 mt-4">Giá theo kích thước (VND) - ${SIZE_COLUMNS.length} mức</p>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:300px;overflow-y:auto;padding:8px;background:#f8fafc;border-radius:8px">
+                ${SIZE_COLUMNS.map((size, i) => `
+                    <div class="form-group" style="margin-bottom:4px"><label style="font-size:11px;color:#64748b">${size}m²</label><input type="number" id="price${i}" value="${item.prices?.[size] || ''}" style="padding:6px 8px;font-size:12px"></div>
+                `).join('')}
+            </div>
+                `;
+            } else if (type === 'group') {
+                const item = id ? groups.find(g => g.id === id) : {};
+                html = `
+                    <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px">
+                        <div class="form-group">
+                            <label style="color:#5b21b6;font-weight:600"> Mã nhóm</label>
+                            <input type="text" id="formGroupCode" value="${item.code || ''}" placeholder="VRA, VRE, CHOP..." style="border:2px solid #c4b5fd;background:#faf5ff">
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#854d0e;font-weight:600"> Tên nhóm</label>
+                            <input type="text" id="formGroupName" value="${item.name || ''}" placeholder="Vách kính cố định, Cửa sổ mở quay 65..." style="border:2px solid #fde68a;background:#fffbeb">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'glass') {
+                const item = id ? glasses.find(g => g.id === id) : {};
+                html = `
+                    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+                        <div class="form-group">
+                            <label style="color:#0369a1;font-weight:600">Tên kính</label>
+                            <input type="text" id="formName" value="${item.name || ''}" placeholder="Kính dán an toàn 2 lớp trắng trong..." style="border:2px solid #7dd3fc;background:#f0f9ff">
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#8b5cf6;font-weight:600">Mã kính</label>
+                            <input type="text" id="formCode" value="${item.code || ''}" placeholder="638TT, 838TT..." style="border:2px solid #c4b5fd;background:#faf5ff">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#475569;font-weight:600">Chủng loại kính</label>
+                        <input type="text" id="formGlassType" value="${item.glass_type || ''}" placeholder="Kính dán an toàn 2 lớp 8.38mm..." style="border:2px solid #cbd5e1;background:#f8fafc">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px">
+                        <div class="form-group">
+                            <label style="color:#6b7280;font-weight:600">Cấu tạo</label>
+                            <input type="text" id="formStructure" value="${item.structure || ''}" placeholder="4+4, 5+5..." style="border:2px solid #e0f2fe;background:#f0f9ff">
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#166534;font-weight:600">Chênh kính áp dụng (VNĐ)</label>
+                            <input type="number" id="formPrice" value="${item.price || ''}" placeholder="0" style="border:2px solid #bbf7d0;background:#f0fdf4">
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#92400e;font-weight:600">Ghi chú</label>
+                            <input type="text" id="formNotes" value="${item.notes || ''}" placeholder="HẢI LONG, HẢI LONG (HL1-10)..." style="border:2px solid #fde68a;background:#fffbeb">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'material') {
+                const item = id ? materials.find(m => m.id === id) : {};
+                html = `
+                    <div class="form-group">
+                        <label style="color:#5b21b6;font-weight:600"> Tên vật tư</label>
+                        <input type="text" id="formName" value="${item.name || ''}" placeholder="Chia đố vách VRA, Bông hoa, Cây góc vuông..." style="border:2px solid #c4b5fd;background:#faf5ff">
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#166534;font-weight:600"> Giá (VND)</label>
+                        <input type="number" id="formPrice" value="${item.price || ''}" placeholder="0" style="border:2px solid #bbf7d0;background:#f0fdf4">
+                    </div>
+                `;
+            }
+
+            document.getElementById('modalBody').innerHTML = html;
+
+            // Populate accessories if editing product
+            if (type === 'product' && id) {
+                const item = products.find(p => p.id === id);
+                if (item.accessories && item.accessories.length > 0) {
+                    item.accessories.forEach(acc => addAccessoryRow(acc.name, acc.price));
+                } else if (item.accessory) {
+                    // Pre-fill with legacy and add Cmech if it's Viralwindow
+                    addAccessoryRow(item.accessory, item.accessoryPrice);
+                    if (item.accessory.toLowerCase() === 'viralwindow') {
+                        addAccessoryRow('Cmech', 0);
+                    } else if (item.accessory.toLowerCase() === 'cmech') {
+                        addAccessoryRow('Viralwindow', 0);
+                    }
+                } else {
+                    // Completely empty - default to both
+                    addAccessoryRow('Viralwindow', 0);
+                    addAccessoryRow('Cmech', 0);
+                }
+            } else if (type === 'product') {
+                // New product defaults
+                addAccessoryRow('Viralwindow', 0);
+                addAccessoryRow('Cmech', 0);
+            }
+
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('modalOverlay').classList.remove('show');
+            currentModal = null;
+            editingId = null;
+        }
+
+        async function saveItem() {
+            try {
+                if (currentModal === 'product') {
+                    const prices = {};
+                    SIZE_COLUMNS.forEach((size, i) => {
+                        const val = +document.getElementById(`price${i}`).value;
+                        if (val) prices[size] = val;
+                    });
+                    const groupId = +document.getElementById('formGroupId').value;
+                    const selectedGroup = groups.find(g => g.id === groupId) || {};
+                    const accessories = [];
+                    const rowElements = document.querySelectorAll('.accessory-row');
+                    console.log(`[DEBUG] Found ${rowElements.length} accessory rows`);
+
+                    rowElements.forEach((row, idx) => {
+                        const nameEl = row.querySelector('.acc-name');
+                        const priceEl = row.querySelector('.acc-price');
+                        const name = nameEl.value.trim();
+                        const rawPrice = priceEl.value;
+                        const price = parseLocalPrice(rawPrice);
+
+                        console.log(`[DEBUG] Row ${idx}: Name="${name}", RawPrice="${rawPrice}", ParsedPrice=${price}`);
+
+                        if (name) accessories.push({ name, price });
+                    });
+
+                    const body = {
+                        code: document.getElementById('formCode').value,
+                        group_code: selectedGroup.code || '',
+                        group_name: selectedGroup.name || '',
+                        name: document.getElementById('formName').value,
+                        accessory: accessories.length > 0 ? accessories[0].name : '',
+                        accessory_price: accessories.length > 0 ? accessories[0].price : 0,
+                        accessories: accessories,
+                        prices: prices
+                    };
+                    const url = editingId ? `${API_BASE}/product-catalog/products/${editingId}` : `${API_BASE}/product-catalog/products`;
+                    const method = editingId ? 'PUT' : 'POST';
+
+                    console.log(`[DEBUG] Saving product:`, body);
+                    console.log(`[DEBUG] URL: ${url}, Method: ${method}`);
+
+                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    const result = await res.json();
+                    if (!result.success) { alert('Lỗi: ' + (result.message || 'Không lưu được')); return; }
+                    await loadProductsFromAPI();
+                } else if (currentModal === 'group') {
+                    const body = {
+                        code: document.getElementById('formGroupCode').value,
+                        name: document.getElementById('formGroupName').value
+                    };
+                    const url = editingId ? `${API_BASE}/product-catalog/groups/${editingId}` : `${API_BASE}/product-catalog/groups`;
+                    const method = editingId ? 'PUT' : 'POST';
+                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    const result = await res.json();
+                    if (!result.success) { alert('Lỗi: ' + (result.message || 'Không lưu được')); return; }
+                    await loadGroupsFromAPI();
+                } else if (currentModal === 'glass') {
+                    const body = {
+                        code: document.getElementById('formCode').value,
+                        name: document.getElementById('formName').value,
+                        glass_type: document.getElementById('formGlassType').value,
+                        structure: document.getElementById('formStructure').value,
+                        price: +document.getElementById('formPrice').value || 0,
+                        notes: document.getElementById('formNotes').value
+                    };
+                    const url = editingId ? `${API_BASE}/glass-items/${editingId}` : `${API_BASE}/glass-items`;
+                    const method = editingId ? 'PUT' : 'POST';
+                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    const result = await res.json();
+                    if (!result.success) { alert('Lỗi: ' + (result.message || 'Không lưu được')); return; }
+                    await loadGlassFromAPI();
+                } else if (currentModal === 'material') {
+                    const matName = document.getElementById('formName').value;
+                    const matPrice = +document.getElementById('formPrice').value || 0;
+                    const body = { code: 'VT-' + Date.now(), name: matName, sale_price: matPrice };
+                    const token = sessionStorage.getItem('token');
+                    const url = editingId ? `${API_BASE}/catalog-materials/${editingId}` : `${API_BASE}/catalog-materials`;
+                    const method = editingId ? 'PUT' : 'POST';
+                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }, body: JSON.stringify(body) });
+                    const result = await res.json();
+                    if (!result.success) { alert('Lỗi: ' + (result.message || 'Không lưu được')); return; }
+                    await loadMaterialsFromAPI();
+                }
+                updateCounts();
+                closeModal();
+            } catch (e) { console.error('Save error:', e); alert('Lỗi kết nối server!'); }
+        }
+
+        function editItem(type, id) { openModal(type, id); }
+
+        async function deleteItem(type, id) {
+            // Use VWModal.confirm for async confirmation (not native confirm)
+            const confirmed = await VWModal.confirm('Xác nhận xóa', 'Bạn có chắc muốn xóa mục này?');
+            if (!confirmed) return;
+            try {
+                let url, headers = {};
+                if (type === 'product') url = `${API_BASE}/product-catalog/products/${id}`;
+                else if (type === 'group') url = `${API_BASE}/product-catalog/groups/${id}`;
+                else if (type === 'glass') url = `${API_BASE}/glass-items/${id}`;
+                else if (type === 'material') {
+                    url = `${API_BASE}/catalog-materials/${id}`;
+                    const token = sessionStorage.getItem('token');
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+                }
+                const res = await fetch(url, { method: 'DELETE', headers });
+                const result = await res.json();
+                if (!result.success) { alert('Lỗi xóa: ' + (result.message || '')); return; }
+                if (type === 'product') await loadProductsFromAPI();
+                else if (type === 'group') await loadGroupsFromAPI();
+                else if (type === 'glass') await loadGlassFromAPI();
+                else if (type === 'material') await loadMaterialsFromAPI();
+                updateCounts();
+            } catch (e) { console.error('Delete error:', e); alert('Lỗi kết nối server!'); }
+        }
+
+        function formatMoney(v) { return v ? new Intl.NumberFormat('vi-VN').format(v) + 'đ' : '0đ'; }
+
+        // API_BASE already defined above
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    if (result.data.logo_path) {
+                        const container = document.getElementById('companyLogoContainer');
+                        if (container) {
+                            container.innerHTML = `<img src="${result.data.logo_path}" alt="Logo" class="w-full h-full object-contain">`;
+                        }
+                    }
+                    const companyNameEl = document.getElementById('companyName');
+                    if (companyNameEl && result.data.company_name) {
+                        companyNameEl.textContent = result.data.company_name;
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load logo:', error);
+            }
+        }
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) userNameEl.textContent = user.full_name || 'User';
+
+                    const avatarContainer = document.getElementById('sidebarUserAvatar');
+                    if (avatarContainer) {
+                        if (user.avatar_url) {
+                            avatarContainer.innerHTML = `<img src="${user.avatar_url}" alt="Avatar" class="w-full h-full object-cover rounded-full">`;
+                        } else {
+                            const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                            avatarContainer.textContent = initial;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load user info:', error);
+            }
+        }
+
+        async function init() {
+            // Load all data from APIs
+            await Promise.all([
+                loadGroupsFromAPI(),
+                loadGlassFromAPI(),
+                loadMaterialsFromAPI(),
+                loadProductsFromAPI()
+            ]);
+            updateCounts();
+            // Load sidebar info
+            loadCompanyLogo();
+            loadSidebarUserInfo();
+        }
+        init();
+    </script>
+    <script src="js/sidebar-enterprise.js"></script>
+</body>
+
+</html>

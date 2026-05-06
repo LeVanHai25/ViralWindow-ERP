@@ -1,0 +1,1860 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thiết kế - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+        }
+
+        .status-received {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-editing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-locked {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-bom_created {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .status-pr_created {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .status-timeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .status-step {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .status-step .circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .status-step .line {
+            width: 60px;
+            height: 3px;
+            background: #e5e7eb;
+        }
+
+        .status-step.completed .circle {
+            background: #22c55e;
+            color: white;
+        }
+
+        .status-step.current .circle {
+            background: #2563eb;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .status-step.pending .circle {
+            background: #e5e7eb;
+            color: #9ca3af;
+        }
+
+        .status-step.completed .line {
+            background: #22c55e;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+            }
+        }
+
+        .unit-card {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .unit-card:hover {
+            border-left-color: #2563eb;
+            transform: translateX(4px);
+        }
+
+        .unit-card.selected {
+            border-left-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .read-only-overlay {
+            position: relative;
+        }
+
+        .read-only-overlay::after {
+            content: '🔒 Đã khóa - Tạo Revision mới để chỉnh sửa';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .checklist-item.pass {
+            color: #16a34a;
+        }
+
+        .checklist-item.fail {
+            color: #dc2626;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="flex items-center gap-2 hover:opacity-80">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Trở về</span>
+                    </a>
+                    <div class="h-6 w-px bg-white/30"></div>
+                    <h1 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-drafting-compass"></i>
+                        <span id="pageTitle">Quản lý Thiết kế</span>
+                    </h1>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Project Selector Button -->
+                    <button onclick="showProjectSelector()"
+                        class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 flex items-center gap-2">
+                        <i class="fas fa-project-diagram"></i>
+                        <span id="selectedProjectName">Chọn dự án</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <span id="revisionBadge"
+                        class="px-3 py-1 bg-white/20 rounded-full text-sm font-medium hidden"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Project Info Bar -->
+    <div id="projectInfoBar" class="bg-white border-b hidden">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <span class="text-gray-500">Mã dự án:</span>
+                        <span id="infoProjectCode" class="font-medium text-blue-600 ml-1"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Khách hàng:</span>
+                        <span id="infoCustomer" class="font-medium ml-1"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Địa chỉ:</span>
+                        <span id="infoAddress" class="ml-1"></span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div>
+                        <span class="text-gray-500">Hạn thiết kế:</span>
+                        <span id="infoDeadline" class="font-medium ml-1"></span>
+                    </div>
+                    <div id="infoStatus" class="px-2 py-1 rounded text-xs"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Status Timeline -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-center">
+                <div class="status-timeline" id="statusTimeline">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-12 gap-6">
+
+            <!-- LEFT: Unit List -->
+            <aside class="col-span-3 space-y-4">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-semibold text-gray-800">
+                            <i class="fas fa-th-list mr-2 text-blue-600"></i>
+                            Danh sách Units
+                        </h2>
+                        <button id="btnAddUnit" onclick="showAddUnitModal()"
+                            class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-plus mr-1"></i> Thêm
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="text" id="unitSearch" placeholder="Tìm unit..."
+                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div id="unitList" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                        <!-- Unit cards rendered here -->
+                        <div class="text-center text-gray-400 py-8">
+                            <i class="fas fa-drafting-compass text-4xl mb-2"></i>
+                            <p>Chưa có unit nào</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <h3 class="font-medium text-gray-700 mb-3">Thống kê</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Tổng units:</span>
+                            <span id="statTotalUnits" class="font-medium">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Tổng diện tích:</span>
+                            <span id="statTotalArea" class="font-medium">0 m²</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Files đính kèm:</span>
+                            <span id="statFileCount" class="font-medium">0</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CENTER: Unit Detail / Editor -->
+            <section class="col-span-6">
+                <div class="bg-white rounded-xl shadow-sm" id="unitEditorPanel">
+                    <div class="p-4 border-b flex items-center justify-between">
+                        <h2 class="font-semibold text-gray-800">
+                            <i class="fas fa-edit mr-2 text-blue-600"></i>
+                            <span id="editorTitle">Chi tiết Unit</span>
+                        </h2>
+                        <div id="editorActions" class="flex items-center gap-2">
+                            <!-- Actions based on state -->
+                        </div>
+                    </div>
+
+                    <div class="p-6" id="unitEditorContent">
+                        <!-- Placeholder -->
+                        <div class="text-center text-gray-400 py-12">
+                            <i class="fas fa-hand-pointer text-5xl mb-3"></i>
+                            <p>Chọn một unit để xem chi tiết</p>
+                            <p class="text-sm mt-1">hoặc thêm unit mới</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Row -->
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2" id="leftActions">
+                        <!-- Receive, Assign buttons for RECEIVED state -->
+                    </div>
+                    <div class="flex items-center gap-2" id="rightActions">
+                        <!-- Lock, Generate BOM, Create PR buttons -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT: BOM / PR Panel -->
+            <aside class="col-span-3 space-y-4">
+                <!-- Files Panel -->
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-medium text-gray-700">
+                            <i class="fas fa-file-alt mr-2 text-blue-600"></i>
+                            Files đính kèm
+                        </h3>
+                        <button onclick="showUploadFileModal()" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-upload"></i>
+                        </button>
+                    </div>
+                    <div id="filesList" class="space-y-2 text-sm">
+                        <div class="text-gray-400 text-center py-4">Chưa có file</div>
+                    </div>
+                </div>
+
+                <!-- BOM Summary -->
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-medium text-gray-700">
+                            <i class="fas fa-clipboard-list mr-2 text-purple-600"></i>
+                            BOM Summary
+                        </h3>
+                        <span id="bomStatus" class="text-xs px-2 py-1 rounded bg-gray-100">Chưa tạo</span>
+                    </div>
+                    <div id="bomSummary" class="space-y-2 text-sm">
+                        <div class="text-gray-400 text-center py-4">
+                            <p>Chốt thiết kế để tạo BOM</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PR Summary -->
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-medium text-gray-700">
+                            <i class="fas fa-shopping-cart mr-2 text-pink-600"></i>
+                            Phiếu yêu cầu VT
+                        </h3>
+                        <span id="prStatus" class="text-xs px-2 py-1 rounded bg-gray-100">Chưa tạo</span>
+                    </div>
+                    <div id="prSummary" class="space-y-2 text-sm">
+                        <div class="text-gray-400 text-center py-4">
+                            <p>Validate BOM để tạo PR</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lock Checklist -->
+                <div class="bg-white rounded-xl shadow-sm p-4" id="lockChecklistPanel">
+                    <h3 class="font-medium text-gray-700 mb-3">
+                        <i class="fas fa-check-square mr-2 text-green-600"></i>
+                        Điều kiện chốt thiết kế
+                    </h3>
+                    <div id="lockChecklist" class="space-y-2 text-sm">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Audit Log Timeline -->
+    <section class="container mx-auto px-4 pb-8">
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <h3 class="font-medium text-gray-700 mb-4">
+                <i class="fas fa-history mr-2 text-gray-500"></i>
+                Lịch sử thao tác
+            </h3>
+            <div id="auditTimeline" class="space-y-3 max-h-48 overflow-y-auto">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Add/Edit Unit Modal -->
+    <div id="unitModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-4 border-b flex items-center justify-between sticky top-0 bg-white">
+                <h3 class="font-semibold text-lg" id="unitModalTitle">Thêm Unit mới</h3>
+                <button onclick="closeUnitModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="unitForm" class="p-6 space-y-4">
+                <input type="hidden" id="unitId">
+                <input type="hidden" id="unitRowVersion">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Unit Code -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã Unit *</label>
+                        <input type="text" id="unitCode" required placeholder="CW-01, VK-02..."
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Unit Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại</label>
+                        <select id="unitType"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="cua">Cửa</option>
+                            <option value="vach">Vách</option>
+                            <option value="o_kinh">Ô kính</option>
+                            <option value="cua_nhom">Cửa nhôm</option>
+                            <option value="cua_kinh">Cửa kính</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- Width -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Rộng (mm) *</label>
+                        <input type="number" id="unitWidth" required placeholder="1200"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Height -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cao (mm) *</label>
+                        <input type="number" id="unitHeight" required placeholder="2100"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Qty -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                        <input type="number" id="unitQty" value="1" min="1"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Profile System -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hệ nhôm *</label>
+                        <select id="profileSystem"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Chọn hệ nhôm --</option>
+                            <option value="Xingfa">Xingfa</option>
+                            <option value="VMA">VMA</option>
+                            <option value="PMI">PMI</option>
+                            <option value="Eurowindow">Eurowindow</option>
+                            <option value="Viet Phap">Việt Pháp</option>
+                        </select>
+                    </div>
+
+                    <!-- Profile Color -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Màu sơn *</label>
+                        <input type="text" id="profileColor" placeholder="Trắng, Ghi xám..."
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Glass Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại kính</label>
+                        <input type="text" id="glassType" placeholder="Kính cường lực..."
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Glass Thickness -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Độ dày kính (mm)</label>
+                        <select id="glassThickness"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Chọn --</option>
+                            <option value="5">5mm</option>
+                            <option value="6">6mm</option>
+                            <option value="8">8mm</option>
+                            <option value="10">10mm</option>
+                            <option value="12">12mm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Num Panels -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số cánh</label>
+                        <input type="number" id="numPanels" value="1" min="1" max="10"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Opening Direction -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hướng mở</label>
+                        <select id="openingDirection"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="fixed">Cố định</option>
+                            <option value="left">Trái</option>
+                            <option value="right">Phải</option>
+                            <option value="both">Hai bên</option>
+                            <option value="sliding">Trượt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Hardware Set -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bộ phụ kiện</label>
+                    <input type="text" id="hardwareSet" placeholder="Kinlong, Hopo, YKK..."
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Position Note -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vị trí lắp đặt</label>
+                    <textarea id="positionNote" rows="2" placeholder="Tầng 1, phòng khách..."
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeUnitModal()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        Hủy
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-save mr-1"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lock Design Modal -->
+    <div id="lockModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold text-lg">Chốt thiết kế</h3>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p class="text-yellow-800 text-sm">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Sau khi chốt, bạn sẽ không thể chỉnh sửa thiết kế trực tiếp.
+                        Để thay đổi, cần tạo <strong>Revision mới</strong>.
+                    </p>
+                </div>
+
+                <div id="lockModalChecklist" class="space-y-2 mb-4">
+                    <!-- Checklist items -->
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeLockModal()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        Hủy
+                    </button>
+                    <button id="btnConfirmLock" onclick="confirmLockDesign()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-lock mr-1"></i> Xác nhận chốt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Selector Modal -->
+    <div id="projectSelectorModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden">
+            <div
+                class="p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+                <h3 class="font-semibold text-lg">
+                    <i class="fas fa-project-diagram mr-2"></i>
+                    Chọn dự án để quản lý thiết kế
+                </h3>
+                <button onclick="closeProjectSelector()" class="text-white/80 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-4 border-b">
+                <div class="flex gap-3">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="projectSearchInput" placeholder="Tìm theo mã, tên dự án, khách hàng..."
+                            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                            oninput="filterProjects(this.value)">
+                    </div>
+                    <select id="projectStatusFilter" class="px-4 py-2 border rounded-lg" onchange="filterProjects()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="designing" selected>Đang thiết kế</option>
+                        <option value="production">Sản xuất</option>
+                        <option value="installation">Lắp đặt</option>
+                        <option value="handover">Bàn giao</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="p-4 overflow-y-auto max-h-[50vh]" id="projectListContainer">
+                <div class="text-center text-gray-400 py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl mb-2"></i>
+                    <p>Đang tải danh sách dự án...</p>
+                </div>
+            </div>
+
+            <div class="p-4 border-t bg-gray-50 flex justify-between items-center">
+                <span id="projectCount" class="text-sm text-gray-500">0 dự án</span>
+                <button onclick="closeProjectSelector()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        // STATE & CONFIG
+        // =====================================================
+        const API_BASE = (window.API_BASE || '/api') + '/design';
+        const API_PROJECTS = (window.API_BASE || '/api') + '/projects';
+
+
+        const STATUS_CONFIG = {
+            received: { label: 'Đã nhận', icon: 'fa-download', step: 1 },
+            editing: { label: 'Đang sửa', icon: 'fa-edit', step: 2 },
+            locked: { label: 'Đã chốt', icon: 'fa-lock', step: 3 },
+            bom_created: { label: 'Có BOM', icon: 'fa-clipboard-list', step: 4 },
+            pr_created: { label: 'Có PR', icon: 'fa-shopping-cart', step: 5 }
+        };
+
+        let currentRevision = null;
+        let currentUnits = [];
+        let selectedUnitId = null;
+        let allProjects = [];
+        let currentProject = null;
+        let authToken = localStorage.getItem('authToken');
+
+        // =====================================================
+        // AUTH CHECK
+        // =====================================================
+        function checkAuth() {
+            if (window.AuthHelper) return window.AuthHelper.checkAuth();
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return false; }
+            if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
+            return true;
+        }
+
+        function handleAuthError(status) {
+            if (status === 401 || status === 403) {
+                localStorage.removeItem('authToken');
+                showError('Phiên đăng nhập đã hết hạn. Đang chuyển đến trang đăng nhập...');
+                setTimeout(() => {
+                    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                }, 1500);
+                return true;
+            }
+            return false;
+        }
+
+        // =====================================================
+        // INIT
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth first
+            if (!checkAuth()) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const revisionId = urlParams.get('id');
+            const projectId = urlParams.get('project_id');
+
+            if (revisionId) {
+                await loadRevision(revisionId);
+            } else if (projectId) {
+                await loadProjectInfo(projectId);
+                await loadOrCreateRevision(projectId);
+            } else {
+                // No project specified - show project selector
+                showProjectSelector();
+            }
+        });
+
+
+        // =====================================================
+        // PROJECT SELECTOR
+        // =====================================================
+        async function showProjectSelector() {
+            document.getElementById('projectSelectorModal').classList.remove('hidden');
+            document.getElementById('projectSelectorModal').classList.add('flex');
+
+            await loadProjectList();
+        }
+
+        function closeProjectSelector() {
+            document.getElementById('projectSelectorModal').classList.add('hidden');
+            document.getElementById('projectSelectorModal').classList.remove('flex');
+        }
+
+        async function loadProjectList() {
+            const container = document.getElementById('projectListContainer');
+            container.innerHTML = `
+                <div class="text-center text-gray-400 py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl mb-2"></i>
+                    <p>Đang tải danh sách dự án...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(API_PROJECTS, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    allProjects = result.data || [];
+                    filterProjects();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="text-center text-red-500 py-8">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                        <p>Lỗi: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function filterProjects(query = '') {
+            const statusFilter = document.getElementById('projectStatusFilter').value;
+            const searchQuery = query || document.getElementById('projectSearchInput').value;
+
+            let filtered = allProjects;
+
+            // Filter by status
+            if (statusFilter) {
+                filtered = filtered.filter(p => p.status === statusFilter);
+            }
+
+            // Filter by search query
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.filter(p =>
+                    (p.project_code || '').toLowerCase().includes(q) ||
+                    (p.project_name || '').toLowerCase().includes(q) ||
+                    (p.customer_name || '').toLowerCase().includes(q)
+                );
+            }
+
+            renderProjectList(filtered);
+        }
+
+        function renderProjectList(projects) {
+            const container = document.getElementById('projectListContainer');
+            document.getElementById('projectCount').textContent = `${projects.length} dự án`;
+
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-400 py-8">
+                        <i class="fas fa-folder-open text-4xl mb-2"></i>
+                        <p>Không tìm thấy dự án nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const statusLabels = {
+                'designing': 'Thiết kế',
+                'production': 'Sản xuất',
+                'installation': 'Lắp đặt',
+                'handover': 'Bàn giao',
+                'completed': 'Hoàn thành'
+            };
+
+            const statusColors = {
+                'designing': 'bg-blue-100 text-blue-800',
+                'production': 'bg-purple-100 text-purple-800',
+                'installation': 'bg-orange-100 text-orange-800',
+                'handover': 'bg-teal-100 text-teal-800',
+                'completed': 'bg-green-100 text-green-800'
+            };
+
+
+            container.innerHTML = projects.map(p => `
+                <div class="border rounded-lg p-4 mb-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                     onclick="selectProject(${p.id})">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-blue-600">${p.project_code || 'N/A'}</span>
+                                <span class="px-2 py-0.5 rounded text-xs ${statusColors[p.status] || 'bg-gray-100'}">${statusLabels[p.status] || p.status}</span>
+                            </div>
+                            <h4 class="font-medium mt-1">${p.project_name || 'Không có tên'}</h4>
+                            <div class="text-sm text-gray-500 mt-1">
+                                <i class="fas fa-user mr-1"></i>${p.customer_name || 'Chưa có khách hàng'}
+                            </div>
+                            ${p.address ? `<div class="text-sm text-gray-400"><i class="fas fa-map-marker-alt mr-1"></i>${p.address}</div>` : ''}
+                        </div>
+                        <div class="text-right">
+                            ${p.deadline ? `<div class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>${new Date(p.deadline).toLocaleDateString('vi-VN')}</div>` : ''}
+                            <div class="text-xs text-gray-400 mt-1">${p.total_items || 0} hạng mục</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function selectProject(projectId) {
+            closeProjectSelector();
+
+            // Update URL
+            const newUrl = `${window.location.pathname}?project_id=${projectId}`;
+            window.history.pushState({}, '', newUrl);
+
+            await loadProjectInfo(projectId);
+            await loadOrCreateRevision(projectId);
+        }
+
+        async function loadProjectInfo(projectId) {
+            try {
+                const response = await fetch(`${API_PROJECTS}/${projectId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    currentProject = result.data;
+                    renderProjectInfo();
+                }
+            } catch (error) {
+                console.error('Error loading project info:', error);
+            }
+        }
+
+        function renderProjectInfo() {
+            if (!currentProject) return;
+
+            // Update header
+            document.getElementById('selectedProjectName').textContent = currentProject.project_code || 'Dự án';
+            document.getElementById('pageTitle').textContent = `Thiết kế - ${currentProject.project_code}`;
+
+            // Update info bar
+            document.getElementById('projectInfoBar').classList.remove('hidden');
+            document.getElementById('infoProjectCode').textContent = currentProject.project_code || '-';
+            document.getElementById('infoCustomer').textContent = currentProject.customer_name || '-';
+            document.getElementById('infoAddress').textContent = currentProject.address || '-';
+            document.getElementById('infoDeadline').textContent = currentProject.deadline
+                ? new Date(currentProject.deadline).toLocaleDateString('vi-VN')
+                : '-';
+
+            const statusEl = document.getElementById('infoStatus');
+            const statusLabels = { 'design': 'Đang thiết kế', 'production': 'Sản xuất', 'installation': 'Lắp đặt' };
+            const statusColors = { 'design': 'bg-blue-100 text-blue-800', 'production': 'bg-purple-100 text-purple-800', 'installation': 'bg-orange-100 text-orange-800' };
+            statusEl.textContent = statusLabels[currentProject.status] || currentProject.status;
+            statusEl.className = `px-2 py-1 rounded text-xs ${statusColors[currentProject.status] || 'bg-gray-100'}`;
+        }
+
+        // =====================================================
+        // API HELPERS
+        // =====================================================
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(`${API_BASE}${endpoint}`, options);
+
+            // Handle auth errors
+            if (response.status === 401 || response.status === 403) {
+                handleAuthError(response.status);
+                throw new Error('Phiên đăng nhập đã hết hạn');
+            }
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.message || 'API Error');
+            }
+
+            return result.data;
+        }
+
+
+
+        // =====================================================
+        // LOAD & RENDER
+        // =====================================================
+        async function loadRevision(revisionId) {
+            try {
+                const data = await apiCall(`/revisions/${revisionId}`);
+                currentRevision = data;
+                currentUnits = data.units || [];
+
+                renderPage();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function loadOrCreateRevision(projectId) {
+            try {
+                // Check if there's an active revision
+                const revisions = await apiCall(`/revisions?project_id=${projectId}&is_active=true`);
+
+                if (revisions.length > 0) {
+                    await loadRevision(revisions[0].id);
+                } else {
+                    // Create new revision
+                    const newRevision = await apiCall('/revisions', 'POST', { project_id: projectId });
+                    await loadRevision(newRevision.id);
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderPage() {
+            if (!currentRevision) return;
+
+            // Page title - use project info if available
+            if (currentProject) {
+                document.getElementById('selectedProjectName').textContent = currentProject.project_code || 'Dự án';
+                document.getElementById('pageTitle').textContent = `Thiết kế - ${currentProject.project_code}`;
+            } else {
+                document.getElementById('pageTitle').textContent = `Thiết kế - ${currentRevision.project_code || 'Dự án'}`;
+            }
+
+            // Show revision badge
+            const revisionBadge = document.getElementById('revisionBadge');
+            revisionBadge.textContent = `V${currentRevision.revision_no}`;
+            revisionBadge.classList.remove('hidden');
+
+            // Status timeline
+            renderStatusTimeline();
+
+            // Unit list
+            renderUnitList();
+
+            // Stats
+            renderStats();
+
+            // Lock checklist
+            renderLockChecklist();
+
+            // Actions based on state
+            renderActions();
+
+            // Files
+            renderFiles();
+
+            // BOM & PR
+            renderBOMSummary();
+            renderPRSummary();
+
+            // Audit logs
+            renderAuditLogs();
+        }
+
+        function renderStatusTimeline() {
+            const container = document.getElementById('statusTimeline');
+            const currentStep = STATUS_CONFIG[currentRevision.status]?.step || 1;
+
+            const steps = ['received', 'editing', 'locked', 'bom_created', 'pr_created'];
+
+            container.innerHTML = steps.map((status, index) => {
+                const config = STATUS_CONFIG[status];
+                const stepNum = index + 1;
+
+                let stepClass = 'pending';
+                if (stepNum < currentStep) stepClass = 'completed';
+                if (stepNum === currentStep) stepClass = 'current';
+
+                const isLast = index === steps.length - 1;
+
+                return `
+                    <div class="status-step ${stepClass}">
+                        <div class="circle" title="${config.label}">
+                            ${stepClass === 'completed' ? '<i class="fas fa-check"></i>' : stepNum}
+                        </div>
+                        ${!isLast ? '<div class="line"></div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderUnitList() {
+            const container = document.getElementById('unitList');
+
+            if (currentUnits.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-400 py-8">
+                        <i class="fas fa-drafting-compass text-4xl mb-2"></i>
+                        <p>Chưa có unit nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = currentUnits.map(unit => `
+                <div class="unit-card bg-gray-50 rounded-lg p-3 cursor-pointer ${selectedUnitId === unit.id ? 'selected' : ''}"
+                     onclick="selectUnit(${unit.id})">
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium text-gray-800">${unit.unit_code}</span>
+                        <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">${unit.unit_type}</span>
+                    </div>
+                    <div class="text-sm text-gray-500 mt-1">
+                        ${unit.width || 0} × ${unit.height || 0} mm | SL: ${unit.qty || 1}
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        ${unit.profile_system || ''} ${unit.profile_color || ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderStats() {
+            document.getElementById('statTotalUnits').textContent = currentUnits.length;
+
+            const totalArea = currentUnits.reduce((sum, u) => {
+                return sum + ((u.width || 0) * (u.height || 0) * (u.qty || 1) / 1000000);
+            }, 0);
+            document.getElementById('statTotalArea').textContent = totalArea.toFixed(2) + ' m²';
+
+            document.getElementById('statFileCount').textContent = (currentRevision.files || []).length;
+        }
+
+        function renderLockChecklist() {
+            const container = document.getElementById('lockChecklist');
+            const checklist = currentRevision.lock_checklist?.checklist || {};
+
+            const items = [
+                { key: 'has_all_dimensions', label: 'Tất cả units có W/H' },
+                { key: 'has_profile_system', label: 'Hệ nhôm xác định' },
+                { key: 'has_profile_color', label: 'Màu sơn xác định' },
+                { key: 'has_glass_spec', label: 'Kính xác định' },
+                { key: 'has_hardware', label: 'Phụ kiện xác định' },
+                { key: 'has_locked_file', label: 'Có file bản vẽ chốt' }
+            ];
+
+            container.innerHTML = items.map(item => {
+                const pass = checklist[item.key];
+                return `
+                    <div class="checklist-item flex items-center gap-2 ${pass ? 'pass' : 'fail'}">
+                        <i class="fas ${pass ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                        <span>${item.label}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderActions() {
+            const leftActions = document.getElementById('leftActions');
+            const rightActions = document.getElementById('rightActions');
+            const btnAddUnit = document.getElementById('btnAddUnit');
+
+            const canEdit = currentRevision.can_edit;
+            btnAddUnit.disabled = !canEdit;
+
+            leftActions.innerHTML = '';
+            rightActions.innerHTML = '';
+
+            switch (currentRevision.status) {
+                case 'received':
+                    leftActions.innerHTML = `
+                        <button onclick="startEditing()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-play mr-1"></i> Bắt đầu chỉnh sửa
+                        </button>
+                    `;
+                    break;
+
+                case 'editing':
+                    rightActions.innerHTML = `
+                        <button onclick="showLockModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-lock mr-1"></i> Chốt thiết kế
+                        </button>
+                    `;
+                    break;
+
+                case 'locked':
+                    leftActions.innerHTML = `
+                        <button onclick="createNewRevision()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+                            <i class="fas fa-redo mr-1"></i> Tạo Revision mới
+                        </button>
+                    `;
+                    rightActions.innerHTML = `
+                        <button onclick="generateBOM()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                            <i class="fas fa-clipboard-list mr-1"></i> Tạo BOM
+                        </button>
+                    `;
+                    break;
+
+                case 'bom_created':
+                    leftActions.innerHTML = `
+                        <button onclick="createNewRevision()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+                            <i class="fas fa-redo mr-1"></i> Tạo Revision mới
+                        </button>
+                    `;
+                    rightActions.innerHTML = `
+                        <button onclick="createPR()" class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
+                            <i class="fas fa-shopping-cart mr-1"></i> Tạo Phiếu yêu cầu VT
+                        </button>
+                    `;
+                    break;
+
+                case 'pr_created':
+                    leftActions.innerHTML = `
+                        <button onclick="createNewRevision()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600">
+                            <i class="fas fa-redo mr-1"></i> Tạo Revision mới
+                        </button>
+                    `;
+                    break;
+            }
+        }
+
+        function renderFiles() {
+            const container = document.getElementById('filesList');
+            const files = currentRevision.files || [];
+
+            if (files.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">Chưa có file</div>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => `
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-file text-gray-400"></i>
+                        <span class="text-gray-700 truncate" title="${file.file_name}">${file.file_name}</span>
+                    </div>
+                    ${file.is_locked_file ? '<span class="text-xs text-green-600">Chốt</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderBOMSummary() {
+            const container = document.getElementById('bomSummary');
+            const statusBadge = document.getElementById('bomStatus');
+            const bom = currentRevision.bom;
+
+            if (!bom) {
+                statusBadge.textContent = 'Chưa tạo';
+                statusBadge.className = 'text-xs px-2 py-1 rounded bg-gray-100';
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">Chốt thiết kế để tạo BOM</div>';
+                return;
+            }
+
+            const statusColors = {
+                'created': 'bg-yellow-100 text-yellow-800',
+                'validated': 'bg-green-100 text-green-800',
+                'frozen': 'bg-blue-100 text-blue-800'
+            };
+            const statusLabels = {
+                'created': 'Cần validate',
+                'validated': 'Đã validate',
+                'frozen': 'Đã đóng băng'
+            };
+
+            statusBadge.textContent = statusLabels[bom.status] || bom.status;
+            statusBadge.className = `text-xs px-2 py-1 rounded ${statusColors[bom.status] || 'bg-gray-100'}`;
+
+            const bomLines = currentRevision.bom_lines || [];
+            const summary = {
+                aluminum: bomLines.filter(l => l.material_type === 'aluminum').length,
+                glass: bomLines.filter(l => l.material_type === 'glass').length,
+                accessory: bomLines.filter(l => l.material_type === 'accessory' || l.material_type === 'hardware').length,
+                gasket: bomLines.filter(l => l.material_type === 'gasket').length
+            };
+
+            container.innerHTML = `
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between"><span>Nhôm:</span><span>${summary.aluminum} dòng</span></div>
+                    <div class="flex justify-between"><span>Kính:</span><span>${summary.glass} dòng</span></div>
+                    <div class="flex justify-between"><span>Phụ kiện:</span><span>${summary.accessory} dòng</span></div>
+                    <div class="flex justify-between"><span>Gioăng:</span><span>${summary.gasket} dòng</span></div>
+                </div>
+                <div class="text-xs text-gray-400 mt-2 mb-3">
+                    V${bom.bom_version} | ${bom.generated_at ? new Date(bom.generated_at).toLocaleDateString('vi-VN') : ''} | ${bomLines.length} dòng
+                </div>
+                <div class="flex gap-2">
+                    ${bom.status === 'created' ? `
+                        <button onclick="validateBOM(${bom.id})" class="flex-1 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                            <i class="fas fa-check mr-1"></i>Validate
+                        </button>
+                    ` : ''}
+                    ${bom.status === 'validated' ? `
+                        <button onclick="freezeBOM()" class="flex-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                            <i class="fas fa-snowflake mr-1"></i>Freeze
+                        </button>
+                    ` : ''}
+                    <button onclick="showBOMDetail(${bom.id})" class="flex-1 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300">
+                        <i class="fas fa-eye mr-1"></i>Xem
+                    </button>
+                </div>
+            `;
+        }
+
+
+        function renderPRSummary() {
+            const container = document.getElementById('prSummary');
+            const statusBadge = document.getElementById('prStatus');
+            const prs = currentRevision.purchase_requests || [];
+
+            if (prs.length === 0) {
+                statusBadge.textContent = 'Chưa tạo';
+                statusBadge.className = 'text-xs px-2 py-1 rounded bg-gray-100';
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">Validate BOM để tạo PR</div>';
+                return;
+            }
+
+            const latestPR = prs[0];
+            const statusColors = {
+                'draft': 'bg-gray-100 text-gray-800',
+                'submitted': 'bg-blue-100 text-blue-800',
+                'approved': 'bg-green-100 text-green-800',
+                'cancelled': 'bg-red-100 text-red-800'
+            };
+            const statusLabels = {
+                'draft': 'Nháp',
+                'submitted': 'Chờ duyệt',
+                'approved': 'Đã duyệt',
+                'cancelled': 'Đã hủy'
+            };
+
+            statusBadge.textContent = statusLabels[latestPR.status] || latestPR.status;
+            statusBadge.className = `text-xs px-2 py-1 rounded ${statusColors[latestPR.status] || 'bg-gray-100'}`;
+
+            container.innerHTML = `
+                <div class="p-2 bg-gray-50 rounded mb-2">
+                    <div class="flex justify-between items-center">
+                        <div class="font-medium">${latestPR.pr_code}</div>
+                        <span class="text-xs px-2 py-0.5 rounded ${statusColors[latestPR.status]}">${statusLabels[latestPR.status] || latestPR.status}</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">${latestPR.pr_type} | ${new Date(latestPR.created_at).toLocaleDateString('vi-VN')}</div>
+                </div>
+                <button onclick="showPRDetail(${latestPR.id})" class="w-full px-2 py-1 bg-pink-600 text-white text-xs rounded hover:bg-pink-700">
+                    <i class="fas fa-eye mr-1"></i>Xem chi tiết PR
+                </button>
+            `;
+        }
+
+
+        function renderAuditLogs() {
+            const container = document.getElementById('auditTimeline');
+            const logs = currentRevision.audit_logs || [];
+
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">Chưa có lịch sử</div>';
+                return;
+            }
+
+            container.innerHTML = logs.map(log => `
+                <div class="flex items-start gap-3 text-sm">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user text-blue-600 text-xs"></i>
+                    </div>
+                    <div>
+                        <div class="text-gray-800"><strong>${log.user_name || 'System'}</strong> ${log.action}</div>
+                        <div class="text-xs text-gray-400">${new Date(log.created_at).toLocaleString('vi-VN')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // =====================================================
+        // UNIT CRUD
+        // =====================================================
+        function selectUnit(unitId) {
+            selectedUnitId = unitId;
+            const unit = currentUnits.find(u => u.id === unitId);
+
+            if (!unit) return;
+
+            // Re-render list to update selection
+            renderUnitList();
+
+            // Show unit detail
+            renderUnitDetail(unit);
+        }
+
+        function renderUnitDetail(unit) {
+            const container = document.getElementById('unitEditorContent');
+            const title = document.getElementById('editorTitle');
+            const actions = document.getElementById('editorActions');
+
+            title.textContent = `${unit.unit_code} - ${unit.unit_type}`;
+
+            const canEdit = currentRevision.can_edit;
+            actions.innerHTML = canEdit ? `
+                <button onclick="editUnit(${unit.id})" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                    <i class="fas fa-edit mr-1"></i> Sửa
+                </button>
+                <button onclick="deleteUnit(${unit.id})" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                    <i class="fas fa-trash mr-1"></i> Xóa
+                </button>
+            ` : `
+                <span class="text-sm text-red-600"><i class="fas fa-lock mr-1"></i> Đã khóa</span>
+            `;
+
+            const area = ((unit.width || 0) * (unit.height || 0) / 1000000).toFixed(2);
+
+            container.innerHTML = `
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">Kích thước</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-500">Rộng:</span><span>${unit.width || 0} mm</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Cao:</span><span>${unit.height || 0} mm</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Diện tích:</span><span>${area} m²</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Số lượng:</span><span>${unit.qty || 1}</span></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">Thông số kỹ thuật</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-500">Hệ nhôm:</span><span>${unit.profile_system || '-'}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Màu:</span><span>${unit.profile_color || '-'}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Kính:</span><span>${unit.glass_type || ''} ${unit.glass_thickness ? unit.glass_thickness + 'mm' : '-'}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Phụ kiện:</span><span>${unit.hardware_set || '-'}</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${unit.position_note ? `
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium text-gray-700 mb-1">Vị trí lắp đặt</h4>
+                    <p class="text-sm text-gray-600">${unit.position_note}</p>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        function showAddUnitModal() {
+            document.getElementById('unitModalTitle').textContent = 'Thêm Unit mới';
+            document.getElementById('unitForm').reset();
+            document.getElementById('unitId').value = '';
+            document.getElementById('unitModal').classList.remove('hidden');
+            document.getElementById('unitModal').classList.add('flex');
+        }
+
+        function editUnit(unitId) {
+            const unit = currentUnits.find(u => u.id === unitId);
+            if (!unit) return;
+
+            document.getElementById('unitModalTitle').textContent = 'Sửa Unit';
+            document.getElementById('unitId').value = unit.id;
+            document.getElementById('unitRowVersion').value = unit.row_version;
+            document.getElementById('unitCode').value = unit.unit_code || '';
+            document.getElementById('unitType').value = unit.unit_type || 'cua';
+            document.getElementById('unitWidth').value = unit.width || '';
+            document.getElementById('unitHeight').value = unit.height || '';
+            document.getElementById('unitQty').value = unit.qty || 1;
+            document.getElementById('profileSystem').value = unit.profile_system || '';
+            document.getElementById('profileColor').value = unit.profile_color || '';
+            document.getElementById('glassType').value = unit.glass_type || '';
+            document.getElementById('glassThickness').value = unit.glass_thickness || '';
+            document.getElementById('numPanels').value = unit.num_panels || 1;
+            document.getElementById('openingDirection').value = unit.opening_direction || 'fixed';
+            document.getElementById('hardwareSet').value = unit.hardware_set || '';
+            document.getElementById('positionNote').value = unit.position_note || '';
+
+            document.getElementById('unitModal').classList.remove('hidden');
+            document.getElementById('unitModal').classList.add('flex');
+        }
+
+        function closeUnitModal() {
+            document.getElementById('unitModal').classList.add('hidden');
+            document.getElementById('unitModal').classList.remove('flex');
+        }
+
+        document.getElementById('unitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const unitId = document.getElementById('unitId').value;
+            const data = {
+                unit_code: document.getElementById('unitCode').value,
+                unit_type: document.getElementById('unitType').value,
+                width: parseFloat(document.getElementById('unitWidth').value) || null,
+                height: parseFloat(document.getElementById('unitHeight').value) || null,
+                qty: parseInt(document.getElementById('unitQty').value) || 1,
+                profile_system: document.getElementById('profileSystem').value,
+                profile_color: document.getElementById('profileColor').value,
+                glass_type: document.getElementById('glassType').value,
+                glass_thickness: parseInt(document.getElementById('glassThickness').value) || null,
+                num_panels: parseInt(document.getElementById('numPanels').value) || 1,
+                opening_direction: document.getElementById('openingDirection').value,
+                hardware_set: document.getElementById('hardwareSet').value,
+                position_note: document.getElementById('positionNote').value
+            };
+
+            if (unitId) {
+                data.row_version = parseInt(document.getElementById('unitRowVersion').value);
+            }
+
+            try {
+                if (unitId) {
+                    await apiCall(`/units/${unitId}`, 'PUT', data);
+                    showSuccess('Đã cập nhật unit');
+                } else {
+                    await apiCall(`/revisions/${currentRevision.id}/units`, 'POST', data);
+                    showSuccess('Đã thêm unit');
+                }
+
+                closeUnitModal();
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        async function deleteUnit(unitId) {
+            if (!confirm('Bạn có chắc muốn xóa unit này?')) return;
+
+            try {
+                await apiCall(`/units/${unitId}`, 'DELETE');
+                showSuccess('Đã xóa unit');
+                selectedUnitId = null;
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // =====================================================
+        // STATE TRANSITIONS
+        // =====================================================
+        async function startEditing() {
+            try {
+                await apiCall(`/revisions/${currentRevision.id}/start-editing`, 'POST');
+                showSuccess('Đã bắt đầu chỉnh sửa');
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function showLockModal() {
+            const container = document.getElementById('lockModalChecklist');
+            const checklist = currentRevision.lock_checklist?.checklist || {};
+            const isValid = currentRevision.lock_checklist?.isValid;
+
+            const items = [
+                { key: 'has_all_dimensions', label: 'Tất cả units có W/H' },
+                { key: 'has_profile_system', label: 'Hệ nhôm xác định' },
+                { key: 'has_profile_color', label: 'Màu sơn xác định' },
+                { key: 'has_glass_spec', label: 'Kính xác định' },
+                { key: 'has_hardware', label: 'Phụ kiện xác định' },
+                { key: 'has_locked_file', label: 'Có file bản vẽ chốt' }
+            ];
+
+            container.innerHTML = items.map(item => {
+                const pass = checklist[item.key];
+                return `
+                    <div class="flex items-center gap-2 ${pass ? 'text-green-600' : 'text-red-600'}">
+                        <i class="fas ${pass ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                        <span>${item.label}</span>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('btnConfirmLock').disabled = !isValid;
+
+            document.getElementById('lockModal').classList.remove('hidden');
+            document.getElementById('lockModal').classList.add('flex');
+        }
+
+        function closeLockModal() {
+            document.getElementById('lockModal').classList.add('hidden');
+            document.getElementById('lockModal').classList.remove('flex');
+        }
+
+        async function confirmLockDesign() {
+            try {
+                await apiCall(`/revisions/${currentRevision.id}/lock`, 'POST', {});
+                closeLockModal();
+                showSuccess('Đã chốt thiết kế thành công!');
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function createNewRevision() {
+            const reason = prompt('Nhập lý do tạo revision mới:');
+            if (!reason) return;
+
+            try {
+                const result = await apiCall(`/revisions/${currentRevision.id}/create-revision`, 'POST', { reason });
+                showSuccess(`Đã tạo Revision V${result.revision_no}`);
+                // Redirect to new revision
+                window.location.href = `design-workflow.html?id=${result.id}`;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function generateBOM() {
+            if (!confirm('Bạn có chắc muốn tạo BOM từ các units hiện tại?')) return;
+
+            try {
+                const result = await apiCall(`/revisions/${currentRevision.id}/bom/generate`, 'POST');
+                showSuccess(`Đã tạo BOM V${result.bom_version} với ${result.total_lines} dòng`);
+                await loadRevision(currentRevision.id);
+
+                // Auto validate
+                if (result.bom_id) {
+                    setTimeout(() => validateBOM(result.bom_id), 500);
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function validateBOM(bomId) {
+            try {
+                const result = await apiCall(`/bom/${bomId}/validate`, 'POST');
+                if (result.is_valid) {
+                    showSuccess('BOM hợp lệ! Có thể tạo phiếu yêu cầu vật tư.');
+                } else {
+                    showError(`BOM có ${result.errors.length} lỗi. Kiểm tra lại units.`);
+                }
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function freezeBOM() {
+            if (!currentRevision.bom) {
+                showError('Chưa có BOM');
+                return;
+            }
+
+            if (!confirm('Đóng băng BOM? Sau khi đóng băng sẽ không thể chỉnh sửa.')) return;
+
+            try {
+                await apiCall(`/bom/${currentRevision.bom.id}/freeze`, 'POST');
+                showSuccess('Đã đóng băng BOM');
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function showBOMDetail(bomId) {
+            try {
+                const bom = await apiCall(`/bom/${bomId}`);
+
+                const typeLabels = {
+                    'aluminum': 'Nhôm',
+                    'glass': 'Kính',
+                    'accessory': 'Phụ kiện',
+                    'hardware': 'Phụ kiện',
+                    'gasket': 'Gioăng',
+                    'other': 'Khác'
+                };
+
+                let html = `
+                    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" id="bomDetailModal">
+                        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto">
+                            <div class="p-4 border-b flex items-center justify-between sticky top-0 bg-white">
+                                <div>
+                                    <h3 class="font-semibold text-lg">BOM V${bom.bom_version}</h3>
+                                    <span class="text-sm text-gray-500">${bom.total_lines} dòng vật tư</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 rounded-full text-sm ${bom.status === 'validated' ? 'bg-green-100 text-green-800' : bom.status === 'frozen' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}">
+                                        ${bom.status}
+                                    </span>
+                                    <button onclick="closeBOMModal()" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="text-left p-2">Loại</th>
+                                            <th class="text-left p-2">Mã VT</th>
+                                            <th class="text-left p-2">Tên vật tư</th>
+                                            <th class="text-right p-2">SL</th>
+                                            <th class="text-right p-2">Hao hụt</th>
+                                            <th class="text-center p-2">ĐVT</th>
+                                            <th class="text-left p-2">Unit</th>
+                                            <th class="text-center p-2">Override</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${bom.lines.map(line => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-2">
+                                                    <span class="px-2 py-0.5 rounded text-xs ${getTypeColor(line.material_type)}">${typeLabels[line.material_type] || line.material_type}</span>
+                                                </td>
+                                                <td class="p-2 font-mono text-xs">${line.material_code_snapshot}</td>
+                                                <td class="p-2">${line.material_name_snapshot}</td>
+                                                <td class="p-2 text-right">${parseFloat(line.qty).toFixed(2)}</td>
+                                                <td class="p-2 text-right text-gray-500">${line.waste_factor}%</td>
+                                                <td class="p-2 text-center">${line.uom_snapshot}</td>
+                                                <td class="p-2 text-gray-500">${line.source_unit_code || '-'}</td>
+                                                <td class="p-2 text-center">
+                                                    ${line.is_manual_override ? '<i class="fas fa-edit text-orange-500" title="Đã chỉnh sửa"></i>' : '-'}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                
+                                <div class="flex justify-between items-center mt-4 pt-4 border-t">
+                                    <div class="text-sm text-gray-500">
+                                        Tạo bởi: ${bom.generated_by_name || 'System'} | 
+                                        ${bom.generated_at ? new Date(bom.generated_at).toLocaleString('vi-VN') : ''}
+                                    </div>
+                                    <button onclick="closeBOMModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', html);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function closeBOMModal() {
+            document.getElementById('bomDetailModal')?.remove();
+        }
+
+        function getTypeColor(type) {
+            const colors = {
+                'aluminum': 'bg-blue-100 text-blue-800',
+                'glass': 'bg-cyan-100 text-cyan-800',
+                'accessory': 'bg-purple-100 text-purple-800',
+                'hardware': 'bg-purple-100 text-purple-800',
+                'gasket': 'bg-green-100 text-green-800',
+                'other': 'bg-gray-100 text-gray-800'
+            };
+            return colors[type] || 'bg-gray-100 text-gray-800';
+        }
+
+        async function createPR() {
+            if (!currentRevision.bom) {
+                showError('Chưa có BOM. Vui lòng tạo BOM trước.');
+                return;
+            }
+
+            // Show PR options
+            const prType = confirm('Tạo PR cho:\n\n[OK] = Chỉ phần thiếu (shortage_only)\n[Cancel] = Toàn bộ BOM')
+                ? 'shortage_only'
+                : 'full_bom';
+
+            try {
+                const result = await apiCall(`/bom/${currentRevision.bom.id}/pr/create`, 'POST', {
+                    pr_type: prType,
+                    inventory_policy: 'available',
+                    reason: 'Tạo từ Design Workflow'
+                });
+
+                showSuccess(`Đã tạo ${result.pr_code} với ${result.lines_count} dòng`);
+                await loadRevision(currentRevision.id);
+
+                // Show PR detail modal
+                showPRDetail(result.pr_id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function showPRDetail(prId) {
+            try {
+                const pr = await apiCall(`/pr/${prId}`);
+
+                let html = `
+                    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" id="prDetailModal">
+                        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <div class="p-4 border-b flex items-center justify-between sticky top-0 bg-white">
+                                <div>
+                                    <h3 class="font-semibold text-lg">${pr.pr_code}</h3>
+                                    <span class="text-sm text-gray-500">${pr.pr_type} | ${pr.inventory_policy}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 rounded-full text-sm ${pr.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${pr.status}</span>
+                                    <button onclick="closePRModal()" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="text-left p-2">Mã VT</th>
+                                            <th class="text-left p-2">Tên vật tư</th>
+                                            <th class="text-right p-2">SL cần</th>
+                                            <th class="text-right p-2">Tồn kho</th>
+                                            <th class="text-right p-2">Thiếu</th>
+                                            <th class="text-left p-2">Unit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${pr.lines.map(line => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-2 font-mono text-xs">${line.material_code}</td>
+                                                <td class="p-2">${line.material_name}</td>
+                                                <td class="p-2 text-right">${parseFloat(line.qty).toFixed(2)}</td>
+                                                <td class="p-2 text-right">${parseFloat(line.qty_available).toFixed(2)}</td>
+                                                <td class="p-2 text-right ${line.qty_shortage > 0 ? 'text-red-600 font-medium' : ''}">${parseFloat(line.qty_shortage).toFixed(2)}</td>
+                                                <td class="p-2 text-gray-500">${line.source_unit_code || '-'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                
+                                <div class="flex justify-end gap-2 mt-4 pt-4 border-t">
+                                    ${pr.status === 'draft' ? `
+                                        <button onclick="submitPR(${prId})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                            <i class="fas fa-paper-plane mr-1"></i> Gửi duyệt
+                                        </button>
+                                    ` : ''}
+                                    ${pr.status === 'submitted' ? `
+                                        <button onclick="approvePR(${prId})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                            <i class="fas fa-check mr-1"></i> Duyệt
+                                        </button>
+                                        <button onclick="rejectPR(${prId})" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                            <i class="fas fa-times mr-1"></i> Từ chối
+                                        </button>
+                                    ` : ''}
+                                    <button onclick="refreshPRInventory(${prId})" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                                        <i class="fas fa-sync mr-1"></i> Refresh tồn kho
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', html);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function closePRModal() {
+            document.getElementById('prDetailModal')?.remove();
+        }
+
+        async function submitPR(prId) {
+            try {
+                await apiCall(`/pr/${prId}/submit`, 'POST');
+                showSuccess('Đã gửi PR để duyệt');
+                closePRModal();
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function approvePR(prId) {
+            try {
+                await apiCall(`/pr/${prId}/approve`, 'POST');
+                showSuccess('Đã duyệt PR và tạo reservation');
+                closePRModal();
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function rejectPR(prId) {
+            const reason = prompt('Nhập lý do từ chối:');
+            if (!reason) return;
+
+            try {
+                await apiCall(`/pr/${prId}/reject`, 'POST', { reason });
+                showSuccess('Đã từ chối PR');
+                closePRModal();
+                await loadRevision(currentRevision.id);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function refreshPRInventory(prId) {
+            try {
+                await apiCall(`/pr/${prId}/refresh-inventory`, 'POST');
+                showSuccess('Đã refresh tồn kho');
+                closePRModal();
+                showPRDetail(prId);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function showUploadFileModal() {
+            showInfo('Tính năng upload file đang phát triển');
+        }
+
+
+        // =====================================================
+        // TOAST NOTIFICATIONS
+        // =====================================================
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in`;
+            toast.textContent = message;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function showSuccess(message) { showToast(message, 'success'); }
+        function showError(message) { showToast(message, 'error'); }
+        function showInfo(message) { showToast(message, 'info'); }
+    </script>
+</body>
+
+</html>

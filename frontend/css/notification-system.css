@@ -1,0 +1,98 @@
+/* Notification System Styles */
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    border: 2px solid white;
+}
+
+/* Notification Dropdown */
+#notificationsDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    width: 380px;
+    max-height: 500px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+#notificationsList {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f9fafb !important;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+/* Scrollbar styling */
+#notificationsList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#notificationsList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#notificationsList::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+#notificationsList::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Notification button in sidebar */
+.notification-button-wrapper {
+    position: relative;
+}
+
+/* Animation for new notifications */
+@keyframes notificationPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.notification-item:not(.opacity-60) {
+    animation: notificationPulse 2s ease-in-out infinite;
+}
+

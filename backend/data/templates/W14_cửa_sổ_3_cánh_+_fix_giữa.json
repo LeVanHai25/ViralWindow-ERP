@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "template_code": "W14",
+    "template_name": "Cửa sổ 3 cánh + fix giữa",
+    "category": "window",
+    "sub_type": "turn",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 1800,
+    "height_mm": 1200,
+    "khoang_ho_mm": 5,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/W14.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "horizontal",
+    "children": [
+      {
+        "id": "w1",
+        "type": "panel",
+        "panelType": "window-leaf",
+        "widthRatio": 1,
+        "openDirection": "left",
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "fix",
+        "type": "panel",
+        "panelType": "fixed",
+        "widthRatio": 1,
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "w3",
+        "type": "panel",
+        "panelType": "window-leaf",
+        "widthRatio": 1,
+        "openDirection": "right",
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

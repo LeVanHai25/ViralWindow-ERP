@@ -1,0 +1,449 @@
+{
+  "templates": [
+    {
+      "id": "D1_L",
+      "name": "Cửa đi 1 cánh mở trái",
+      "type": "door_open",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 1,
+          "height_ratio": 1,
+          "open": "left"
+        }
+      ]
+    },
+    {
+      "id": "D1_R",
+      "name": "Cửa đi 1 cánh mở phải",
+      "type": "door_open",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 1,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    },
+    {
+      "id": "D2_OS",
+      "name": "Cửa đi 2 cánh mở đối xứng",
+      "type": "door_open",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    },
+    {
+      "id": "D2_LR",
+      "name": "Cửa đi 2 cánh lệch",
+      "type": "door_open",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.65,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.35,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    },
+    {
+      "id": "D4_OUT",
+      "name": "Cửa đi 4 cánh mở quay ngoài",
+      "type": "door_open",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "right"
+        },
+        {
+          "id": "K3",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K4",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    },
+    {
+      "id": "D4_IN",
+      "name": "Cửa đi 4 cánh mở quay trong",
+      "type": "door_open_in",
+      "category": "door_in",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "right"
+        },
+        {
+          "id": "K3",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K4",
+          "width_ratio": 0.25,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    },
+    {
+      "id": "S1_HAT",
+      "name": "Cửa sổ mở hất",
+      "type": "window_tilt",
+      "category": "window",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 1,
+          "height_ratio": 1,
+          "open": "tilt"
+        }
+      ]
+    },
+    {
+      "id": "S1_QUAY",
+      "name": "Cửa sổ mở quay 1 cánh",
+      "type": "window_open",
+      "category": "window",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 1,
+          "height_ratio": 1,
+          "open": "left"
+        }
+      ]
+    },
+    {
+      "id": "S2_QUAY",
+      "name": "Cửa sổ mở quay 2 cánh",
+      "type": "window_open",
+      "category": "window",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    },
+    {
+      "id": "S2_SLIDE",
+      "name": "Cửa sổ trượt 2 cánh",
+      "type": "window_slide",
+      "category": "window",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "slide_left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "slide_right"
+        }
+      ]
+    },
+    {
+      "id": "S3_SLIDE",
+      "name": "Cửa sổ trượt 3 cánh",
+      "type": "window_slide",
+      "category": "window",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.33,
+          "height_ratio": 1,
+          "open": "slide_left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.34,
+          "height_ratio": 1,
+          "open": "slide_right"
+        },
+        {
+          "id": "K3",
+          "width_ratio": 0.33,
+          "height_ratio": 1,
+          "open": "slide_left"
+        }
+      ]
+    },
+    {
+      "id": "D2_SLIDE",
+      "name": "Cửa đi trượt 2 cánh",
+      "type": "door_slide",
+      "category": "door_slide",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "slide_left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.5,
+          "height_ratio": 1,
+          "open": "slide_right"
+        }
+      ]
+    },
+    {
+      "id": "D3_SLIDE",
+      "name": "Cửa đi trượt 3 cánh",
+      "type": "door_slide",
+      "category": "door_slide",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.33,
+          "height_ratio": 1,
+          "open": "slide_left"
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.34,
+          "height_ratio": 1,
+          "open": "slide_right"
+        },
+        {
+          "id": "K3",
+          "width_ratio": 0.33,
+          "height_ratio": 1,
+          "open": "slide_left"
+        }
+      ]
+    },
+    {
+      "id": "V1",
+      "name": "Vách cố định 1 ô",
+      "type": "fixed",
+      "category": "fixed",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 1,
+          "height_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "V2_VERTICAL",
+      "name": "Vách chia 2 ô đứng",
+      "type": "fixed",
+      "category": "fixed",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.5,
+          "height_ratio": 1
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.5,
+          "height_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "V2_HORIZONTAL",
+      "name": "Vách chia 2 ô ngang",
+      "type": "fixed",
+      "category": "fixed",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 1,
+          "height_ratio": 0.5
+        },
+        {
+          "id": "K2",
+          "width_ratio": 1,
+          "height_ratio": 0.5
+        }
+      ]
+    },
+    {
+      "id": "V3",
+      "name": "Vách chia 3 ô",
+      "type": "fixed",
+      "category": "fixed",
+      "panels": [
+        {
+          "id": "K1",
+          "width_ratio": 0.33,
+          "height_ratio": 1
+        },
+        {
+          "id": "K2",
+          "width_ratio": 0.34,
+          "height_ratio": 1
+        },
+        {
+          "id": "K3",
+          "width_ratio": 0.33,
+          "height_ratio": 1
+        }
+      ]
+    },
+    {
+      "id": "D2_FIX_TOP",
+      "name": "Cửa đi 2 cánh + fix trên",
+      "type": "door_with_fix",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "BLOCK1",
+          "type": "fix",
+          "width_ratio": 1,
+          "height_ratio": 0.2
+        },
+        {
+          "id": "BLOCK2",
+          "type": "door",
+          "width_ratio": 1,
+          "height_ratio": 0.8,
+          "panels": [
+            {
+              "id": "K1",
+              "width_ratio": 0.5,
+              "height_ratio": 1,
+              "open": "left"
+            },
+            {
+              "id": "K2",
+              "width_ratio": 0.5,
+              "height_ratio": 1,
+              "open": "right"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D4_FIX_TOP",
+      "name": "Cửa đi 4 cánh + fix trên",
+      "type": "door_with_fix",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "FIX",
+          "type": "fix",
+          "width_ratio": 1,
+          "height_ratio": 0.2
+        },
+        {
+          "id": "MAIN",
+          "type": "door",
+          "width_ratio": 1,
+          "height_ratio": 0.8,
+          "panels": [
+            {
+              "id": "K1",
+              "width_ratio": 0.25,
+              "height_ratio": 1,
+              "open": "left"
+            },
+            {
+              "id": "K2",
+              "width_ratio": 0.25,
+              "height_ratio": 1,
+              "open": "right"
+            },
+            {
+              "id": "K3",
+              "width_ratio": 0.25,
+              "height_ratio": 1,
+              "open": "left"
+            },
+            {
+              "id": "K4",
+              "width_ratio": 0.25,
+              "height_ratio": 1,
+              "open": "right"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D1_FIX_SIDE",
+      "name": "Cửa đi 1 cánh + fix bên",
+      "type": "door_with_fix",
+      "category": "door_out",
+      "panels": [
+        {
+          "id": "FIX",
+          "type": "fix",
+          "width_ratio": 0.3,
+          "height_ratio": 1
+        },
+        {
+          "id": "K1",
+          "type": "door",
+          "width_ratio": 0.7,
+          "height_ratio": 1,
+          "open": "right"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,550 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách cửa công trình - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .template-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .template-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        .category-tab {
+            transition: all 0.3s ease;
+        }
+        .category-tab.active {
+            background: #10b981;
+            color: white;
+        }
+        .category-tab:not(.active) {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+        .category-tab:not(.active):hover {
+            background: #d1d5db;
+        }
+        .viralwindow-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+<body class="bg-gray-50">
+    <!-- HEADER -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="projects.html" class="text-gray-600 hover:text-gray-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900" id="projectTitle">Danh sách cửa công trình</h1>
+                        <p class="text-sm text-gray-500" id="projectSubtitle">Chọn template cửa để thêm vào công trình</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openMyLibrary()" class="px-4 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Thư viện tự tạo
+                    </button>
+                    <button onclick="openUploadExcel()" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Tải lên file Excel
+                    </button>
+                    <button onclick="openPriceSettings()" class="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Sửa lại giá nhôm, kính
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Steps -->
+        <div class="px-6 pb-4 flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold">1</div>
+                <span class="font-medium text-gray-900">DANH SÁCH CỬA</span>
+            </div>
+            <div class="w-12 h-0.5 bg-gray-300"></div>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center font-bold">2</div>
+                <span class="font-medium text-gray-500">CHI TIẾT</span>
+            </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="px-6 pb-4">
+            <div class="flex items-center gap-2 overflow-x-auto pb-2">
+                <button class="category-tab active px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('all', this)">
+                    Tất cả
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('door_out', this)">
+                    Cửa đi mở ngoài
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('door_in', this)">
+                    Cửa đi mở trong
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('window_swing', this)">
+                    Cửa sổ mở quay
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('wall_window', this)">
+                    Vách + Cửa sổ quay
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('window_sliding', this)">
+                    Cửa sổ mở trượt
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('door_sliding', this)">
+                    Cửa đi mở trượt
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('door_folding', this)">
+                    Cửa đi xếp trượt
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap" onclick="filterByCategory('fixed', this)">
+                    Cửa cố định
+                </button>
+                <button class="category-tab px-4 py-2 rounded-lg font-medium whitespace-nowrap ml-auto" onclick="openParameterSettings()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 inline mr-1">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Cài đặt thông số
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="p-6">
+        <!-- Category Title -->
+        <div class="mb-6">
+            <h2 class="text-3xl font-bold text-gray-900" id="categoryTitle">TẤT CẢ CÁC LOẠI CỬA</h2>
+        </div>
+
+        <!-- Templates Grid -->
+        <div id="templatesGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <!-- Templates will be loaded here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p class="mt-4 text-gray-600">Đang tải templates...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 text-gray-400 mx-auto mb-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <p class="text-gray-600 text-lg">Không tìm thấy template nào</p>
+        </div>
+    </div>
+
+    <!-- MODAL: Nhập thông số cửa -->
+    <div id="doorParamsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-2xl font-bold" id="modalTemplateName">Nhập thông số cửa</h2>
+                <button onclick="closeDoorParamsModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="doorParamsForm" onsubmit="saveDoor(event)" class="p-6">
+                <div class="space-y-6">
+                    <!-- Hệ nhôm -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hệ nhôm *</label>
+                        <select id="modalAluminumSystem" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Chọn hệ nhôm --</option>
+                        </select>
+                    </div>
+
+                    <!-- Template Info -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="font-semibold text-blue-900">Template:</span>
+                            <span id="modalTemplateCode" class="font-mono text-blue-700"></span>
+                        </div>
+                        <p class="text-sm text-blue-800" id="modalTemplateDescription"></p>
+                    </div>
+
+                    <!-- Parameters -->
+                    <div id="paramsContainer" class="space-y-4">
+                        <!-- Parameters will be generated here -->
+                    </div>
+
+                    <!-- Màu sắc -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Màu sắc</label>
+                        <div class="flex gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="color" value="black" class="w-4 h-4 text-gray-900" checked>
+                                <span>Đen</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="color" value="white" class="w-4 h-4 text-gray-900">
+                                <span>Trắng</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="color" value="gray" class="w-4 h-4 text-gray-900">
+                                <span>Ghi</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="color" value="brown" class="w-4 h-4 text-gray-900">
+                                <span>Nâu</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="closeDoorParamsModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50">
+                        Hủy
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+                        Thêm cửa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let currentProjectId = null;
+        let currentCategory = 'all';
+        let allTemplates = [];
+        let currentTemplate = null;
+        let aluminumSystems = [];
+
+        // Get project ID from URL or localStorage
+        function getProjectId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('projectId') || localStorage.getItem('currentProjectId');
+            return projectId;
+        }
+
+        // Initialize
+        async function init() {
+            currentProjectId = getProjectId();
+            if (!currentProjectId) {
+                alert('Vui lòng chọn dự án trước!');
+                window.location.href = 'projects.html';
+                return;
+            }
+
+            await Promise.all([
+                loadProjectInfo(),
+                loadAluminumSystems(),
+                loadTemplates()
+            ]);
+        }
+
+        // Load project info
+        async function loadProjectInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/projects/${currentProjectId}`);
+                const result = await response.json();
+                if (result.success) {
+                    const project = result.data;
+                    document.getElementById('projectTitle').textContent = `${project.project_name} - Danh sách cửa`;
+                    document.getElementById('projectSubtitle').textContent = `Dự án: ${project.project_code || project.project_name}`;
+                }
+            } catch (error) {
+                console.error('Error loading project:', error);
+            }
+        }
+
+        // Load aluminum systems
+        async function loadAluminumSystems() {
+            try {
+                const response = await fetch(`${API_BASE}/aluminum-systems`);
+                const result = await response.json();
+                if (result.success) {
+                    aluminumSystems = result.data;
+                    // Prioritize ViralWindow
+                    aluminumSystems.sort((a, b) => {
+                        if (a.brand === 'ViralWindow') return -1;
+                        if (b.brand === 'ViralWindow') return 1;
+                        return 0;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading aluminum systems:', error);
+            }
+        }
+
+        // Load templates
+        async function loadTemplates() {
+            try {
+                document.getElementById('loadingState').classList.remove('hidden');
+                document.getElementById('templatesGrid').innerHTML = '';
+                document.getElementById('emptyState').classList.add('hidden');
+
+                const response = await fetch(`${API_BASE}/door-templates?brand=ViralWindow`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    allTemplates = result.data;
+                    displayTemplates(allTemplates);
+                }
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        // Display templates
+        function displayTemplates(templates) {
+            const grid = document.getElementById('templatesGrid');
+            grid.innerHTML = '';
+
+            if (templates.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            templates.forEach(template => {
+                const isViralWindow = template.brand === 'ViralWindow';
+                const card = document.createElement('div');
+                card.className = 'template-card bg-white rounded-lg shadow p-4 border border-gray-200';
+                card.onclick = () => openDoorParamsModal(template);
+                
+                card.innerHTML = `
+                    <div class="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden">
+                        ${template.preview_image 
+                            ? `<img src="${template.preview_image}" alt="${template.name}" class="w-full h-full object-contain">`
+                            : `<div class="text-gray-400 text-4xl font-bold">${template.code}</div>`
+                        }
+                        ${isViralWindow ? '<div class="absolute top-2 right-2 viralwindow-badge">VIRALWINDOW</div>' : ''}
+                    </div>
+                    <div class="text-center">
+                        <div class="font-mono font-bold text-gray-900 mb-1">${template.code}</div>
+                        <div class="text-sm text-gray-600 line-clamp-2">${template.name}</div>
+                        ${template.brand ? `<div class="text-xs text-gray-500 mt-1">${template.brand}</div>` : ''}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter by category
+        function filterByCategory(category, buttonElement) {
+            currentCategory = category;
+            
+            // Update active tab
+            document.querySelectorAll('.category-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            buttonElement.classList.add('active');
+
+            // Update title
+            const categoryNames = {
+                'all': 'TẤT CẢ CÁC LOẠI CỬA',
+                'door_out': 'CỬA ĐI MỞ NGOÀI',
+                'door_in': 'CỬA ĐI MỞ TRONG',
+                'window_swing': 'CỬA SỔ MỞ QUAY',
+                'wall_window': 'VÁCH + CỬA SỔ QUAY',
+                'window_sliding': 'CỬA SỔ MỞ TRƯỢT',
+                'door_sliding': 'CỬA ĐI MỞ TRƯỢT',
+                'door_folding': 'CỬA ĐI XẾP TRƯỢT',
+                'fixed': 'CỬA CỐ ĐỊNH'
+            };
+            document.getElementById('categoryTitle').textContent = categoryNames[category] || 'TẤT CẢ CÁC LOẠI CỬA';
+
+            // Filter templates
+            const filtered = category === 'all' 
+                ? allTemplates 
+                : allTemplates.filter(t => t.family === category);
+            displayTemplates(filtered);
+        }
+
+        // Open door params modal
+        function openDoorParamsModal(template) {
+            currentTemplate = template;
+            document.getElementById('modalTemplateName').textContent = template.name;
+            document.getElementById('modalTemplateCode').textContent = template.code;
+            document.getElementById('modalTemplateDescription').textContent = template.description || 'Nhập thông số để tạo cửa';
+
+            // Populate aluminum systems
+            const select = document.getElementById('modalAluminumSystem');
+            select.innerHTML = '<option value="">-- Chọn hệ nhôm --</option>';
+            aluminumSystems.forEach(system => {
+                const option = document.createElement('option');
+                option.value = system.id;
+                option.textContent = `${system.name} (${system.brand})`;
+                if (system.brand === 'ViralWindow') {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            // Generate parameter inputs
+            const paramsContainer = document.getElementById('paramsContainer');
+            paramsContainer.innerHTML = '';
+            
+            if (template.param_schema && template.param_schema.params) {
+                template.param_schema.params.forEach(param => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ${param.label} ${param.min && param.max ? `(${param.min} - ${param.max}mm)` : ''} *
+                        </label>
+                        <input 
+                            type="number" 
+                            name="param_${param.name}" 
+                            required
+                            min="${param.min || 0}"
+                            max="${param.max || 10000}"
+                            value="${param.default || param.min || 0}"
+                            step="10"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    `;
+                    paramsContainer.appendChild(div);
+                });
+            }
+
+            document.getElementById('doorParamsModal').classList.remove('hidden');
+        }
+
+        // Close door params modal
+        function closeDoorParamsModal() {
+            document.getElementById('doorParamsModal').classList.add('hidden');
+            currentTemplate = null;
+        }
+
+        // Save door
+        async function saveDoor(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const aluminumSystemId = formData.get('modalAluminumSystem');
+            const color = formData.get('color');
+
+            // Collect parameters
+            const params = {};
+            if (currentTemplate.param_schema && currentTemplate.param_schema.params) {
+                currentTemplate.param_schema.params.forEach(param => {
+                    const value = formData.get(`param_${param.name}`);
+                    if (value) {
+                        params[param.name] = parseInt(value);
+                    }
+                });
+            }
+
+            // Calculate width and height from params
+            const width = params.B || params.width || 1200;
+            const height = params.H || params.height || 2400;
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${currentProjectId}/doors`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        template_id: currentTemplate.id,
+                        template_code: currentTemplate.code,
+                        aluminum_system_id: aluminumSystemId,
+                        door_type: getDoorTypeFromFamily(currentTemplate.family),
+                        color: color,
+                        width_mm: width,
+                        height_mm: height,
+                        params_json: params
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Thêm cửa thành công!');
+                    closeDoorParamsModal();
+                    // Reload project doors if needed
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể thêm cửa'));
+                }
+            } catch (error) {
+                console.error('Error saving door:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // Helper: Get door type from family
+        function getDoorTypeFromFamily(family) {
+            const mapping = {
+                'door_out': 'swing',
+                'door_in': 'swing',
+                'window_swing': 'swing',
+                'window_sliding': 'sliding',
+                'door_sliding': 'sliding',
+                'door_folding': 'folding',
+                'wall_window': 'fixed',
+                'fixed': 'fixed'
+            };
+            return mapping[family] || 'swing';
+        }
+
+        // Placeholder functions
+        function openMyLibrary() {
+            alert('Chức năng thư viện tự tạo đang được phát triển');
+        }
+
+        function openUploadExcel() {
+            alert('Chức năng tải lên Excel đang được phát triển');
+        }
+
+        function openPriceSettings() {
+            alert('Chức năng cài đặt giá đang được phát triển');
+        }
+
+        function openParameterSettings() {
+            alert('Chức năng cài đặt thông số đang được phát triển');
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

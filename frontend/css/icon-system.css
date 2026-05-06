@@ -1,0 +1,59 @@
+/* icon-system.css - Centralized Professional Icon System */
+
+.icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.icon-box i[data-lucide] {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.icon-box:hover {
+  transform: scale(1.05);
+}
+
+/* Semantic Colors */
+.icon-box.blue {
+  background-color: #dbeafe; /* Tailwind blue-100 */
+  color: #2563eb;            /* Tailwind blue-600 */
+}
+
+.icon-box.green {
+  background-color: #dcfce7; /* Tailwind green-100 */
+  color: #16a34a;            /* Tailwind green-600 */
+}
+
+.icon-box.red {
+  background-color: #fee2e2; /* Tailwind red-100 */
+  color: #dc2626;            /* Tailwind red-600 */
+}
+
+.icon-box.orange {
+  background-color: #ffedd5; /* Tailwind orange-100 */
+  color: #ea580c;            /* Tailwind orange-600 */
+}
+
+.icon-box.purple {
+  background-color: #f3e8ff; /* Tailwind purple-100 */
+  color: #9333ea;            /* Tailwind purple-600 */
+}
+
+/* Add utility inline icon styles for buttons/chips if needed */
+.icon-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.icon-inline i[data-lucide] {
+  width: 16px;
+  height: 16px;
+}

@@ -1,0 +1,205 @@
+{
+  "meta": {
+    "template_code": "VK5",
+    "template_name": "Vách + cửa sổ mở quay + fix trên",
+    "category": "folding",
+    "sub_type": "turn",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 3000,
+    "height_mm": 2600,
+    "khoang_ho_mm": 5,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/VK5.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "horizontal",
+    "children": [
+      {
+        "id": "fix1",
+        "type": "panel",
+        "panelType": "fixed",
+        "widthRatio": 0.5,
+        "glassType": "6mm_clear"
+      },
+      {
+        "type": "container",
+        "direction": "vertical",
+        "widthRatio": 2,
+        "children": [
+          {
+            "id": "fixTop",
+            "type": "panel",
+            "panelType": "fixed",
+            "heightRatio": 0.3,
+            "glassType": "6mm_clear"
+          },
+          {
+            "id": "leaf",
+            "type": "panel",
+            "panelType": "window-leaf",
+            "heightRatio": 0.7,
+            "openDirection": "right",
+            "glassType": "6mm_clear"
+          }
+        ]
+      },
+      {
+        "id": "fix2",
+        "type": "panel",
+        "panelType": "fixed",
+        "widthRatio": 0.5,
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}
+
+
+  "meta": {
+    "template_code": "VK5",
+    "template_name": "Vách + cửa sổ mở quay + fix trên",
+    "category": "folding",
+    "sub_type": "turn",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 3000,
+    "height_mm": 2600,
+    "khoang_ho_mm": 5,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/VK5.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "horizontal",
+    "children": [
+      {
+        "id": "fix1",
+        "type": "panel",
+        "panelType": "fixed",
+        "widthRatio": 0.5,
+        "glassType": "6mm_clear"
+      },
+      {
+        "type": "container",
+        "direction": "vertical",
+        "widthRatio": 2,
+        "children": [
+          {
+            "id": "fixTop",
+            "type": "panel",
+            "panelType": "fixed",
+            "heightRatio": 0.3,
+            "glassType": "6mm_clear"
+          },
+          {
+            "id": "leaf",
+            "type": "panel",
+            "panelType": "window-leaf",
+            "heightRatio": 0.7,
+            "openDirection": "right",
+            "glassType": "6mm_clear"
+          }
+        ]
+      },
+      {
+        "id": "fix2",
+        "type": "panel",
+        "panelType": "fixed",
+        "widthRatio": 0.5,
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

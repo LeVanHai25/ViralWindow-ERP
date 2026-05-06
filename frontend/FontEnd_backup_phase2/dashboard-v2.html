@@ -1,0 +1,1646 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng Quan Dự Án - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/sidebar-enterprise.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        .project-list-panel {
+            width: 60%;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .detail-panel {
+            width: 40%;
+            overflow-y: auto;
+            background: #fff;
+        }
+
+        /* ===== TOP SUMMARY ===== */
+        .top-summary {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* Status Cards (4 trạng thái) */
+        .status-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-card.active {
+            border-color: #1e40af;
+        }
+
+        .status-card.amber {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+        }
+
+        .status-card.green {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        }
+
+        .status-card.red {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+        }
+
+        .status-card.purple {
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+        }
+
+        .status-count {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .status-card.amber .status-count {
+            color: #92400e;
+        }
+
+        .status-card.green .status-count {
+            color: #065f46;
+        }
+
+        .status-card.red .status-count {
+            color: #991b1b;
+        }
+
+        .status-card.purple .status-count {
+            color: #5b21b6;
+        }
+
+        .status-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .status-sublabel {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        /* Phase Chips (5 giai đoạn) */
+        .phase-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .phase-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .phase-chip:hover {
+            background: #e5e7eb;
+        }
+
+        .phase-chip.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .phase-chip .count {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .phase-chip.active .count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Alert Pills */
+        .alert-pills {
+            display: flex;
+            gap: 12px;
+        }
+
+        .alert-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .alert-pill.overdue {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .alert-pill.material {
+            background: #fefce8;
+            color: #ca8a04;
+        }
+
+        .alert-pill.issue {
+            background: #fef3f2;
+            color: #ef4444;
+        }
+
+        /* ===== SEARCH & FILTER ===== */
+        .search-filter-bar {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 13px;
+            background: white;
+        }
+
+        /* ===== PROJECT CARDS ===== */
+        .project-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .project-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .project-code {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6366f1;
+            background: #eef2ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .project-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+            margin: 4px 0;
+        }
+
+        .project-customer {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .project-alerts {
+            display: flex;
+            gap: 4px;
+        }
+
+        .alert-icon {
+            font-size: 14px;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        /* Operation Status Badge */
+        .op-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .op-status-badge.status-1 {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .op-status-badge.status-2 {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .op-status-badge.status-3 {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .op-status-badge.status-4 {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        /* Phase Badge */
+        .phase-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .phase-duration {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-left: 4px;
+        }
+
+        /* Deadline */
+        .deadline-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .deadline-badge.overdue {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .deadline-badge.today {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .deadline-badge.ok {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* Material Chips */
+        .material-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .mat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .mat-chip.ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .mat-chip.waiting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .mat-chip.missing {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .mat-chip .eta {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        /* ===== DETAIL PANEL ===== */
+        .detail-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+        }
+
+        .detail-empty i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .detail-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        }
+
+        .detail-project-code {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        .detail-project-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin: 4px 0;
+        }
+
+        .detail-customer {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .detail-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .detail-tab {
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .detail-tab:hover {
+            color: #3b82f6;
+        }
+
+        .detail-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: white;
+        }
+
+        .detail-content {
+            padding: 20px;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            padding-bottom: 24px;
+            position: relative;
+        }
+
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 32px;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .timeline-icon.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .timeline-icon.current {
+            background: #3b82f6;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .timeline-icon.pending {
+            background: #e5e7eb;
+            color: #9ca3af;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+            }
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .timeline-duration {
+            font-size: 11px;
+            color: #3b82f6;
+            margin-top: 2px;
+        }
+
+        /* Material Detail */
+        .material-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .material-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .material-icon.kinh {
+            background: #dbeafe;
+        }
+
+        .material-icon.nhom {
+            background: #fef3c7;
+        }
+
+        .material-icon.phukien {
+            background: #fce7f3;
+        }
+
+        .material-icon.vattu {
+            background: #e0e7ff;
+        }
+
+        .material-info {
+            flex: 1;
+        }
+
+        .material-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .material-timeline {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .material-status-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .material-status-badge.ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .material-status-badge.waiting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .material-status-badge.missing {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Logs */
+        .log-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .log-time {
+            font-size: 11px;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-user {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .log-message {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <div class="ml-64 min-h-screen" id="mainContent">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-6 py-3 sticky top-0 z-20">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-th-large text-blue-600"></i>
+                        Tổng Quan Dự Án
+                    </h1>
+                    <p class="text-sm text-gray-500">Overview Tracker - Scan nhanh tiến độ dự án</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportExcel()"
+                        class="px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition flex items-center gap-2">
+                        <i class="fas fa-file-excel"></i> Xuất Excel
+                    </button>
+                    <button onclick="refresh()"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Làm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Summary -->
+        <div class="top-summary">
+            <!-- 4 Status Cards -->
+            <div class="status-cards">
+                <div class="status-card amber" onclick="filterByStatus(1)" data-status="1">
+                    <div class="status-count" id="count-1">0</div>
+                    <div>
+                        <div class="status-label">Đang sản xuất</div>
+                        <div class="status-sublabel">Chuẩn bị giao</div>
+                    </div>
+                    <i class="fas fa-industry text-xl opacity-30"></i>
+                </div>
+                <div class="status-card green" onclick="filterByStatus(2)" data-status="2">
+                    <div class="status-count" id="count-2">0</div>
+                    <div>
+                        <div class="status-label">Đã giao hàng</div>
+                        <div class="status-sublabel">Hoàn thành</div>
+                    </div>
+                    <i class="fas fa-check-circle text-xl opacity-30"></i>
+                </div>
+                <div class="status-card red" onclick="filterByStatus(3)" data-status="3">
+                    <div class="status-count" id="count-3">0</div>
+                    <div>
+                        <div class="status-label">Vướng mắc gấp</div>
+                        <div class="status-sublabel">Cần xử lý</div>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-xl opacity-30"></i>
+                </div>
+                <div class="status-card purple" onclick="filterByStatus(4)" data-status="4">
+                    <div class="status-count" id="count-4">0</div>
+                    <div>
+                        <div class="status-label">Thay đổi TK</div>
+                        <div class="status-sublabel">Điều chỉnh</div>
+                    </div>
+                    <i class="fas fa-edit text-xl opacity-30"></i>
+                </div>
+            </div>
+
+            <!-- 5 Phase Chips -->
+            <div class="phase-chips">
+                <div class="phase-chip" onclick="filterByPhase('quote')" data-phase="quote">
+                    📋 Báo giá <span class="count" id="phase-quote">0</span>
+                </div>
+                <div class="phase-chip" onclick="filterByPhase('design')" data-phase="design">
+                    🎨 Thiết kế <span class="count" id="phase-design">0</span>
+                </div>
+                <div class="phase-chip" onclick="filterByPhase('production')" data-phase="production">
+                    🏭 Sản xuất <span class="count" id="phase-production">0</span>
+                </div>
+                <div class="phase-chip" onclick="filterByPhase('installation')" data-phase="installation">
+                    🔧 Lắp đặt <span class="count" id="phase-installation">0</span>
+                </div>
+                <div class="phase-chip" onclick="filterByPhase('handover')" data-phase="handover">
+                    ✅ Bàn giao <span class="count" id="phase-handover">0</span>
+                </div>
+            </div>
+
+            <!-- 3 Alert Pills -->
+            <div class="alert-pills">
+                <div class="alert-pill overdue" onclick="filterByAlert('overdue')">
+                    <i class="fas fa-clock"></i> Quá hạn <span id="alert-overdue">0</span>
+                </div>
+                <div class="alert-pill material" onclick="filterByAlert('material')">
+                    <i class="fas fa-box"></i> Thiếu vật tư <span id="alert-material">0</span>
+                </div>
+                <div class="alert-pill issue" onclick="filterByAlert('issue')">
+                    <i class="fas fa-exclamation"></i> Vướng mắc <span id="alert-issue">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container: List + Detail -->
+        <div class="main-container">
+            <!-- Left: Project List -->
+            <div class="project-list-panel">
+                <!-- Search & Filter -->
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm mã, tên dự án, khách hàng..."
+                            oninput="debounceSearch()">
+                    </div>
+                    <select id="materialFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">Tất cả VT</option>
+                        <option value="ok">✅ VT OK</option>
+                        <option value="waiting">⏳ Chờ VT</option>
+                        <option value="missing">⚠️ Thiếu VT</option>
+                    </select>
+                    <select id="deadlineFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">Tất cả deadline</option>
+                        <option value="overdue">Quá hạn</option>
+                        <option value="today">Hôm nay</option>
+                        <option value="week">Tuần này</option>
+                    </select>
+                    <button onclick="clearFilters()"
+                        class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-times"></i> Xóa lọc
+                    </button>
+                </div>
+
+                <!-- Project List -->
+                <div class="project-cards" id="projectList">
+                    <!-- Cards rendered by JS -->
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-spinner fa-spin text-2xl"></i>
+                        <p class="mt-2">Đang tải dự án...</p>
+                    </div>
+                </div>
+
+                <!-- Count -->
+                <div class="text-sm text-gray-500 mt-4 px-2">
+                    Hiển thị <span id="showCount">0</span> / <span id="totalCount">0</span> dự án
+                </div>
+            </div>
+
+            <!-- Right: Detail Panel -->
+            <div class="detail-panel" id="detailPanel">
+                <div class="detail-empty">
+                    <i class="fas fa-hand-pointer"></i>
+                    <p>Chọn một dự án để xem chi tiết</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== CONFIG ==========
+        const API_URL = (window.API_BASE || '/api') + '/projects';
+        let projectsData = [];
+        let selectedProject = null;
+        let currentFilters = {
+            status: 0,
+            phase: '',
+            alert: '',
+            search: '',
+            material: '',
+            deadline: ''
+        };
+        let searchTimeout = null;
+
+        // ========== INIT ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+        });
+
+        // ========== LOAD PROJECTS ==========
+        async function loadProjects() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                const projects = result.data || result || [];
+
+                // Transform projects
+                projectsData = projects.map(p => {
+                    const now = new Date();
+                    const deadline = p.deadline ? new Date(p.deadline) : null;
+                    const isOverdue = deadline && deadline < now && !['completed', 'handover'].includes(p.status);
+
+                    // Use operation_status from DB if available, otherwise calculate
+                    let opStatus = p.operation_status || 1;
+                    if (!p.operation_status) {
+                        // Fallback calculation if not set in DB
+                        if (p.status === 'completed' || p.status === 'handover') {
+                            opStatus = 2;
+                        } else if (isOverdue) {
+                            opStatus = 3;
+                        } else if (['designing', 'bom'].includes(p.status)) {
+                            opStatus = 4;
+                        }
+                    }
+
+                    // Phase mapping
+                    const phaseMap = {
+                        'quote': 'quote',
+                        'approved': 'quote',
+                        'designing': 'design',
+                        'bom': 'design',
+                        'in_production': 'production',
+                        'installation': 'installation',
+                        'completed': 'handover',
+                        'handover': 'handover'
+                    };
+
+                    return {
+                        id: p.id,
+                        code: p.project_code || 'N/A',
+                        name: p.project_name || '',
+                        customer: p.customer_name || '-',
+                        status: opStatus,
+                        operationNotes: p.operation_notes || '',
+                        phase: phaseMap[p.status] || 'quote',
+                        phaseLabel: getPhaseLabel(p.status),
+                        phaseDuration: calculateDuration(p.updated_at || p.created_at),
+                        deadline: p.deadline,
+                        deadlineStatus: getDeadlineStatus(p.deadline),
+                        createdAt: p.created_at,
+                        updatedAt: p.updated_at,
+                        isOverdue: isOverdue,
+                        hasIssue: isOverdue || opStatus === 3,
+                        // Material status will be loaded from API
+                        materials: [],
+                        timeline: generateTimeline(p),
+                        logs: generateLogs(p)
+                    };
+                });
+
+                // Load material status for each project
+                await loadMaterialStatuses();
+
+                updateCounts();
+                renderProjectCards();
+                document.getElementById('totalCount').textContent = projectsData.length;
+
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectList').innerHTML = `
+                    <div class="text-center py-8 text-red-400">
+                        <i class="fas fa-exclamation-circle text-2xl"></i>
+                        <p class="mt-2">Lỗi tải dữ liệu</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ========== HELPERS ==========
+        function getPhaseLabel(status) {
+            const labels = {
+                'quote': '📋 Báo giá',
+                'approved': '📋 Đã duyệt',
+                'designing': '🎨 Thiết kế',
+                'bom': '📦 Bóc tách',
+                'in_production': '🏭 Sản xuất',
+                'installation': '🔧 Lắp đặt',
+                'completed': '✅ Hoàn thành',
+                'handover': '✅ Bàn giao'
+            };
+            return labels[status] || '📋 Khởi tạo';
+        }
+
+        function calculateDuration(fromDate) {
+            if (!fromDate) return '';
+            const from = new Date(fromDate);
+            const now = new Date();
+            const diff = Math.floor((now - from) / 1000);
+
+            if (diff < 3600) return `${Math.floor(diff / 60)} phút`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} giờ`;
+            return `${Math.floor(diff / 86400)} ngày`;
+        }
+
+        function getDeadlineStatus(deadline) {
+            if (!deadline) return 'ok';
+            const d = new Date(deadline);
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const deadlineDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+            if (deadlineDate < today) return 'overdue';
+            if (deadlineDate.getTime() === today.getTime()) return 'today';
+            return 'ok';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+        }
+
+        function generateTimeline(p) {
+            const phases = ['Báo giá', 'Thiết kế', 'Sản xuất', 'Lắp đặt', 'Bàn giao'];
+            const currentPhaseIndex = {
+                'quote': 0, 'approved': 0,
+                'designing': 1, 'bom': 1,
+                'in_production': 2,
+                'installation': 3,
+                'completed': 4, 'handover': 4
+            }[p.status] || 0;
+
+            return phases.map((phase, index) => ({
+                name: phase,
+                status: index < currentPhaseIndex ? 'completed' : index === currentPhaseIndex ? 'current' : 'pending',
+                startTime: index <= currentPhaseIndex ? (p[`${phase.toLowerCase()}_date`] || p.created_at) : null,
+                endTime: index < currentPhaseIndex ? (p[`${phases[index + 1]?.toLowerCase()}_date`] || p.updated_at) : null
+            }));
+        }
+
+        function generateLogs(p) {
+            const logs = [];
+            if (p.created_at) {
+                logs.push({
+                    time: p.created_at,
+                    user: 'System',
+                    message: 'Dự án được tạo'
+                });
+            }
+            if (p.updated_at && p.updated_at !== p.created_at) {
+                logs.push({
+                    time: p.updated_at,
+                    user: 'System',
+                    message: `Cập nhật trạng thái: ${getPhaseLabel(p.status)}`
+                });
+            }
+            return logs.sort((a, b) => new Date(b.time) - new Date(a.time));
+        }
+
+        // ========== UPDATE COUNTS ==========
+        function updateCounts() {
+            const statusCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+            const phaseCounts = { quote: 0, design: 0, production: 0, installation: 0, handover: 0 };
+            let overdueCount = 0, materialCount = 0, issueCount = 0;
+
+            projectsData.forEach(p => {
+                statusCounts[p.status]++;
+                phaseCounts[p.phase]++;
+                if (p.isOverdue) overdueCount++;
+                if (p.materials.some(m => m.status === 'missing')) materialCount++;
+                if (p.hasIssue) issueCount++;
+            });
+
+            document.getElementById('count-1').textContent = statusCounts[1];
+            document.getElementById('count-2').textContent = statusCounts[2];
+            document.getElementById('count-3').textContent = statusCounts[3];
+            document.getElementById('count-4').textContent = statusCounts[4];
+
+            document.getElementById('phase-quote').textContent = phaseCounts.quote;
+            document.getElementById('phase-design').textContent = phaseCounts.design;
+            document.getElementById('phase-production').textContent = phaseCounts.production;
+            document.getElementById('phase-installation').textContent = phaseCounts.installation;
+            document.getElementById('phase-handover').textContent = phaseCounts.handover;
+
+            document.getElementById('alert-overdue').textContent = overdueCount;
+            document.getElementById('alert-material').textContent = materialCount;
+            document.getElementById('alert-issue').textContent = issueCount;
+        }
+
+        // ========== FILTERS ==========
+        function filterByStatus(status) {
+            currentFilters.status = currentFilters.status === status ? 0 : status;
+            document.querySelectorAll('.status-card').forEach(card => {
+                card.classList.toggle('active', parseInt(card.dataset.status) === currentFilters.status);
+            });
+            renderProjectCards();
+        }
+
+        function filterByPhase(phase) {
+            currentFilters.phase = currentFilters.phase === phase ? '' : phase;
+            document.querySelectorAll('.phase-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.phase === currentFilters.phase);
+            });
+            renderProjectCards();
+        }
+
+        function filterByAlert(alert) {
+            currentFilters.alert = currentFilters.alert === alert ? '' : alert;
+            renderProjectCards();
+        }
+
+        function applyFilters() {
+            currentFilters.material = document.getElementById('materialFilter').value;
+            currentFilters.deadline = document.getElementById('deadlineFilter').value;
+            renderProjectCards();
+        }
+
+        function clearFilters() {
+            currentFilters = { status: 0, phase: '', alert: '', search: '', material: '', deadline: '' };
+            document.getElementById('searchInput').value = '';
+            document.getElementById('materialFilter').value = '';
+            document.getElementById('deadlineFilter').value = '';
+            document.querySelectorAll('.status-card, .phase-chip').forEach(el => el.classList.remove('active'));
+            renderProjectCards();
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentFilters.search = document.getElementById('searchInput').value.toLowerCase();
+                renderProjectCards();
+            }, 300);
+        }
+
+        // ========== RENDER PROJECT CARDS ==========
+        function renderProjectCards() {
+            const filtered = projectsData.filter(p => {
+                if (currentFilters.status && p.status !== currentFilters.status) return false;
+                if (currentFilters.phase && p.phase !== currentFilters.phase) return false;
+                if (currentFilters.alert === 'overdue' && !p.isOverdue) return false;
+                if (currentFilters.alert === 'issue' && !p.hasIssue) return false;
+                if (currentFilters.search) {
+                    const searchable = `${p.code} ${p.name} ${p.customer}`.toLowerCase();
+                    if (!searchable.includes(currentFilters.search)) return false;
+                }
+                if (currentFilters.deadline === 'overdue' && p.deadlineStatus !== 'overdue') return false;
+                if (currentFilters.deadline === 'today' && p.deadlineStatus !== 'today') return false;
+                return true;
+            });
+
+            const container = document.getElementById('projectList');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <i class="fas fa-inbox text-3xl"></i>
+                        <p class="mt-2">Không có dự án nào</p>
+                    </div>
+                `;
+                document.getElementById('showCount').textContent = 0;
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => `
+                <div class="project-card ${selectedProject?.id === p.id ? 'selected' : ''}" onclick="selectProject(${p.id})">
+                    <div class="project-header">
+                        <div>
+                            <span class="project-code">${p.code}</span>
+                            <div class="project-name">${p.name}</div>
+                            <div class="project-customer"><i class="fas fa-user text-xs mr-1"></i>${p.customer}</div>
+                        </div>
+                        <div class="project-alerts">
+                            ${p.isOverdue ? '<span class="alert-icon" title="Quá hạn">⏰</span>' : ''}
+                            ${p.hasIssue ? '<span class="alert-icon" title="Vướng mắc">⚠️</span>' : ''}
+                            ${p.status === 4 ? '<span class="alert-icon" title="Thay đổi TK">✏️</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="project-meta">
+                        <span class="op-status-badge status-${p.status} cursor-pointer hover:opacity-80" onclick="event.stopPropagation(); showStatusModal(${p.id})" title="Click để đổi trạng thái">
+                            ${getStatusText(p.status)} <i class="fas fa-pen text-xs ml-1 opacity-50"></i>
+                        </span>
+                        <span class="phase-badge">${p.phaseLabel}<span class="phase-duration">${p.phaseDuration}</span></span>
+                        <span class="deadline-badge ${p.deadlineStatus}">
+                            <i class="fas fa-calendar-alt mr-1"></i>${formatDate(p.deadline)}
+                        </span>
+                    </div>
+                    <div class="material-chips" onclick="event.stopPropagation(); showMaterialModal(${p.id})" title="Click để cập nhật vật tư" style="cursor: pointer;">
+                        ${p.materials.map(m => `
+                            <span class="mat-chip ${m.status}">
+                                ${m.icon} ${m.type} ${getMatIcon(m.status)}
+                                ${m.eta ? `<span class="eta">(${m.eta})</span>` : ''}
+                            </span>
+                        `).join('')}
+                        <span class="mat-chip" style="background: #e5e7eb; color: #6b7280;"><i class="fas fa-pen text-xs"></i></span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('showCount').textContent = filtered.length;
+        }
+
+        function getStatusText(status) {
+            const texts = { 1: 'Đang SX', 2: 'Đã giao', 3: 'Vướng mắc', 4: 'Thay đổi TK' };
+            return texts[status] || '';
+        }
+
+        function getMatIcon(status) {
+            return { ok: '✅', waiting: '⏳', missing: '⚠️' }[status] || '';
+        }
+
+        // ========== SELECT PROJECT ==========
+        function selectProject(id) {
+            selectedProject = projectsData.find(p => p.id === id);
+            renderProjectCards(); // Re-render to update selected state
+            renderDetailPanel();
+        }
+
+        // ========== RENDER DETAIL PANEL ==========
+        function renderDetailPanel() {
+            const panel = document.getElementById('detailPanel');
+            if (!selectedProject) {
+                panel.innerHTML = `
+                    <div class="detail-empty">
+                        <i class="fas fa-hand-pointer"></i>
+                        <p>Chọn một dự án để xem chi tiết</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const p = selectedProject;
+            panel.innerHTML = `
+                <div class="detail-header">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="detail-project-code">${p.code}</div>
+                            <div class="detail-project-name">${p.name}</div>
+                            <div class="detail-customer"><i class="fas fa-user mr-1"></i>${p.customer}</div>
+                        </div>
+                        <a href="project-detail.html?id=${p.id}" class="text-blue-500 hover:text-blue-700 text-sm">
+                            <i class="fas fa-external-link-alt"></i> Chi tiết
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-tabs">
+                    <div class="detail-tab active" onclick="switchDetailTab('timeline', this)">📊 Timeline</div>
+                    <div class="detail-tab" onclick="switchDetailTab('materials', this)">📦 Vật tư</div>
+                    <div class="detail-tab" onclick="switchDetailTab('logs', this)">📝 Lịch sử</div>
+                </div>
+                <div class="detail-content" id="detailContent">
+                    ${renderTimelineTab(p)}
+                </div>
+            `;
+        }
+
+        function switchDetailTab(tab, el) {
+            document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const content = document.getElementById('detailContent');
+            if (tab === 'timeline') content.innerHTML = renderTimelineTab(selectedProject);
+            else if (tab === 'materials') content.innerHTML = renderMaterialsTab(selectedProject);
+            else if (tab === 'logs') content.innerHTML = renderLogsTab(selectedProject);
+        }
+
+        function renderTimelineTab(p) {
+            return `
+                <h3 class="font-semibold text-gray-800 mb-4">Tiến độ quy trình</h3>
+                <div class="timeline">
+                    ${p.timeline.map(t => `
+                        <div class="timeline-item">
+                            <div class="timeline-icon ${t.status}">
+                                ${t.status === 'completed' ? '✓' : t.status === 'current' ? '●' : '○'}
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">${t.name}</div>
+                                <div class="timeline-time">
+                                    ${t.status === 'pending' ? 'Chưa bắt đầu' :
+                    t.status === 'current' ? `Bắt đầu: ${formatDateTime(t.startTime)} → Đang thực hiện` :
+                        `${formatDateTime(t.startTime)} → ${formatDateTime(t.endTime)}`}
+                                </div>
+                                ${t.status !== 'pending' ? `<div class="timeline-duration">⏱ ${calculateDuration(t.startTime)}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderMaterialsTab(p) {
+            return `
+                <h3 class="font-semibold text-gray-800 mb-4">Tình trạng vật tư</h3>
+                ${p.materials.map(m => `
+                    <div class="material-detail-item">
+                        <div class="material-icon ${m.type.toLowerCase().replace(/ /g, '')}">
+                            ${m.icon}
+                        </div>
+                        <div class="material-info">
+                            <div class="material-name">${m.type}</div>
+                            <div class="material-timeline">
+                                ${m.status === 'ok' ? 'Đã có / Đã về kho' :
+                    m.status === 'waiting' ? `Đang chờ ${m.eta ? '(ETA: ' + m.eta + ')' : ''}` :
+                        'Cần đặt hàng'}
+                            </div>
+                        </div>
+                        <span class="material-status-badge ${m.status}">
+                            ${getMatIcon(m.status)} ${m.status === 'ok' ? 'OK' : m.status === 'waiting' ? 'Chờ' : 'Thiếu'}
+                        </span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function renderLogsTab(p) {
+            if (!p.logs || p.logs.length === 0) {
+                return '<p class="text-gray-400 text-center py-8">Chưa có lịch sử</p>';
+            }
+            return `
+                <h3 class="font-semibold text-gray-800 mb-4">Lịch sử hoạt động</h3>
+                ${p.logs.map(log => `
+                    <div class="log-item">
+                        <div class="log-time">${formatDateTime(log.time)}</div>
+                        <div class="log-content">
+                            <div class="log-user">${log.user}</div>
+                            <div class="log-message">${log.message}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // ========== ACTIONS ==========
+        function exportExcel() {
+            alert('Đang xuất Excel...');
+        }
+
+        function refresh() {
+            location.reload();
+        }
+
+        // ========== LOAD MATERIAL STATUSES ==========
+        async function loadMaterialStatuses() {
+            const typeLabels = { glass: 'Kính', aluminum: 'Nhôm', accessory: 'Phụ kiện', auxiliary: 'VT phụ' };
+            const typeIcons = { glass: '🪟', aluminum: '📐', accessory: '🔧', auxiliary: '📦' };
+            const statusMap = { ok: 'ok', arrived: 'ok', waiting: 'waiting', ordered: 'waiting', missing: 'missing' };
+
+            for (let p of projectsData) {
+                try {
+                    const response = await fetch(`${API_URL}/${p.id}/material-status`);
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        p.materials = result.data.map(m => ({
+                            type: typeLabels[m.material_type] || m.material_type,
+                            icon: typeIcons[m.material_type] || '📦',
+                            status: statusMap[m.status] || 'missing',
+                            dbStatus: m.status,
+                            eta: m.expected_date ? formatDate(m.expected_date) : null,
+                            orderDate: m.order_date,
+                            actualDate: m.actual_date,
+                            supplier: m.supplier,
+                            notes: m.notes,
+                            materialType: m.material_type
+                        }));
+                    } else {
+                        // Default materials if no data
+                        p.materials = Object.keys(typeLabels).map(key => ({
+                            type: typeLabels[key],
+                            icon: typeIcons[key],
+                            status: 'missing',
+                            dbStatus: 'missing',
+                            eta: null,
+                            materialType: key
+                        }));
+                    }
+                } catch (err) {
+                    console.log(`Could not load materials for project ${p.id}`);
+                    p.materials = Object.keys(typeLabels).map(key => ({
+                        type: typeLabels[key],
+                        icon: typeIcons[key],
+                        status: 'missing',
+                        dbStatus: 'missing',
+                        eta: null,
+                        materialType: key
+                    }));
+                }
+            }
+        }
+
+        // ========== LOAD ACTIVITY LOGS FROM API ==========
+        async function loadActivityLogs(projectId) {
+            try {
+                const response = await fetch(`${API_URL}/${projectId}/activity-logs?limit=20`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    return result.data.map(log => ({
+                        time: log.created_at,
+                        user: log.user_name || 'System',
+                        message: log.description || log.action_type
+                    }));
+                }
+            } catch (err) {
+                console.log('Could not load activity logs');
+            }
+            return [];
+        }
+
+        // ========== UPDATE OPERATION STATUS ==========
+        async function updateOperationStatus(projectId, newStatus, notes = '') {
+            try {
+                const response = await fetch(`${API_URL}/${projectId}/operation-status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ operation_status: newStatus, operation_notes: notes })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    // Update local data
+                    const p = projectsData.find(x => x.id === projectId);
+                    if (p) {
+                        p.status = newStatus;
+                        p.operationNotes = notes;
+                        p.hasIssue = newStatus === 3;
+                    }
+                    updateCounts();
+                    renderProjectCards();
+                    if (selectedProject?.id === projectId) {
+                        selectedProject = projectsData.find(x => x.id === projectId);
+                        renderDetailPanel();
+                    }
+                    alert('Cập nhật trạng thái thành công!');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi cập nhật trạng thái!');
+            }
+        }
+
+        // ========== UPDATE MATERIAL STATUS ==========
+        async function updateMaterialStatus(projectId, materialType, status, expectedDate = null, notes = '') {
+            try {
+                const response = await fetch(`${API_URL}/${projectId}/material-status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        material_type: materialType,
+                        status: status,
+                        expected_date: expectedDate,
+                        notes: notes
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    // Reload material status for this project
+                    const p = projectsData.find(x => x.id === projectId);
+                    if (p) {
+                        const typeLabels = { glass: 'Kính', aluminum: 'Nhôm', accessory: 'Phụ kiện', auxiliary: 'VT phụ' };
+                        const typeIcons = { glass: '🪟', aluminum: '📐', accessory: '🔧', auxiliary: '📦' };
+                        const statusMap = { ok: 'ok', arrived: 'ok', waiting: 'waiting', ordered: 'waiting', missing: 'missing' };
+
+                        const matResponse = await fetch(`${API_URL}/${projectId}/material-status`);
+                        const matResult = await matResponse.json();
+                        if (matResult.success && matResult.data) {
+                            p.materials = matResult.data.map(m => ({
+                                type: typeLabels[m.material_type] || m.material_type,
+                                icon: typeIcons[m.material_type] || '📦',
+                                status: statusMap[m.status] || 'missing',
+                                dbStatus: m.status,
+                                eta: m.expected_date ? formatDate(m.expected_date) : null,
+                                materialType: m.material_type
+                            }));
+                        }
+                    }
+                    renderProjectCards();
+                    if (selectedProject?.id === projectId) {
+                        selectedProject = projectsData.find(x => x.id === projectId);
+                        renderDetailPanel();
+                    }
+                    return true;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            return false;
+        }
+
+        // ========== SHOW STATUS MODAL ==========
+        function showStatusModal(projectId) {
+            const p = projectsData.find(x => x.id === projectId);
+            if (!p) return;
+
+            const modalHtml = `
+                <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeStatusModal(event)">
+                    <div class="bg-white rounded-xl p-6 w-96" onclick="event.stopPropagation()">
+                        <h3 class="text-lg font-bold mb-4">Cập nhật trạng thái dự án</h3>
+                        <p class="text-sm text-gray-600 mb-4">${p.code} - ${p.name}</p>
+                        
+                        <div class="space-y-3 mb-4">
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-yellow-50 ${p.status === 1 ? 'border-yellow-500 bg-yellow-50' : ''}" onclick="selectStatus(1)">
+                                <input type="radio" name="opStatus" value="1" ${p.status === 1 ? 'checked' : ''}>
+                                <span class="text-yellow-600 font-medium">1. Đang sản xuất / Chuẩn bị giao</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-green-50 ${p.status === 2 ? 'border-green-500 bg-green-50' : ''}" onclick="selectStatus(2)">
+                                <input type="radio" name="opStatus" value="2" ${p.status === 2 ? 'checked' : ''}>
+                                <span class="text-green-600 font-medium">2. Đã giao hàng / Hoàn thành</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-red-50 ${p.status === 3 ? 'border-red-500 bg-red-50' : ''}" onclick="selectStatus(3)">
+                                <input type="radio" name="opStatus" value="3" ${p.status === 3 ? 'checked' : ''}>
+                                <span class="text-red-600 font-medium">3. Vướng mắc gấp / Cần xử lý</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-purple-50 ${p.status === 4 ? 'border-purple-500 bg-purple-50' : ''}" onclick="selectStatus(4)">
+                                <input type="radio" name="opStatus" value="4" ${p.status === 4 ? 'checked' : ''}>
+                                <span class="text-purple-600 font-medium">4. Thay đổi thiết kế / Điều chỉnh</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                            <textarea id="opNotes" class="w-full border rounded-lg p-2 text-sm" rows="2" placeholder="Nhập ghi chú...">${p.operationNotes || ''}</textarea>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="closeStatusModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Hủy</button>
+                            <button onclick="saveStatus(${projectId})" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        let selectedStatusValue = null;
+        function selectStatus(val) {
+            selectedStatusValue = val;
+        }
+
+        function closeStatusModal(e) {
+            if (e && e.target && e.target.id !== 'statusModal') return;
+            document.getElementById('statusModal')?.remove();
+            selectedStatusValue = null;
+        }
+
+        async function saveStatus(projectId) {
+            const selected = document.querySelector('input[name="opStatus"]:checked');
+            const notes = document.getElementById('opNotes')?.value || '';
+            if (!selected) {
+                alert('Vui lòng chọn trạng thái');
+                return;
+            }
+            closeStatusModal();
+            await updateOperationStatus(projectId, parseInt(selected.value), notes);
+        }
+
+        // ========== SHOW MATERIAL MODAL ==========
+        function showMaterialModal(projectId) {
+            const p = projectsData.find(x => x.id === projectId);
+            if (!p) return;
+
+            const statusOptions = `
+                <option value="ok">✅ OK / Đã về</option>
+                <option value="waiting">⏳ Đang chờ</option>
+                <option value="ordered">📦 Đã đặt</option>
+                <option value="missing">⚠️ Thiếu / Cần đặt</option>
+            `;
+
+            const modalHtml = `
+                <div id="materialModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeMaterialModal(event)">
+                    <div class="bg-white rounded-xl p-6 w-[500px]" onclick="event.stopPropagation()">
+                        <h3 class="text-lg font-bold mb-4">Cập nhật tình trạng vật tư</h3>
+                        <p class="text-sm text-gray-600 mb-4">${p.code} - ${p.name}</p>
+                        
+                        <div class="space-y-4">
+                            ${p.materials.map(m => `
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-xl">${m.icon}</span>
+                                    <span class="font-medium w-20">${m.type}</span>
+                                    <select id="mat_${m.materialType}" class="flex-1 border rounded p-2 text-sm">
+                                        ${statusOptions.replace(`value="${m.dbStatus}"`, `value="${m.dbStatus}" selected`)}
+                                    </select>
+                                    <input type="date" id="eta_${m.materialType}" class="border rounded p-2 text-sm" 
+                                        value="${m.eta ? formatDateForInput(m.eta) : ''}" placeholder="ETA">
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="flex gap-3 mt-6">
+                            <button onclick="closeMaterialModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Hủy</button>
+                            <button onclick="saveMaterials(${projectId})" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function formatDateForInput(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+            return dateStr;
+        }
+
+        function closeMaterialModal(e) {
+            if (e && e.target && e.target.id !== 'materialModal') return;
+            document.getElementById('materialModal')?.remove();
+        }
+
+        async function saveMaterials(projectId) {
+            const p = projectsData.find(x => x.id === projectId);
+            if (!p) return;
+
+            for (const m of p.materials) {
+                const statusEl = document.getElementById(`mat_${m.materialType}`);
+                const etaEl = document.getElementById(`eta_${m.materialType}`);
+                if (statusEl) {
+                    await updateMaterialStatus(projectId, m.materialType, statusEl.value, etaEl?.value || null);
+                }
+            }
+            closeMaterialModal();
+            alert('Cập nhật vật tư thành công!');
+        }
+    </script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['projects', 'finance'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadDashboardData === 'function') {
+                        loadDashboardData();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

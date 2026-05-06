@@ -1,0 +1,365 @@
+{
+  "catalog": {
+    "name": "Danh mục 100 mẫu cửa ViralWindow",
+    "version": "1.0",
+    "created_at": "2024-01-01",
+    "description": "Danh mục đầy đủ 100 mẫu cửa theo tiêu chuẩn nhôm kính Việt Nam"
+  },
+  "categories": {
+    "door": {
+      "name": "Cửa đi",
+      "count": 40,
+      "templates": [
+        {
+          "code": "D1",
+          "name": "Cửa đi 2 cánh + Fix trên",
+          "sub_type": "swing",
+          "description": "Cửa đi 2 cánh mở quay, phía trên có fix",
+          "width_mm": 1800,
+          "height_mm": 2600,
+          "file": "D1_cua_di_2_canh.json"
+        },
+        {
+          "code": "D2",
+          "name": "Cửa đi 1 cánh mở trái",
+          "sub_type": "swing",
+          "description": "Cửa đi 1 cánh mở quay trái",
+          "width_mm": 900,
+          "height_mm": 2200,
+          "file": "D2_cua_di_1_canh_trai.json"
+        },
+        {
+          "code": "D3",
+          "name": "Cửa đi 1 cánh mở phải",
+          "sub_type": "swing",
+          "description": "Cửa đi 1 cánh mở quay phải",
+          "width_mm": 900,
+          "height_mm": 2200,
+          "file": "D3_cua_di_1_canh_phai.json"
+        },
+        {
+          "code": "D4",
+          "name": "Cửa đi 2 cánh + Fix 2 bên",
+          "sub_type": "swing",
+          "description": "Cửa đi 2 cánh mở quay, có fix 2 bên",
+          "width_mm": 2200,
+          "height_mm": 2300,
+          "file": "D4_cua_di_2_canh_fix_ben.json"
+        },
+        {
+          "code": "D5",
+          "name": "Cửa đi 2 cánh lệch",
+          "sub_type": "swing",
+          "description": "Cửa đi 2 cánh lệch (cánh chính + cánh phụ)",
+          "width_mm": 1500,
+          "height_mm": 2200,
+          "file": "D5_cua_di_2_canh_lech.json"
+        },
+        {
+          "code": "D6-D10",
+          "name": "Cửa đi 1 cánh (biến thể)",
+          "sub_type": "swing",
+          "description": "Các biến thể cửa đi 1 cánh với fix trên/dưới/bên",
+          "variants": 5
+        },
+        {
+          "code": "D11-D25",
+          "name": "Cửa đi 2 cánh (biến thể)",
+          "sub_type": "swing",
+          "description": "Các biến thể cửa đi 2 cánh với fix, chia đố, kính hộp",
+          "variants": 15
+        },
+        {
+          "code": "D26-D35",
+          "name": "Cửa đi 3-4 cánh",
+          "sub_type": "swing",
+          "description": "Cửa đi 3-4 cánh mở quay/french",
+          "variants": 10
+        },
+        {
+          "code": "D36-D40",
+          "name": "Cửa đi đặc biệt",
+          "sub_type": "swing",
+          "description": "Cửa đi có pano, nan hoa, ô fix xung quanh",
+          "variants": 5
+        }
+      ]
+    },
+    "window": {
+      "name": "Cửa sổ mở quay/hất",
+      "count": 30,
+      "templates": [
+        {
+          "code": "W1",
+          "name": "Cửa sổ 1 cánh mở quay trái",
+          "sub_type": "swing",
+          "description": "Cửa sổ 1 cánh mở quay trái",
+          "width_mm": 800,
+          "height_mm": 1200,
+          "file": "W1_cua_so_1_canh_trai.json"
+        },
+        {
+          "code": "W2",
+          "name": "Cửa sổ 1 cánh mở quay phải",
+          "sub_type": "swing",
+          "description": "Cửa sổ 1 cánh mở quay phải",
+          "width_mm": 800,
+          "height_mm": 1200,
+          "file": "W2_cua_so_1_canh_phai.json"
+        },
+        {
+          "code": "W3",
+          "name": "Cửa sổ 2 cánh mở quay",
+          "sub_type": "swing",
+          "description": "Cửa sổ 2 cánh mở quay đối xứng",
+          "width_mm": 1200,
+          "height_mm": 1200,
+          "file": "W3_cua_so_2_canh.json"
+        },
+        {
+          "code": "W4",
+          "name": "Cửa sổ 1 cánh mở hất",
+          "sub_type": "tilt",
+          "description": "Cửa sổ 1 cánh mở hất",
+          "width_mm": 900,
+          "height_mm": 900,
+          "file": "W4_cua_so_1_canh_hat.json"
+        },
+        {
+          "code": "W5",
+          "name": "Cửa sổ 2 cánh mở hất",
+          "sub_type": "tilt",
+          "description": "Cửa sổ 2 cánh mở hất",
+          "width_mm": 1600,
+          "height_mm": 900,
+          "file": "W5_cua_so_2_canh_hat.json"
+        },
+        {
+          "code": "W6-W10",
+          "name": "Cửa sổ 1 cánh (biến thể)",
+          "sub_type": "swing",
+          "description": "Các biến thể cửa sổ 1 cánh với fix",
+          "variants": 5
+        },
+        {
+          "code": "W11-W20",
+          "name": "Cửa sổ 2-3 cánh có fix",
+          "sub_type": "swing",
+          "description": "Cửa sổ 2-3 cánh mở quay với panel fix",
+          "variants": 10
+        },
+        {
+          "code": "W21-W30",
+          "name": "Cửa sổ kết hợp",
+          "sub_type": "mixed",
+          "description": "Cửa sổ kết hợp: dưới mở quay, trên hất/fix",
+          "variants": 10
+        }
+      ]
+    },
+    "sliding": {
+      "name": "Cửa lùa / trượt",
+      "count": 20,
+      "templates": [
+        {
+          "code": "SL1",
+          "name": "Cửa lùa 2 cánh",
+          "sub_type": "sliding",
+          "description": "Cửa lùa 2 cánh trượt ngang",
+          "width_mm": 2000,
+          "height_mm": 2200,
+          "file": "SL1_cua_lua_2_canh.json"
+        },
+        {
+          "code": "SL2",
+          "name": "Cửa sổ lùa 2 cánh",
+          "sub_type": "sliding",
+          "description": "Cửa sổ lùa 2 cánh",
+          "width_mm": 1600,
+          "height_mm": 1200,
+          "file": "SL2_cua_so_lua_2_canh.json"
+        },
+        {
+          "code": "SL3",
+          "name": "Cửa lùa 3 cánh",
+          "sub_type": "sliding",
+          "description": "Cửa lùa 3 cánh trượt ngang",
+          "width_mm": 3000,
+          "height_mm": 2200,
+          "file": "SL3_cua_lua_3_canh.json"
+        },
+        {
+          "code": "SL4",
+          "name": "Cửa lùa 4 cánh",
+          "sub_type": "sliding",
+          "description": "Cửa lùa 4 cánh trượt ngang",
+          "width_mm": 3200,
+          "height_mm": 2300,
+          "file": "SL4_cua_lua_4_canh.json"
+        },
+        {
+          "code": "SL5-SL8",
+          "name": "Cửa lùa 2-4 cánh (biến thể)",
+          "sub_type": "sliding",
+          "description": "Các biến thể cửa lùa 2-4 cánh",
+          "variants": 4
+        },
+        {
+          "code": "SL9-SL15",
+          "name": "Cửa lùa + fix bên/trên",
+          "sub_type": "sliding",
+          "description": "Cửa lùa kết hợp với panel fix",
+          "variants": 7
+        },
+        {
+          "code": "SL16-SL20",
+          "name": "Cửa lùa pano",
+          "sub_type": "sliding",
+          "description": "Cửa lùa dạng cửa đi với pano",
+          "variants": 5
+        }
+      ]
+    },
+    "folding": {
+      "name": "Cửa xếp trượt, vách kính",
+      "count": 10,
+      "templates": [
+        {
+          "code": "XF1",
+          "name": "Cửa xếp trượt 3 cánh",
+          "sub_type": "folding",
+          "description": "Cửa xếp trượt 3 cánh",
+          "width_mm": 2400,
+          "height_mm": 2200,
+          "file": "XF1_cua_xep_3_canh.json"
+        },
+        {
+          "code": "XF2",
+          "name": "Cửa xếp trượt 4 cánh",
+          "sub_type": "folding",
+          "description": "Cửa xếp trượt 4 cánh",
+          "width_mm": 3200,
+          "height_mm": 2200,
+          "file": "XF2_cua_xep_4_canh.json"
+        },
+        {
+          "code": "XF3-XF6",
+          "name": "Cửa xếp trượt 3-6 cánh",
+          "sub_type": "folding",
+          "description": "Các biến thể cửa xếp trượt 3-6 cánh",
+          "variants": 4
+        },
+        {
+          "code": "VK1",
+          "name": "Vách kính fix + cửa đi",
+          "sub_type": "fixed",
+          "description": "Vách kính fix kết hợp cửa đi",
+          "width_mm": 2600,
+          "height_mm": 2600,
+          "file": "VK1_vach_kinh_cua_di.json"
+        },
+        {
+          "code": "VK2-VK4",
+          "name": "Vách kính + cửa đi/cửa sổ",
+          "sub_type": "fixed",
+          "description": "Vách kính fix với cửa đi/cửa sổ lồng trong",
+          "variants": 3
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total_templates": 100,
+    "by_category": {
+      "door": 40,
+      "window": 30,
+      "sliding": 20,
+      "folding": 10
+    },
+    "by_sub_type": {
+      "swing": 55,
+      "sliding": 20,
+      "tilt": 8,
+      "folding": 7,
+      "fixed": 10
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

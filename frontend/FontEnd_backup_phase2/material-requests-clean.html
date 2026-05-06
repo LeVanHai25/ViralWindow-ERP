@@ -1,0 +1,1236 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Yêu Cầu Vật Tư - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/success-notification.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-draft {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .status-submitted {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .category-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .category-nhom {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .category-kinh {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .category-phukien {
+            background: #e9d5ff;
+            color: #6b21a8;
+        }
+
+        .category-vattu {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- Header Notification -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header">
+                <h3>Thông báo</h3>
+            </div>
+            <div id="headerNotificationsList" class="header-notifications-list"></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+            
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+                        <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+                
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="p-6">
+            <!-- Header -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Quản lý Yêu Cầu Vật Tư</h1>
+                        <p class="text-sm text-gray-500 mt-1">Xem, chỉnh sửa và quản lý các yêu cầu vật tư đã lưu</p>
+                    </div>
+                    <a href="design-new.html"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Tạo yêu cầu mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                        <input type="text" id="searchInput" placeholder="Mã đơn hàng, tên dự án..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại vật tư</label>
+                        <select id="categoryFilter"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tất cả</option>
+                            <option value="nhom">Nhôm</option>
+                            <option value="kinh">Kính</option>
+                            <option value="phukien">Phụ kiện</option>
+                            <option value="vattu">Vật tư phụ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                        <select id="statusFilter"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tất cả</option>
+                            <option value="draft">Bản nháp</option>
+                            <option value="submitted">Đã gửi</option>
+                            <option value="approved">Đã duyệt</option>
+                            <option value="rejected">Từ chối</option>
+                            <option value="completed">Hoàn thành</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="loadMaterialRequests()"
+                            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Requests List -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div id="loadingIndicator" class="text-center py-8 hidden">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p class="mt-2 text-gray-500">Đang tải...</p>
+                </div>
+                <div id="emptyState" class="text-center py-12 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Không có yêu cầu nào</h3>
+                    <p class="mt-1 text-sm text-gray-500">Chưa có yêu cầu vật tư nào được lưu.</p>
+                </div>
+                <div id="requestsList" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View/Edit Modal -->
+    <div id="requestModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Chi tiết Yêu Cầu Vật Tư</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/success-notification.js"></script>
+    <script src="js/notification-header.js"></script>
+    <script src="js/sidebar-enterprise.js"></script>
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let currentEditingId = null;
+        let allRequests = [];
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    sessionStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) return;
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) {
+                        userNameEl.textContent = user.full_name || user.name || user.username || 'User';
+                    }
+
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                    if (avatarInitial && avatarImage) {
+                        if (user.avatar_url) {
+                            // Handle different URL formats
+                            let avatarUrl = user.avatar_url;
+                            if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/')) {
+                                avatarUrl = `${API_BASE.replace('/api', '')}/${avatarUrl}`;
+                            } else if (avatarUrl.startsWith('/')) {
+                                avatarUrl = `${window.location.origin}${avatarUrl}`;
+                            }
+
+                            avatarImage.src = avatarUrl;
+                            avatarImage.onerror = () => {
+                                avatarImage.classList.add('hidden');
+                                avatarInitial.classList.remove('hidden');
+                                // Set initial if image fails
+                                const initial = (user.full_name || user.name || user.username || 'U').charAt(0).toUpperCase();
+                                avatarInitial.textContent = initial;
+                            };
+                            avatarImage.onload = () => {
+                                avatarImage.classList.remove('hidden');
+                                avatarInitial.classList.add('hidden');
+                            };
+                        } else {
+                            const initial = (user.full_name || user.name || user.username || 'U').charAt(0).toUpperCase();
+                            avatarInitial.textContent = initial;
+                            avatarInitial.classList.remove('hidden');
+                            avatarImage.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+            }
+        }
+
+        function toggleSidebarUserMenu() {
+            const menu = document.getElementById('sidebarUserMenuDropdown');
+            menu.classList.toggle('hidden');
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Load material requests
+        async function loadMaterialRequests() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const emptyState = document.getElementById('emptyState');
+            const requestsList = document.getElementById('requestsList');
+
+            loadingIndicator.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            requestsList.innerHTML = '';
+
+            try {
+                const search = document.getElementById('searchInput').value;
+                const category = document.getElementById('categoryFilter').value;
+                const status = document.getElementById('statusFilter').value;
+
+                let url = `${API_BASE}/purchase-requests?`;
+                if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (status) url += `status=${status}&`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                loadingIndicator.classList.add('hidden');
+
+                if (result.success && result.data && result.data.length > 0) {
+                    allRequests = result.data;
+                    displayRequests(result.data);
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading material requests:', error);
+                loadingIndicator.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                showToast('Lỗi khi tải danh sách yêu cầu', 'error');
+            }
+        }
+
+        function displayRequests(requests) {
+            const requestsList = document.getElementById('requestsList');
+            requestsList.innerHTML = '';
+
+            requests.forEach(request => {
+                const categoryNames = {
+                    'nhom': 'Nhôm',
+                    'kinh': 'Kính',
+                    'phukien': 'Phụ kiện',
+                    'vattu': 'Vật tư phụ',
+                    'all': 'Tất cả'
+                };
+
+                const statusNames = {
+                    'draft': 'Bản nháp',
+                    'submitted': 'Đã gửi',
+                    'approved': 'Đã duyệt',
+                    'rejected': 'Từ chối',
+                    'completed': 'Hoàn thành'
+                };
+
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow';
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-semibold text-gray-900">${escapeHtml(request.order_code)}</h3>
+                                <span class="status-badge status-${request.status}">${statusNames[request.status] || request.status}</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                                <div>
+                                    <span class="font-medium">Dự án:</span>
+                                    <span class="ml-2">${escapeHtml(request.project_name || 'N/A')}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Ngày tạo:</span>
+                                    <span class="ml-2">${formatDate(request.request_date)}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Số lượng vật tư:</span>
+                                    <span class="ml-2">${request.item_count || 0}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Ngày cần về:</span>
+                                    <span class="ml-2">${request.required_date ? formatDate(request.required_date) : 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-4">
+                            <button onclick="viewRequest(${request.id})" 
+                                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Xem
+                            </button>
+                            <button onclick="editRequest(${request.id})" 
+                                class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Sửa
+                            </button>
+                            <button onclick="deleteRequest(${request.id})" 
+                                class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                requestsList.appendChild(card);
+            });
+        }
+
+        async function viewRequest(id) {
+            currentEditingId = null;
+            await loadRequestDetail(id, false);
+        }
+
+        async function editRequest(id) {
+            currentEditingId = id;
+            await loadRequestDetail(id, true);
+        }
+
+        async function loadRequestDetail(id, isEdit) {
+            try {
+                const response = await fetch(`${API_BASE}/purchase-requests/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const request = result.data;
+                    showRequestModal(request, isEdit);
+                } else {
+                    showToast('Không tìm thấy yêu cầu', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading request detail:', error);
+                showToast('Lỗi khi tải chi tiết yêu cầu', 'error');
+            }
+        }
+
+        function showRequestModal(request, isEdit) {
+            const modal = document.getElementById('requestModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+
+            modalTitle.textContent = isEdit ? 'Chỉnh sửa Yêu Cầu Vật Tư' : 'Chi tiết Yêu Cầu Vật Tư';
+
+            const categoryNames = {
+                'nhom': 'Nhôm',
+                'kinh': 'Kính',
+                'phukien': 'Phụ kiện',
+                'vattu': 'Vật tư phụ',
+                'all': 'Tất cả'
+            };
+
+            let itemsTable = '';
+            if (request.items && request.items.length > 0) {
+                // Group items by material_type
+                const itemsByType = {
+                    nhom: [],
+                    kinh: [],
+                    phukien: [],
+                    vattu: []
+                };
+
+                request.items.forEach(item => {
+                    if (itemsByType[item.material_type]) {
+                        itemsByType[item.material_type].push(item);
+                    }
+                });
+
+                // Build tables for each category
+                let tablesHtml = '';
+
+                // Nhôm table
+                if (itemsByType.nhom.length > 0) {
+                    tablesHtml += `
+                        <h4 class="font-semibold mb-2 mt-4">Nhôm</h4>
+                        <table class="w-full text-sm border-collapse mb-4">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="border p-2">STT</th>
+                                    <th class="border p-2">Tên vật tư</th>
+                                    <th class="border p-2">Mã vật tư</th>
+                                    <th class="border p-2">Tỷ trọng</th>
+                                    <th class="border p-2">Mét (M)</th>
+                                    <th class="border p-2">ĐVT</th>
+                                    <th class="border p-2">Số lượng</th>
+                                    <th class="border p-2">Khối lượng</th>
+                                    <th class="border p-2">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsByType.nhom.map((item, index) => `
+                                    <tr>
+                                        <td class="border p-2 text-center">${index + 1}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_name)}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
+                                        <td class="border p-2 text-center">${item.density || ''}</td>
+                                        <td class="border p-2 text-center">${item.length_m || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit || ''}</td>
+                                        <td class="border p-2 text-center">${item.quantity || ''}</td>
+                                        <td class="border p-2 text-center">${item.weight || ''}</td>
+                                        <td class="border p-2">${escapeHtml(item.notes || '')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                // Kính table
+                if (itemsByType.kinh.length > 0) {
+                    tablesHtml += `
+                        <h4 class="font-semibold mb-2 mt-4">Kính</h4>
+                        <table class="w-full text-sm border-collapse mb-4">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="border p-2">STT</th>
+                                    <th class="border p-2">Mã Kính</th>
+                                    <th class="border p-2">Loại kính</th>
+                                    <th class="border p-2">Chiều rộng</th>
+                                    <th class="border p-2">Chiều cao</th>
+                                    <th class="border p-2">ĐVT</th>
+                                    <th class="border p-2">Số tấm</th>
+                                    <th class="border p-2">Diện tích</th>
+                                    <th class="border p-2">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsByType.kinh.map((item, index) => `
+                                    <tr>
+                                        <td class="border p-2 text-center">${index + 1}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_name || '')}</td>
+                                        <td class="border p-2 text-center">${item.width || ''}</td>
+                                        <td class="border p-2 text-center">${item.height || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit || ''}</td>
+                                        <td class="border p-2 text-center">${item.panels || item.quantity || ''}</td>
+                                        <td class="border p-2 text-center">${item.area || ''}</td>
+                                        <td class="border p-2">${escapeHtml(item.notes || '')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                // Phụ kiện & Vật tư phụ table
+                const otherItems = [...itemsByType.phukien, ...itemsByType.vattu];
+                if (otherItems.length > 0) {
+                    tablesHtml += `
+                        <h4 class="font-semibold mb-2 mt-4">Phụ kiện & Vật tư phụ</h4>
+                        <table class="w-full text-sm border-collapse mb-4">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="border p-2">STT</th>
+                                    <th class="border p-2">Mã VT</th>
+                                    <th class="border p-2">Tên vật tư</th>
+                                    <th class="border p-2">ĐVT</th>
+                                    <th class="border p-2">Số lượng</th>
+                                    <th class="border p-2">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${otherItems.map((item, index) => `
+                                    <tr>
+                                        <td class="border p-2 text-center">${index + 1}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_name)}</td>
+                                        <td class="border p-2 text-center">${item.unit || ''}</td>
+                                        <td class="border p-2 text-center">${item.quantity || ''}</td>
+                                        <td class="border p-2">${escapeHtml(item.notes || '')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                itemsTable = tablesHtml;
+            }
+
+            modalContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
+                            <input type="text" id="editOrderCode" value="${escapeHtml(request.order_code)}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
+                            <input type="date" id="editRequestDate" value="${formatDateForInput(request.request_date)}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dự án</label>
+                            <input type="text" id="editProjectName" value="${escapeHtml(request.project_name || '')}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày cần về</label>
+                            <input type="date" id="editRequiredDate" value="${formatDateForInput(request.required_date)}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Loại vật tư</label>
+                            <input type="text" value="${categoryNames[request.category] || request.category || 'Tất cả'}" 
+                                readonly
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                            ${isEdit ? `
+                                <select id="editStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="draft" ${request.status === 'draft' ? 'selected' : ''}>Bản nháp</option>
+                                    <option value="submitted" ${request.status === 'submitted' ? 'selected' : ''}>Đã gửi</option>
+                                    <option value="approved" ${request.status === 'approved' ? 'selected' : ''}>Đã duyệt</option>
+                                    <option value="rejected" ${request.status === 'rejected' ? 'selected' : ''}>Từ chối</option>
+                                    <option value="completed" ${request.status === 'completed' ? 'selected' : ''}>Hoàn thành</option>
+                                </select>
+                            ` : `
+                                <input type="text" value="${statusNames[request.status] || request.status}" readonly
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                            `}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ giao hàng</label>
+                        <input type="text" id="editDeliveryAddress" value="${escapeHtml(request.delivery_address || '')}" 
+                            ${!isEdit ? 'readonly' : ''}
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-semibold mb-2">Danh sách vật tư</h3>
+                        <div class="overflow-x-auto">
+                            ${itemsTable || '<p class="text-gray-500">Không có vật tư nào</p>'}
+                        </div>
+                    </div>
+                    ${isEdit ? `
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button onclick="closeModal()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                                Hủy
+                            </button>
+                            <button onclick="saveRequest()" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button onclick="closeModal()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                                Đóng
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        async function saveRequest() {
+            if (!currentEditingId) return;
+
+            try {
+                const data = {
+                    order_code: document.getElementById('editOrderCode').value,
+                    request_date: document.getElementById('editRequestDate').value,
+                    project_name: document.getElementById('editProjectName').value,
+                    required_date: document.getElementById('editRequiredDate').value || null,
+                    delivery_address: document.getElementById('editDeliveryAddress').value || null,
+                    status: document.getElementById('editStatus').value
+                };
+
+                const response = await fetch(`${API_BASE}/purchase-requests/${currentEditingId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Cập nhật yêu cầu thành công!', 'success');
+                    closeModal();
+                    loadMaterialRequests();
+                } else {
+                    showToast(result.message || 'Lỗi khi cập nhật', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving request:', error);
+                showToast('Lỗi khi cập nhật yêu cầu', 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('requestModal').classList.add('hidden');
+            currentEditingId = null;
+        }
+
+        async function deleteRequest(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu này?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/purchase-requests/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Xóa yêu cầu thành công!', 'success');
+                    loadMaterialRequests();
+                } else {
+                    showToast(result.message || 'Lỗi khi xóa', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting request:', error);
+                showToast('Lỗi khi xóa yêu cầu', 'error');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                    'bg-blue-500'
+                }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+                const response = await fetch(`${API_BASE}/company-settings`, { headers });
+
+                if (!response.ok) {
+                    console.warn('Company settings API not available');
+                    const logoImg = document.getElementById('companyLogo');
+                    const logoIcon = document.getElementById('companyLogoIcon');
+                    if (logoImg && logoIcon) {
+                        logoImg.classList.add('hidden');
+                        logoIcon.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const logoImg = document.getElementById('companyLogo');
+                    const logoIcon = document.getElementById('companyLogoIcon');
+
+                    if (logoImg && logoIcon) {
+                        if (result.data.logo_path) {
+                            let logoUrl = result.data.logo_path;
+                            if (!logoUrl.startsWith('http') && !logoUrl.startsWith('/')) {
+                                logoUrl = `${API_BASE.replace('/api', '')}/${logoUrl}`;
+                            } else if (logoUrl.startsWith('/')) {
+                                logoUrl = `${window.location.origin}${logoUrl}`;
+                            }
+
+                            logoImg.src = logoUrl;
+                            logoImg.onerror = () => {
+                                logoImg.classList.add('hidden');
+                                logoIcon.classList.remove('hidden');
+                            };
+                            logoImg.onload = () => {
+                                logoImg.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            };
+                        } else {
+                            logoImg.classList.add('hidden');
+                            logoIcon.classList.remove('hidden');
+                        }
+                    }
+
+                    if (result.data.company_name) {
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl) {
+                            companyNameEl.textContent = result.data.company_name;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading company logo:', error);
+                const logoImg = document.getElementById('companyLogo');
+                const logoIcon = document.getElementById('companyLogoIcon');
+                if (logoImg && logoIcon) {
+                    logoImg.classList.add('hidden');
+                    logoIcon.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSidebarUserInfo();
+            loadCompanyLogo();
+            loadMaterialRequests();
+
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loadMaterialRequests();
+            });
+        });
+    </script>
+</body>
+
+</html>
+

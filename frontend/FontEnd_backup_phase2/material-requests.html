@@ -1,0 +1,2004 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Yêu Cầu Vật Tư - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/success-notification.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-draft {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .status-submitted {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .category-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .category-nhom {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .category-kinh {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .category-phukien {
+            background: #e9d5ff;
+            color: #6b21a8;
+        }
+
+        .category-vattu {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- Header Notification -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header">
+                <h3>Thông báo</h3>
+            </div>
+            <div id="headerNotificationsList" class="header-notifications-list"></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="p-6">
+            <!-- Header -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Quản lý Yêu Cầu Vật Tư</h1>
+                        <p class="text-sm text-gray-500 mt-1">Xem, chỉnh sửa và quản lý các yêu cầu vật tư đã lưu</p>
+                    </div>
+                    <a href="purchase-request.html"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Tạo yêu cầu mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+                        <input type="text" id="searchInput" placeholder=" 🔍︎ Mã đơn hàng, tên dự án..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại vật tư</label>
+                        <select id="categoryFilter"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tất cả</option>
+                            <option value="nhom">Nhôm</option>
+                            <option value="kinh">Kính</option>
+                            <option value="phukien">Phụ kiện</option>
+                            <option value="vattu">Vật tư phụ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                        <select id="statusFilter"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tất cả</option>
+                            <option value="draft">Bản nháp</option>
+                            <option value="submitted">Đã gửi</option>
+                            <option value="approved">Đã duyệt</option>
+                            <option value="rejected">Từ chối</option>
+                            <option value="completed">Hoàn thành</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="loadMaterialRequests()"
+                            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Requests List -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div id="loadingIndicator" class="text-center py-8 hidden">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p class="mt-2 text-gray-500">Đang tải...</p>
+                </div>
+                <div id="emptyState" class="text-center py-12 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Không có yêu cầu nào</h3>
+                    <p class="mt-1 text-sm text-gray-500">Chưa có yêu cầu vật tư nào được lưu.</p>
+                </div>
+                <div id="requestsList" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View/Edit Modal -->
+    <div id="requestModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Chi tiết Yêu Cầu Vật Tư</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create New Request Modal -->
+    <div id="createRequestModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900">Tạo Yêu Cầu Vật Tư Mới</h2>
+                <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- Chọn loại phiếu -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Chọn loại phiếu yêu cầu:</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="selectRequestType('nhom')" id="typeNhom"
+                            class="request-type-btn p-4 border-2 border-gray-200 rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all">
+                            <div
+                                class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                </svg>
+                            </div>
+                            <span class="font-medium text-gray-800">Phiếu Yêu Cầu Nhôm</span>
+                            <p class="text-xs text-gray-500 mt-1">Thanh nhôm, profile nhôm</p>
+                        </button>
+                        <button onclick="selectRequestType('kinh')" id="typeKinh"
+                            class="request-type-btn p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium text-gray-800">Phiếu Yêu Cầu Kính</span>
+                            <p class="text-xs text-gray-500 mt-1">Kính cường lực, kính dán</p>
+                        </button>
+                        <button onclick="selectRequestType('vattu')" id="typeVattu"
+                            class="request-type-btn p-4 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:bg-pink-50 transition-all">
+                            <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                            <span class="font-medium text-gray-800">Phiếu Yêu Cầu Vật Tư Phụ</span>
+                            <p class="text-xs text-gray-500 mt-1">Keo, ron, gioăng, vít...</p>
+                        </button>
+                        <button onclick="selectRequestType('phukien')" id="typePhukien"
+                            class="request-type-btn p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all">
+                            <div
+                                class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium text-gray-800">Phiếu Yêu Cầu Phụ Kiện</span>
+                            <p class="text-xs text-gray-500 mt-1">Tay nắm, bản lề, khóa...</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form thông tin cơ bản -->
+                <div id="createFormFields" class="hidden space-y-4 border-t pt-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="newOrderCode" placeholder="VD: DH-001"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo phiếu</label>
+                            <input type="date" id="newCreatedDate"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dự án</label>
+                            <select id="newProjectId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Chọn dự án --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày cần vật tư về</label>
+                            <input type="date" id="newRequiredDate"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ giao hàng</label>
+                        <input type="text" id="newDeliveryAddress" placeholder="Nhập địa chỉ giao hàng"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                        <textarea id="newNotes" rows="2" placeholder="Ghi chú thêm..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 border-t">
+                        <button onclick="closeCreateModal()"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                            Hủy
+                        </button>
+                        <button onclick="goToCreatePage()"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                            Tiếp tục nhập vật tư
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .request-type-btn.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .request-type-btn.selected.type-nhom {
+            border-color: #d97706;
+            background-color: #fffbeb;
+        }
+
+        .request-type-btn.selected.type-kinh {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+
+        .request-type-btn.selected.type-vattu {
+            border-color: #db2777;
+            background-color: #fdf2f8;
+        }
+
+        .request-type-btn.selected.type-phukien {
+            border-color: #7c3aed;
+            background-color: #f5f3ff;
+        }
+    </style>
+
+    <script src="js/success-notification.js"></script>
+    <script src="js/notification-header.js"></script>
+    <script src="js/sidebar-enterprise.js"></script>
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let currentEditingId = null;
+        let allRequests = [];
+        let currentViewingRequest = null; // Store current request for create payment
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    sessionStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) return;
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) {
+                        userNameEl.textContent = user.full_name || user.name || user.username || 'User';
+                    }
+
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                    if (avatarInitial && avatarImage) {
+                        if (user.avatar_url) {
+                            avatarImage.src = user.avatar_url;
+                            avatarImage.onerror = () => {
+                                avatarImage.classList.add('hidden');
+                                avatarInitial.classList.remove('hidden');
+                            };
+                            avatarImage.onload = () => {
+                                avatarImage.classList.remove('hidden');
+                                avatarInitial.classList.add('hidden');
+                            };
+                        } else {
+                            const initial = (user.full_name || user.name || user.username || 'U').charAt(0).toUpperCase();
+                            avatarInitial.textContent = initial;
+                            avatarInitial.classList.remove('hidden');
+                            avatarImage.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+            }
+        }
+
+        function toggleSidebarUserMenu() {
+            const menu = document.getElementById('sidebarUserMenuDropdown');
+            menu.classList.toggle('hidden');
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Load material requests
+        async function loadMaterialRequests() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const emptyState = document.getElementById('emptyState');
+            const requestsList = document.getElementById('requestsList');
+
+            loadingIndicator.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            requestsList.innerHTML = '';
+
+            try {
+                const search = document.getElementById('searchInput').value;
+                const category = document.getElementById('categoryFilter').value;
+                const status = document.getElementById('statusFilter').value;
+
+                let url = `${API_BASE}/material-requests?`;
+                if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (category) url += `category=${category}&`;
+                if (status) url += `status=${status}&`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                loadingIndicator.classList.add('hidden');
+
+                if (result.success && result.data && result.data.length > 0) {
+                    allRequests = result.data;
+                    displayRequests(result.data);
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading material requests:', error);
+                loadingIndicator.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                showToast('Lỗi khi tải danh sách yêu cầu', 'error');
+            }
+        }
+
+        function displayRequests(requests) {
+            const requestsList = document.getElementById('requestsList');
+            requestsList.innerHTML = '';
+
+            requests.forEach(request => {
+                const categoryNames = {
+                    'nhom': 'Nhôm',
+                    'kinh': 'Kính',
+                    'phukien': 'Phụ kiện',
+                    'vattu': 'Vật tư phụ'
+                };
+
+                const statusNames = {
+                    'draft': 'Bản nháp',
+                    'submitted': 'Đã gửi',
+                    'approved': 'Đã duyệt',
+                    'rejected': 'Từ chối',
+                    'completed': 'Hoàn thành'
+                };
+
+                const isUnread = (!request.is_read || request.is_read == 0) && (request.status === 'draft' || request.status === 'submitted');
+                const cardClass = isUnread 
+                    ? 'bg-amber-50 border border-amber-300 rounded-lg p-4 hover:shadow-md transition-shadow relative request-card' 
+                    : 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow request-card';
+
+                const card = document.createElement('div');
+                card.className = cardClass;
+                card.dataset.id = request.id; // Thêm ID vào thẻ để tí nữa chọc DOM xoá nền vàng
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-semibold text-gray-900">${escapeHtml(request.order_code || request.request_code || 'N/A')}</h3>
+                                ${isUnread ? '<span class="unread-new-badge bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse shadow-sm">Mới</span>' : ''}
+                                ${request.category ? `<span class="category-badge category-${request.category}">${categoryNames[request.category] || request.category}</span>` : ''}
+                                <span class="status-badge status-${request.status}">${statusNames[request.status] || request.status}</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                                <div>
+                                    <span class="font-medium">Dự án:</span>
+                                    <span class="ml-2">${escapeHtml(request.project_name || request.project_name_full || 'Chưa chọn')}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Ngày tạo:</span>
+                                    <span class="ml-2">${formatDate(request.created_date || request.created_at)}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Số lượng vật tư:</span>
+                                    <span class="ml-2">${request.item_count || 0}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Ngày cần về:</span>
+                                    <span class="ml-2">${request.required_date ? formatDate(request.required_date) : 'Chưa xác định'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-4">
+                            <button onclick="viewRequest(${request.id})" 
+                                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Xem
+                            </button>
+                            <button onclick="editRequest(${request.id})" 
+                                class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Sửa
+                            </button>
+                            <button onclick="exportExcelRequest(${request.id})" 
+                                class="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Excel
+                            </button>
+                            <button onclick="createPaymentFromList(${request.id})" 
+                                class="px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm" title="Tạo phiếu chi từ yêu cầu này">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                Chi
+                            </button>
+                            <button onclick="deleteRequest(${request.id})" 
+                                class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
+                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                            <button onclick="convertToImportTicket(${request.id})" 
+                                class="px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm" title="Chuyển thành phiếu nhập kho">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                                Nhập kho
+                            </button>
+                        </div>
+                    </div>
+                `;
+                requestsList.appendChild(card);
+            });
+        }
+
+        async function viewRequest(id) {
+            currentEditingId = null;
+            
+            // Tìm và sửa cục bộ (Real-time DOM update) không cần load lại trang
+            const cardEl = document.querySelector(`.request-card[data-id="${id}"]`);
+            if (cardEl) {
+                // Xoá nền vàng cam, thay thành nền trắng
+                cardEl.classList.remove('bg-amber-50', 'border-amber-300');
+                cardEl.classList.add('bg-white', 'border-gray-200');
+                
+                // Xoá cái huy hiệu [Mới] màu đỏ
+                const badgeEl = cardEl.querySelector('.unread-new-badge');
+                if (badgeEl) badgeEl.remove();
+            }
+
+            // Đồng bộ dữ liệu RAM (để tránh render lại thì màu vàng lại hiện ra)
+            if (typeof allRequests !== 'undefined' && allRequests.length > 0) {
+                const reqItem = allRequests.find(r => r.id === id);
+                if (reqItem) reqItem.is_read = 1;
+            }
+
+            // Ngầm gửi yêu cầu đánh dấu đã đọc
+            const token = sessionStorage.getItem('token');
+            if (token) {
+                fetch(`${API_BASE}/purchase-requests/${id}/read`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(() => {
+                    // Update badge nếu hàm tồn tại
+                    if (typeof updateMaterialRequestBadge === 'function') {
+                        updateMaterialRequestBadge();
+                    }
+                }).catch(e => console.error('Error marking as read:', e));
+            }
+
+            await loadRequestDetail(id, false);
+        }
+
+        async function editRequest(id) {
+            currentEditingId = id;
+            await loadRequestDetail(id, true);
+        }
+
+        async function loadRequestDetail(id, isEdit) {
+            try {
+                const response = await fetch(`${API_BASE}/material-requests/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const request = result.data;
+                    showRequestModal(request, isEdit);
+                } else {
+                    showToast('Không tìm thấy yêu cầu', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading request detail:', error);
+                showToast('Lỗi khi tải chi tiết yêu cầu', 'error');
+            }
+        }
+
+        function showRequestModal(request, isEdit) {
+            const modal = document.getElementById('requestModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+
+            // Store request data for create payment function
+            currentViewingRequest = request;
+
+            modalTitle.textContent = isEdit ? 'Chỉnh sửa Yêu Cầu Vật Tư' : 'Chi tiết Yêu Cầu Vật Tư';
+
+            const categoryNames = {
+                'nhom': 'Nhôm',
+                'kinh': 'Kính',
+                'phukien': 'Phụ kiện',
+                'vattu': 'Vật tư phụ'
+            };
+
+            let itemsTable = '';
+            if (request.items && request.items.length > 0) {
+                if (request.category === 'nhom') {
+                    itemsTable = `
+                        <table class="w-full text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="border p-2">STT</th>
+                                    <th class="border p-2">Tên vật tư</th>
+                                    <th class="border p-2">Mã vật tư</th>
+                                    <th class="border p-2">Tỷ trọng</th>
+                                    <th class="border p-2">Mét (M)</th>
+                                    <th class="border p-2">ĐVT</th>
+                                    <th class="border p-2">Số lượng</th>
+                                    <th class="border p-2">Khối lượng</th>
+                                    <th class="border p-2">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${request.items.map((item, index) => `
+                                    <tr>
+                                        <td class="border p-2 text-center">${index + 1}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_name)}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
+                                        <td class="border p-2 text-center">${item.density || ''}</td>
+                                        <td class="border p-2 text-center">${item.length_m || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit}</td>
+                                        <td class="border p-2 text-center">${item.quantity}</td>
+                                        <td class="border p-2 text-center">${item.weight || ''}</td>
+                                        <td class="border p-2">${escapeHtml(item.notes || '')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else if (request.category === 'kinh') {
+                    itemsTable = `
+                        <table class="w-full text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="border p-2">STT</th>
+                                    <th class="border p-2">Mã Kính</th>
+                                    <th class="border p-2">Loại kính</th>
+                                    <th class="border p-2">Chiều rộng</th>
+                                    <th class="border p-2">Chiều cao</th>
+                                    <th class="border p-2">ĐVT</th>
+                                    <th class="border p-2">Số tấm</th>
+                                    <th class="border p-2">Diện tích</th>
+                                    <th class="border p-2">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${request.items.map((item, index) => `
+                                    <tr>
+                                        <td class="border p-2 text-center">${index + 1}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
+                                        <td class="border p-2">${escapeHtml(item.glass_type || '')}</td>
+                                        <td class="border p-2 text-center">${item.width || ''}</td>
+                                        <td class="border p-2 text-center">${item.height || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit}</td>
+                                        <td class="border p-2 text-center">${item.panels || ''}</td>
+                                        <td class="border p-2 text-center">${item.area || ''}</td>
+                                        <td class="border p-2">${escapeHtml(item.notes || '')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    itemsTable = `
+                        <table class="w-full text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="border p-2">STT</th>
+                                    <th class="border p-2">Mã VT</th>
+                                    <th class="border p-2">Tên vật tư</th>
+                                    <th class="border p-2">ĐVT</th>
+                                    <th class="border p-2">Số lượng</th>
+                                    <th class="border p-2">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${request.items.map((item, index) => `
+                                    <tr>
+                                        <td class="border p-2 text-center">${index + 1}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
+                                        <td class="border p-2">${escapeHtml(item.material_name)}</td>
+                                        <td class="border p-2 text-center">${item.unit}</td>
+                                        <td class="border p-2 text-center">${item.quantity}</td>
+                                        <td class="border p-2">${escapeHtml(item.notes || '')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+            }
+
+            modalContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
+                            <input type="text" id="editOrderCode" value="${escapeHtml(request.order_code)}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
+                            <input type="date" id="editRequestDate" value="${formatDateForInput(request.created_date || request.created_at)}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dự án</label>
+                            <input type="text" id="editProjectName" value="${escapeHtml(request.project_name || '')}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày cần về</label>
+                            <input type="date" id="editRequiredDate" value="${formatDateForInput(request.required_date)}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Loại vật tư</label>
+                            <input type="text" value="${categoryNames[request.category] || request.category}" 
+                                readonly
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                            ${isEdit ? `
+                                <select id="editStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="draft" ${request.status === 'draft' ? 'selected' : ''}>Bản nháp</option>
+                                    <option value="submitted" ${request.status === 'submitted' ? 'selected' : ''}>Đã gửi</option>
+                                    <option value="approved" ${request.status === 'approved' ? 'selected' : ''}>Đã duyệt</option>
+                                    <option value="rejected" ${request.status === 'rejected' ? 'selected' : ''}>Từ chối</option>
+                                    <option value="completed" ${request.status === 'completed' ? 'selected' : ''}>Hoàn thành</option>
+                                </select>
+                            ` : `
+                                <input type="text" value="${request.status}" readonly
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                            `}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Chủng loại</label>
+                            <input type="text" id="editProductType" value="${escapeHtml(request.product_type || 'Viralwindow')}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
+                            <input type="text" id="editColor" value="${escapeHtml(request.color || '')}" 
+                                ${!isEdit ? 'readonly' : ''}
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ giao hàng</label>
+                        <input type="text" id="editDeliveryAddress" value="${escapeHtml(request.delivery_address || '')}" 
+                            ${!isEdit ? 'readonly' : ''}
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-semibold mb-2">Danh sách vật tư</h3>
+                        <div class="overflow-x-auto">
+                            ${itemsTable}
+                        </div>
+                    </div>
+                    ${isEdit ? `
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button onclick="closeModal()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                                Hủy
+                            </button>
+                            <button onclick="saveRequest()" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button onclick="convertToImportTicketFromModal()" 
+                                class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 inline-flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                                 Chuyển phiếu nhập kho
+                            </button>
+                            <button onclick="createPaymentFromRequest()" 
+                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 inline-flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                Tạo phiếu chi
+                            </button>
+                            <button onclick="closeModal()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                                Đóng
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        async function saveRequest() {
+            if (!currentEditingId) return;
+
+            try {
+                const data = {
+                    order_code: document.getElementById('editOrderCode').value,
+                    created_date: document.getElementById('editRequestDate').value,
+                    project_name: document.getElementById('editProjectName').value,
+                    required_date: document.getElementById('editRequiredDate').value || null,
+                    delivery_address: document.getElementById('editDeliveryAddress').value || null,
+                    product_type: document.getElementById('editProductType').value || null,
+                    color: document.getElementById('editColor').value || null,
+                    status: document.getElementById('editStatus').value
+                };
+
+                const response = await fetch(`${API_BASE}/material-requests/${currentEditingId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Cập nhật yêu cầu thành công!', 'success');
+                    closeModal();
+                    loadMaterialRequests();
+                } else {
+                    showToast(result.message || 'Lỗi khi cập nhật', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving request:', error);
+                showToast('Lỗi khi cập nhật yêu cầu', 'error');
+            }
+        }
+
+        // Create payment from material request
+        async function createPaymentFromRequest() {
+            if (!currentViewingRequest) {
+                showToast('Không có dữ liệu yêu cầu để tạo phiếu chi', 'error');
+                return;
+            }
+
+            try {
+                const request = currentViewingRequest;
+                const token = sessionStorage.getItem('token');
+
+                // Map expense type from category - MUST match ENUM values in database!
+                // ENUM: 'supplier_payment','construction_cost','transport_cost','labor_cost','material_cost','other','material','purchase'
+                const expenseTypeMap = {
+                    'nhom': 'material',
+                    'kinh': 'material',
+                    'phukien': 'material',
+                    'vattu': 'material_cost'
+                };
+
+                // Vietnamese category names for the category field (text, not ENUM)
+                const categoryDescMap = {
+                    'nhom': 'Mua nhôm',
+                    'kinh': 'Mua kính',
+                    'phukien': 'Mua phụ kiện',
+                    'vattu': 'Mua vật tư phụ'
+                };
+
+                showToast('Đang tra cứu đơn giá từ kho...', 'info');
+
+                let aluminumData = [];
+                let accessoriesData = [];
+                let inventoryData = [];
+
+                try {
+                    // Fetch all data in parallel for better performance
+                    const [aluminumRes, accessoriesRes, inventoryRes] = await Promise.all([
+                        fetch(`${API_BASE}/aluminum-systems`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        }).catch(() => ({ ok: false })),
+                        fetch(`${API_BASE}/accessories`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        }).catch(() => ({ ok: false })),
+                        fetch(`${API_BASE}/inventory`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        }).catch(() => ({ ok: false }))
+                    ]);
+
+                    if (aluminumRes.ok) {
+                        const result = await aluminumRes.json();
+                        aluminumData = result.success ? (result.data || []) : [];
+                    }
+                    if (accessoriesRes.ok) {
+                        const result = await accessoriesRes.json();
+                        accessoriesData = result.success ? (result.data || []) : [];
+                    }
+                    if (inventoryRes.ok) {
+                        const result = await inventoryRes.json();
+                        inventoryData = result.success ? (result.data || []) : [];
+                    }
+
+                    console.log(` Loaded: ${aluminumData.length} aluminum, ${accessoriesData.length} accessories, ${inventoryData.length} inventory items`);
+
+                    // Debug: Show sample codes from each source
+                    console.log(' Sample aluminum codes:', aluminumData.slice(0, 5).map(d => ({ code: d.code, unit_price: d.unit_price })));
+                    console.log(' Sample accessories codes:', accessoriesData.slice(0, 5).map(d => ({ code: d.code, unit_price: d.unit_price })));
+                    console.log(' Sample inventory item_codes:', inventoryData.slice(0, 5).map(d => ({ item_code: d.item_code, unit_price: d.unit_price })));
+
+                    // Debug: Show request items to be looked up
+                    console.log('📋 Request items to lookup:', (request.items || []).map(i => ({
+                        code: i.material_code || i.code,
+                        type: i.material_type,
+                        name: i.material_name
+                    })));
+                } catch (fetchErr) {
+                    console.warn('⚠️ Error pre-fetching price data:', fetchErr.message);
+                }
+
+                // ✅ Helper function to extract price from any item type
+                const getPrice = (item) => {
+                    // Try all possible price field names
+                    return parseFloat(item.unit_price) ||
+                        parseFloat(item.sale_price) ||
+                        parseFloat(item.purchase_price) ||
+                        parseFloat(item.price) ||
+                        parseFloat(item.don_gia) || 0;
+                };
+
+                // ✅ Helper function to find price by code
+                const findPriceByCode = (code, category) => {
+                    if (!code) return 0;
+
+                    let matchingItem = null;
+                    console.log(`🔍 Looking up price for: code="${code}", category="${category}"`);
+
+                    if (category === 'nhom') {
+                        // Search in aluminum_systems
+                        matchingItem = aluminumData.find(d =>
+                            d.code === code || d.code?.toLowerCase() === code.toLowerCase()
+                        );
+                        if (matchingItem) {
+                            const price = getPrice(matchingItem);
+                            console.log(`   ✅ Found in aluminum_systems: ${price}`);
+                            return price;
+                        }
+                    } else if (category === 'phukien') {
+                        // Search in accessories ONLY for phukien
+                        // ✅ FIX: accessories uses sale_price or purchase_price, NOT unit_price!
+                        matchingItem = accessoriesData.find(d =>
+                            d.code === code || d.code?.toLowerCase() === code.toLowerCase()
+                        );
+                        if (matchingItem) {
+                            const price = getPrice(matchingItem);
+                            console.log(`   ✅ Found in accessories: ${price} (fields: sale_price=${matchingItem.sale_price}, purchase_price=${matchingItem.purchase_price})`);
+                            return price;
+                        }
+                    } else if (category === 'vattu') {
+                        // ✅ FIX: Vật tư phụ - search accessories FIRST (where vattu items are stored)
+                        // Accessories uses sale_price/purchase_price fields
+                        matchingItem = accessoriesData.find(d =>
+                            d.code === code || d.code?.toLowerCase() === code.toLowerCase()
+                        );
+                        if (matchingItem) {
+                            const price = getPrice(matchingItem);
+                            console.log(`   ✅ Found in accessories (vattu): ${price} (fields: sale_price=${matchingItem.sale_price}, purchase_price=${matchingItem.purchase_price})`);
+                            return price;
+                        }
+                        // Fallback: also search inventory for vattu
+                        matchingItem = inventoryData.find(d =>
+                            d.item_code === code || d.item_code?.toLowerCase() === code.toLowerCase() ||
+                            d.code === code || d.code?.toLowerCase() === code.toLowerCase()
+                        );
+                        if (matchingItem) {
+                            const price = getPrice(matchingItem);
+                            console.log(`   ✅ Found in inventory (vattu fallback): ${price}`);
+                            return price;
+                        }
+                    } else if (category === 'kinh') {
+                        // Search in inventory (glass) - use item_code field
+                        matchingItem = inventoryData.find(d =>
+                            d.item_code === code || d.item_code?.toLowerCase() === code.toLowerCase() ||
+                            d.code === code || d.code?.toLowerCase() === code.toLowerCase()
+                        );
+                        if (matchingItem) {
+                            const price = getPrice(matchingItem);
+                            console.log(`   ✅ Found in inventory (kinh): ${price}`);
+                            return price;
+                        }
+                    }
+
+                    // Fallback: search ALL data sources
+                    console.log(`   ⚠️ Not found in primary source, searching all...`);
+                    matchingItem = aluminumData.find(d => d.code === code || d.code?.toLowerCase() === code?.toLowerCase()) ||
+                        accessoriesData.find(d => d.code === code || d.code?.toLowerCase() === code?.toLowerCase()) ||
+                        inventoryData.find(d => d.item_code === code || d.item_code?.toLowerCase() === code?.toLowerCase() || d.code === code);
+
+                    if (matchingItem) {
+                        const price = getPrice(matchingItem);
+                        console.log(`   ✅ Found in fallback: ${price}`);
+                        return price;
+                    }
+
+                    console.log(`   ❌ NOT FOUND anywhere!`);
+                    return 0;
+                };
+
+                // ✅ Build payment items with looked-up prices
+                const paymentItems = [];
+                for (const item of (request.items || [])) {
+                    const code = item.material_code || item.code || '';
+                    const category = item.material_type || request.category;
+
+                    // Use existing price or lookup
+                    let unitPrice = parseFloat(item.unit_price) || 0;
+                    if (unitPrice === 0 && code) {
+                        unitPrice = findPriceByCode(code, category);
+                        if (unitPrice > 0) {
+                            console.log(`✅ Found price for ${code}: ${unitPrice.toLocaleString('vi-VN')} đ`);
+                        } else {
+                            console.warn(`⚠️ No price found for ${code}`);
+                        }
+                    }
+
+                    const quantity = parseFloat(item.quantity) || 1;
+                    paymentItems.push({
+                        item_code: code,
+                        item_name: item.material_name || item.name || '',
+                        quantity: quantity,
+                        unit_price: unitPrice,
+                        amount: quantity * unitPrice
+                    });
+                }
+
+                // Calculate total
+                const totalAmount = paymentItems.reduce((sum, item) => sum + item.amount, 0);
+
+                // Get today's date for transaction_date
+                const today = new Date().toISOString().split('T')[0];
+
+                // Prepare payment data
+                const paymentData = {
+                    transaction_date: today, // Required field
+                    transaction_type: 'expense',
+                    category: categoryDescMap[request.category] || 'Chi phí vật tư',
+                    expense_type: expenseTypeMap[request.category] || 'material',
+                    project_id: request.project_id || null,
+                    supplier: request.supplier || '',
+                    amount: totalAmount,
+                    description: `Chi phí từ phiếu yêu cầu ${request.order_code || request.request_code || 'N/A'} - ${request.project_name || ''}`,
+                    status: 'draft',
+                    items: paymentItems
+                };
+
+                // Create draft payment
+                const response = await fetch(`${API_BASE}/financial/transactions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Đã tạo phiếu chi nháp thành công! Tổng: ${totalAmount.toLocaleString('vi-VN')} đ`, 'success');
+                    closeModal();
+                    // Ask to redirect to payment page
+                    const goToPayment = await VWModal.confirm('Thành công', `Đã tạo phiếu chi nháp! Tổng: ${totalAmount.toLocaleString('vi-VN')} đ. Bạn có muốn mở trang phiếu chi để xem không?`);
+                    if (goToPayment) {
+                        window.location.href = 'finance-payments.html';
+                    }
+                } else {
+                    showToast(result.message || 'Lỗi khi tạo phiếu chi', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating payment from request:', error);
+                showToast('Lỗi khi tạo phiếu chi', 'error');
+            }
+        }
+
+        // Quick create payment from list view (fetches request data first)
+        async function quickCreatePayment(requestId) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                // Fetch request details
+                const response = await fetch(`${API_BASE}/material-requests/${requestId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+                    showToast('Không tìm thấy yêu cầu vật tư', 'error');
+                    return;
+                }
+
+                // Store request and call create function
+                currentViewingRequest = result.data;
+                await createPaymentFromRequest();
+            } catch (error) {
+                console.error('Error in quickCreatePayment:', error);
+                showToast('Lỗi khi tạo phiếu chi', 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('requestModal').classList.add('hidden');
+            currentEditingId = null;
+            currentViewingRequest = null; // Reset viewing request
+        }
+
+        async function deleteRequest(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu này?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/material-requests/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Xóa yêu cầu thành công!', 'success');
+                    loadMaterialRequests();
+                } else {
+                    showToast(result.message || 'Lỗi khi xóa', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting request:', error);
+                showToast('Lỗi khi xóa yêu cầu', 'error');
+            }
+        }
+
+        async function exportRequestExcel(id) {
+            try {
+                showToast('Đang xuất Excel...', 'info');
+
+                const token = sessionStorage.getItem('token');
+                if (!token) {
+                    showToast('Vui lòng đăng nhập lại', 'error');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const url = `${API_BASE}/material-requests/${id}/export-excel`;
+
+                // Tạo link tạm để download
+                const link = document.createElement('a');
+                link.href = url;
+                link.style.display = 'none';
+
+                // Thêm token vào header bằng cách fetch và tạo blob
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    showToast('Phiên đăng nhập đã hết hạn', 'error');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Lỗi khi xuất Excel');
+                }
+
+                // Lấy filename từ Content-Disposition header
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `Phieu_Yeu_Cau_Vat_Tu_${id}.xlsx`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                }
+
+                // Download file
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                link.href = blobUrl;
+                link.download = decodeURIComponent(filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+                showToast('Đã xuất Excel thành công!', 'success');
+            } catch (error) {
+                console.error('Error exporting Excel:', error);
+                showToast('Lỗi khi xuất Excel: ' + (error.message || error), 'error');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            // Format as yyyy-MM-dd for date input
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                    'bg-blue-500'
+                }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // Load logo
+                    if (result.data.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg && logoIcon) {
+                            logoImg.src = result.data.logo_path;
+                            logoImg.onerror = () => {
+                                logoImg.classList.add('hidden');
+                                logoIcon.classList.remove('hidden');
+                            };
+                            logoImg.onload = () => {
+                                logoImg.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            };
+                        }
+                    }
+
+                    // Load company name
+                    if (result.data.company_name) {
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl) {
+                            companyNameEl.textContent = result.data.company_name;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading company logo:', error);
+            }
+        }
+
+        // ====================================
+        // CREATE NEW REQUEST MODAL FUNCTIONS
+        // ====================================
+        let selectedRequestType = null;
+        let projectsCache = [];
+
+        function openCreateModal() {
+            document.getElementById('createRequestModal').classList.remove('hidden');
+            // Reset form
+            selectedRequestType = null;
+            document.querySelectorAll('.request-type-btn').forEach(btn => {
+                btn.classList.remove('selected', 'type-nhom', 'type-kinh', 'type-vattu', 'type-phukien');
+            });
+            document.getElementById('createFormFields').classList.add('hidden');
+
+            // Set default date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('newCreatedDate').value = today;
+
+            // Calculate default required date (7 days from now)
+            const requiredDate = new Date();
+            requiredDate.setDate(requiredDate.getDate() + 7);
+            document.getElementById('newRequiredDate').value = requiredDate.toISOString().split('T')[0];
+
+            // Load projects for dropdown
+            loadProjectsForDropdown();
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createRequestModal').classList.add('hidden');
+        }
+
+        function selectRequestType(type) {
+            selectedRequestType = type;
+
+            // Update button styles
+            document.querySelectorAll('.request-type-btn').forEach(btn => {
+                btn.classList.remove('selected', 'type-nhom', 'type-kinh', 'type-vattu', 'type-phukien');
+            });
+
+            const selectedBtn = document.getElementById('type' + type.charAt(0).toUpperCase() + type.slice(1));
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected', 'type-' + type);
+            }
+
+            // Show form fields
+            document.getElementById('createFormFields').classList.remove('hidden');
+        }
+
+        async function loadProjectsForDropdown() {
+            try {
+                const response = await fetch(`${API_BASE}/projects?limit=100`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success || result.data) {
+                    projectsCache = result.data || result;
+                    const select = document.getElementById('newProjectId');
+                    select.innerHTML = '<option value="">-- Chọn dự án --</option>';
+
+                    projectsCache.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.project_code || ''} - ${project.project_name || project.customer_name || 'Dự án'}`;
+                        option.dataset.projectName = project.project_name || '';
+                        option.dataset.address = project.address || '';
+                        select.appendChild(option);
+                    });
+
+                    // Auto-fill address when project selected
+                    select.addEventListener('change', function () {
+                        const selectedOption = this.options[this.selectedIndex];
+                        if (selectedOption.dataset.address) {
+                            document.getElementById('newDeliveryAddress').value = selectedOption.dataset.address;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+
+        function goToCreatePage() {
+            if (!selectedRequestType) {
+                showToast('Vui lòng chọn loại phiếu yêu cầu!', 'error');
+                return;
+            }
+
+            const orderCode = document.getElementById('newOrderCode').value.trim();
+            if (!orderCode) {
+                showToast('Vui lòng nhập mã đơn hàng!', 'error');
+                document.getElementById('newOrderCode').focus();
+                return;
+            }
+
+            // Build URL with query params
+            const params = new URLSearchParams();
+            params.set('type', selectedRequestType);
+            params.set('orderCode', orderCode);
+            params.set('createdDate', document.getElementById('newCreatedDate').value || '');
+            params.set('requiredDate', document.getElementById('newRequiredDate').value || '');
+            params.set('projectId', document.getElementById('newProjectId').value || '');
+            params.set('deliveryAddress', document.getElementById('newDeliveryAddress').value || '');
+            params.set('notes', document.getElementById('newNotes').value || '');
+
+            // Get project name from selected option
+            const projectSelect = document.getElementById('newProjectId');
+            const selectedOption = projectSelect.options[projectSelect.selectedIndex];
+            if (selectedOption && selectedOption.dataset.projectName) {
+                params.set('projectName', selectedOption.dataset.projectName);
+            }
+
+            // Navigate to purchase-request.html with pre-filled data
+            window.location.href = `purchase-request.html?${params.toString()}`;
+        }
+
+        // =====================================================
+        // CHUYỂN PHIẾU YÊU CẦU VẬT TƯ → PHIẾU NHẬP KHO
+        // =====================================================
+        const STOCK_DOC_API = API_BASE + '/stock-documents';
+
+        const CATEGORY_TO_ITEM_TYPE = {
+            'nhom': 'aluminum',
+            'kinh': 'glass',
+            'phukien': 'accessory',
+            'vattu': 'other'
+        };
+
+        async function convertToImportTicket(requestId) {
+            const confirmed = await confirm('Xác nhận chuyển phiếu yêu cầu này thành phiếu nhập kho nháp?');
+            if (!confirmed) return;
+
+            try {
+                // 1. Fetch request detail
+                const response = await fetch(`${API_BASE}/material-requests/${requestId}`, {
+                    headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                });
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+                    throw new Error(result.message || 'Không tìm thấy phiếu yêu cầu');
+                }
+
+                const request = result.data;
+                await doConvertToImport(request);
+            } catch (error) {
+                console.error('Convert error:', error);
+                await alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function convertToImportTicketFromModal() {
+            if (!currentViewingRequest) {
+                await alert('Không có dữ liệu phiếu yêu cầu');
+                return;
+            }
+            const confirmed = await confirm('Xác nhận chuyển phiếu yêu cầu này thành phiếu nhập kho nháp?');
+            if (!confirmed) return;
+            await doConvertToImport(currentViewingRequest);
+        }
+
+        async function doConvertToImport(request) {
+            try {
+                const itemType = CATEGORY_TO_ITEM_TYPE[request.category] || 'other';
+                const items = request.items || [];
+
+                if (items.length === 0) {
+                    await alert('⚠️ Phiếu yêu cầu không có vật tư nào!');
+                    return;
+                }
+
+                // 2. Map items → stock document lines
+                const lines = items.map(item => ({
+                    item_type: itemType,
+                    item_id: item.item_id || null,
+                    item_code: item.material_code || '',
+                    item_name: item.material_name || item.glass_type || '',
+                    qty: parseFloat(item.quantity) || parseFloat(item.panels) || 1,
+                    unit_price: 0,
+                    note: item.notes || `Từ YCVT: ${request.order_code}`
+                }));
+
+                // 3. POST to create draft import ticket
+                const docData = {
+                    doc_type: 'import',
+                    warehouse_id: 1,
+                    note: ` Nhập kho từ YCVT: ${request.order_code} — ${request.project_name || ''} (${items.length} vật tư)`,
+                    lines: lines
+                };
+
+                const postResponse = await fetch(STOCK_DOC_API, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(docData)
+                });
+
+                const postResult = await postResponse.json();
+
+                if (!postResult.success) {
+                    throw new Error(postResult.message || 'Lỗi tạo phiếu nhập');
+                }
+
+                await alert(`✅ Đã tạo phiếu nhập kho nháp: ${postResult.data.doc_no}\n\n📋 ${items.length} vật tư từ YCVT: ${request.order_code}\n\n➡️ Vào Kho vật tư → tab NHẬP KHO để xem và hạch toán.`);
+
+                closeModal();
+            } catch (error) {
+                console.error('doConvertToImport error:', error);
+                await alert('❌ Lỗi tạo phiếu nhập: ' + error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSidebarUserInfo();
+            loadCompanyLogo();
+            loadMaterialRequests();
+
+            // Filter events
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loadMaterialRequests();
+            });
+        });
+    </script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['inventory'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadMaterialRequests === 'function') {
+                        loadMaterialRequests();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

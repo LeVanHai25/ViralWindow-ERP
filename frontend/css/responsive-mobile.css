@@ -1,0 +1,285 @@
+/**
+ * ViralWindow — Global Responsive Mobile CSS
+ * Strategy: Mobile-first overrides, injected globally via responsive-mobile.js
+ * Breakpoints:
+ *   xs:  < 480px  (small phones)
+ *   sm:  < 768px  (phones landscape / large phones)
+ *   md:  < 1024px (tablets)
+ *   lg: >= 1024px (laptop/desktop — default layout)
+ *
+ * Author: Senior Software Architect
+ * Do NOT edit per-page — this is the single source of truth for responsive.
+ */
+
+/* ============================================================
+   1. HAMBURGER MENU BUTTON (hidden on desktop)
+   ============================================================ */
+.vw-hamburger {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 9999;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #1e3a5f;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.vw-hamburger:hover { background: #2563eb; }
+.vw-hamburger svg { width: 22px; height: 22px; stroke: white; }
+
+/* ============================================================
+   2. SIDEBAR OVERLAY (mobile backdrop)
+   ============================================================ */
+.vw-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+    backdrop-filter: blur(2px);
+}
+.vw-sidebar-overlay.active { display: block; }
+
+/* ============================================================
+   3. GLOBAL TABLE RESPONSIVE WRAPPER
+   ============================================================ */
+.vw-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+}
+
+/* Auto-wrap tables that don't have explicit overflow */
+table {
+    min-width: 600px; /* prevent collapse on narrow screens */
+}
+
+/* ============================================================
+   4. TABLET BREAKPOINT — md: < 1024px
+   ============================================================ */
+@media (max-width: 1023px) {
+
+    /* --- Sidebar: slide off-screen by default --- */
+    .sidebar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 280px !important;
+        overflow-y: auto;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* --- Main content: full width when sidebar hidden --- */
+    .main-content {
+        margin-left: 0 !important;
+        padding-top: 60px; /* space for hamburger button */
+    }
+
+    /* --- Show hamburger --- */
+    .vw-hamburger {
+        display: flex;
+    }
+
+    /* --- Auth pages: collapse split panel --- */
+    .auth-container,
+    .login-container {
+        flex-direction: column !important;
+        min-height: 100vh;
+    }
+
+    .left-panel {
+        width: 100% !important;
+        min-height: 200px !important;
+        max-height: 260px;
+        justify-content: center !important;
+        padding: 24px !important;
+    }
+
+    .left-panel .wavy-edge {
+        display: none;
+    }
+
+    .right-panel {
+        width: 100% !important;
+        min-height: calc(100vh - 260px);
+        padding: 24px 20px !important;
+    }
+
+    /* --- Stat cards: 2 columns on tablet --- */
+    .grid-cols-4,
+    .lg\\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* --- Hero section padding --- */
+    .hero-section {
+        padding: 16px !important;
+    }
+
+    /* --- Header notification: adjust position --- */
+    .header-notification-container {
+        top: 8px !important;
+        right: 8px !important;
+    }
+}
+
+/* ============================================================
+   5. PHONE BREAKPOINT — sm: < 768px
+   ============================================================ */
+@media (max-width: 767px) {
+
+    /* --- Stat cards: 1 column on small phones --- */
+    .grid-cols-4,
+    .lg\\:grid-cols-4,
+    .md\\:grid-cols-2 {
+        grid-template-columns: repeat(1, 1fr) !important;
+    }
+
+    /* --- Overview stats: 2 columns --- */
+    .grid-cols-2.md\\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* --- Company overview: 2 cols --- */
+    .grid.grid-cols-2.md\\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* --- Quick action buttons: 2 cols --- */
+    .quick-btn {
+        font-size: 12px !important;
+        padding: 10px 8px !important;
+    }
+
+    /* --- Live clock widget: compact --- */
+    .live-clock-widget {
+        padding: 8px 12px !important;
+        gap: 8px !important;
+    }
+
+    .analog-clock-container {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    #liveClock {
+        font-size: 16px !important;
+    }
+
+    /* --- Hero section: stack vertically --- */
+    .hero-section .flex-col.md\\:flex-row {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    /* --- Auth: smaller padding --- */
+    .right-panel {
+        padding: 16px !important;
+    }
+
+    .auth-form-container {
+        padding: 24px 16px !important;
+    }
+
+    /* --- Alert items: compact --- */
+    .alert-item {
+        font-size: 12px !important;
+        padding: 8px 10px !important;
+    }
+
+    /* --- Headings: smaller --- */
+    h1.text-3xl {
+        font-size: 1.5rem !important;
+    }
+
+    /* --- Two column layout: stack --- */
+    .grid.grid-cols-1.lg\\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .grid.grid-cols-1.lg\\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* --- Data tables: enforce scroll --- */
+    .overflow-x-auto,
+    [class*="table-container"] {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* --- Modal: full screen on mobile --- */
+    .modal-content,
+    [class*="modal"] > div {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 10px auto !important;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* --- Buttons: larger touch targets --- */
+    button, .btn, [class*="btn"] {
+        min-height: 40px;
+    }
+
+    /* --- Form inputs: prevent zoom on iOS --- */
+    input, select, textarea {
+        font-size: 16px !important; /* prevents iOS auto-zoom */
+    }
+}
+
+/* ============================================================
+   6. SMALL PHONE — xs: < 480px
+   ============================================================ */
+@media (max-width: 479px) {
+
+    /* Clock widgets hidden to save space */
+    #weatherWidget {
+        display: none !important;
+    }
+
+    .live-clock-widget {
+        padding: 6px 10px !important;
+    }
+
+    /* Left panel branding features hidden */
+    .left-panel .feature-list,
+    .left-panel ul {
+        display: none;
+    }
+
+    /* Auth form full width */
+    .left-panel {
+        max-height: 140px !important;
+    }
+
+    /* Page title smaller */
+    h1, .page-title {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ============================================================
+   7. PRINT STYLES
+   ============================================================ */
+@media print {
+    .sidebar, .vw-hamburger, .header-notification-container { display: none !important; }
+    .main-content { margin-left: 0 !important; }
+}

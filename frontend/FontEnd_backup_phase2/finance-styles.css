@@ -1,0 +1,313 @@
+/* MISA-STYLE FINANCE MODULE STYLES */
+
+/* KPI Cards */
+.kpi-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 transition-all duration-200 hover:shadow-md;
+}
+
+.kpi-card-header {
+    @apply flex items-center justify-between mb-3;
+}
+
+.kpi-icon {
+    @apply w-10 h-10 rounded-lg flex items-center justify-center;
+}
+
+.kpi-value {
+    @apply text-2xl font-bold text-gray-900 mb-1;
+}
+
+.kpi-label {
+    @apply text-sm text-gray-500;
+}
+
+.kpi-trend {
+    @apply flex items-center gap-1 text-xs font-medium;
+}
+
+.kpi-trend.positive {
+    @apply text-green-600;
+}
+
+.kpi-trend.negative {
+    @apply text-red-600;
+}
+
+/* Chart Cards */
+.chart-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+}
+
+.chart-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.chart-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+.chart-filter {
+    @apply px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.chart-body {
+    @apply relative;
+    height: 300px;
+}
+
+/* Alert Cards */
+.alert-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+}
+
+.alert-header {
+    @apply flex items-center justify-between mb-3;
+}
+
+.alert-icon {
+    @apply w-8 h-8 rounded-lg flex items-center justify-center;
+}
+
+.alert-title {
+    @apply text-base font-semibold text-gray-900 flex-1 ml-3;
+}
+
+.alert-badge {
+    @apply bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full;
+}
+
+.alert-body {
+    @apply space-y-2;
+}
+
+.alert-item {
+    @apply p-2 rounded hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0;
+}
+
+/* Buttons */
+.btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors;
+}
+
+.btn-secondary {
+    @apply px-4 py-2 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors;
+}
+
+.btn-success {
+    @apply px-4 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors;
+}
+
+.btn-danger {
+    @apply px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors;
+}
+
+.btn-sm {
+    @apply px-3 py-1.5 text-sm;
+}
+
+/* Status Badges */
+.status-badge {
+    @apply px-2 py-1 text-xs font-medium rounded-full;
+}
+
+.status-draft {
+    @apply bg-gray-100 text-gray-800;
+}
+
+.status-posted {
+    @apply bg-green-100 text-green-800;
+}
+
+.status-cancelled {
+    @apply bg-red-100 text-red-800;
+}
+
+.status-pending {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-paid {
+    @apply bg-blue-100 text-blue-800;
+}
+
+.status-overdue {
+    @apply bg-red-100 text-red-800;
+}
+
+/* Tables */
+.data-table {
+    @apply w-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden;
+}
+
+.data-table thead {
+    @apply bg-gray-50 border-b border-gray-200;
+}
+
+.data-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider;
+}
+
+.data-table td {
+    @apply px-4 py-3 text-sm text-gray-900 border-b border-gray-100;
+}
+
+.data-table tbody tr:hover {
+    @apply bg-gray-50;
+}
+
+.data-table tbody tr:last-child td {
+    @apply border-b-0;
+}
+
+/* Filters */
+.filter-bar {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4;
+}
+
+.filter-group {
+    @apply flex items-center gap-4 flex-wrap;
+}
+
+.filter-item {
+    @apply flex items-center gap-2;
+}
+
+.filter-item label {
+    @apply text-sm font-medium text-gray-700 whitespace-nowrap;
+}
+
+.filter-item select,
+.filter-item input {
+    @apply px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+/* Forms */
+.form-group {
+    @apply mb-4;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-label.required::after {
+    content: ' *';
+    @apply text-red-500;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-textarea {
+    @apply resize-none;
+}
+
+.form-error {
+    @apply mt-1 text-sm text-red-600;
+}
+
+.form-help {
+    @apply mt-1 text-sm text-gray-500;
+}
+
+/* Modals */
+.modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4;
+}
+
+.modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+}
+
+.modal-header {
+    @apply flex items-center justify-between p-6 border-b border-gray-200;
+}
+
+.modal-title {
+    @apply text-xl font-semibold text-gray-900;
+}
+
+.modal-body {
+    @apply p-6;
+}
+
+.modal-footer {
+    @apply flex items-center justify-end gap-3 p-6 border-t border-gray-200;
+}
+
+.modal-close {
+    @apply text-gray-400 hover:text-gray-600 transition-colors;
+}
+
+/* Money Format */
+.money-positive {
+    @apply text-green-600 font-semibold;
+}
+
+.money-negative {
+    @apply text-red-600 font-semibold;
+}
+
+.money-neutral {
+    @apply text-gray-900 font-semibold;
+}
+
+/* Loading States */
+.loading {
+    @apply animate-pulse;
+}
+
+.skeleton {
+    @apply bg-gray-200 rounded;
+}
+
+/* Empty States */
+.empty-state {
+    @apply text-center py-12;
+}
+
+.empty-state-icon {
+    @apply mx-auto w-16 h-16 text-gray-400 mb-4;
+}
+
+.empty-state-text {
+    @apply text-gray-500 text-sm;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .kpi-card {
+        @apply p-3;
+    }
+    
+    .kpi-value {
+        @apply text-xl;
+    }
+    
+    .chart-body {
+        height: 250px;
+    }
+    
+    .filter-group {
+        @apply flex-col items-stretch;
+    }
+    
+    .filter-item {
+        @apply flex-col items-stretch;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+

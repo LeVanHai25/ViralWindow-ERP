@@ -1,0 +1,443 @@
+/* Production Excel View Styles */
+
+/* Excel Table */
+.excel-table {
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.excel-table th,
+.excel-table td {
+    border: 1px solid #e5e7eb;
+    padding: 8px 12px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.excel-table th {
+    background: #f3f4f6;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Column widths */
+.excel-table th:nth-child(1) {
+    width: 30px;
+}
+
+/* Expand */
+.excel-table th:nth-child(2) {
+    width: 80px;
+}
+
+/* Mã đơn */
+.excel-table th:nth-child(3) {
+    min-width: 120px;
+}
+
+/* Đơn hàng */
+.excel-table th:nth-child(4) {
+    width: 120px;
+    max-width: 150px;
+}
+
+/* CN-Khách hàng - narrower */
+.excel-table th:nth-child(5) {
+    width: 70px;
+}
+
+/* Khối lượng */
+.excel-table th:nth-child(6) {
+    width: 90px;
+}
+
+/* Đơn vị SX */
+.excel-table th:nth-child(7) {
+    width: 90px;
+}
+
+/* Ngày tạo */
+.excel-table th:nth-child(8) {
+    width: 100px;
+}
+
+/* Kế hoạch giao */
+.excel-table th:nth-child(9) {
+    width: 80px;
+}
+
+/* Loại vật tư */
+.excel-table th:nth-child(10) {
+    width: 90px;
+}
+
+/* Tình trạng VT */
+.excel-table th:nth-child(11) {
+    width: 100px;
+}
+
+/* Lịch giao VT */
+.excel-table th:nth-child(12) {
+    min-width: 150px;
+}
+
+/* Fix tổ hợp - wider */
+.excel-table th:nth-child(13) {
+    min-width: 180px;
+}
+
+/* Ghi chú - wider */
+
+/* Allow text wrap for wider columns */
+.excel-table td:nth-child(12),
+.excel-table td:nth-child(13) {
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.excel-table tbody tr:hover {
+    background: #f0f9ff;
+}
+
+/* Clickable rows */
+.excel-table tbody tr.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Clickable material cells */
+.material-status-cell,
+.material-date-cell {
+    cursor: pointer;
+}
+
+.material-status-cell:hover,
+.material-date-cell:hover {
+    background: #dbeafe !important;
+}
+
+/* Customer cell - clickable */
+.customer-cell {
+    cursor: pointer;
+    color: #2563eb;
+}
+
+.customer-cell:hover {
+    background: #eff6ff !important;
+    text-decoration: underline;
+}
+
+.excel-table tbody tr.expanded {
+    background: #fef3c7;
+}
+
+/* Expand button */
+.expand-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: #e5e7eb;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.expand-btn:hover {
+    background: #d1d5db;
+}
+
+/* Material sub-rows */
+.material-row {
+    background: #fafafa;
+}
+
+.material-row td:first-child {
+    border-left: 3px solid #3b82f6;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.status-late {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.status-missing {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.status-ok {
+    background: #bbf7d0;
+    color: #166534;
+}
+
+.status-pending {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.status-ordered {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-arrived {
+    background: #a7f3d0;
+    color: #065f46;
+}
+
+.status-issued {
+    background: #c7d2fe;
+    color: #3730a3;
+}
+
+.status-customer {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+/* =============================================
+   MULTI-BADGE DISPLAY (Material Status)
+   ============================================= */
+
+/* Container for multiple badges */
+.material-badges-container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Compact version of badge for multi-display */
+.status-badge-compact {
+    padding: 2px 6px;
+    font-size: 10px;
+}
+
+/* +N indicator badge */
+.status-more {
+    background: #9ca3af;
+    color: #ffffff;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: help;
+}
+
+.status-more:hover {
+    background: #6b7280;
+}
+
+/* Tooltip styling for multi-line content */
+.material-badges-container[title] {
+    position: relative;
+}
+
+/* White-space preserving for tooltip */
+.material-badges-container {
+    white-space: nowrap;
+}
+
+/* Override cell white-space for tooltip line breaks */
+td[data-col="materialStatus"] .material-badges-container {
+    white-space: normal;
+}
+
+/* Editable cells */
+.editable-cell {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable-cell:hover {
+    background: #fffbeb;
+}
+
+.editable-cell input,
+.editable-cell textarea {
+    width: 100%;
+    border: 1px solid #3b82f6;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* Detail Panel */
+.detail-panel {
+    transition: all 0.3s ease;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+/* Timeline */
+.timeline-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-left: 2px solid #e5e7eb;
+    padding-left: 16px;
+    margin-left: 8px;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 16px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+}
+
+.timeline-item.completed::before {
+    background: #22c55e;
+}
+
+.timeline-item.pending::before {
+    background: #9ca3af;
+}
+
+/* Tabs */
+.detail-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 16px;
+}
+
+.detail-tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-size: 13px;
+}
+
+.detail-tab.active {
+    border-bottom-color: #3b82f6;
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+/* Material cards in detail */
+.material-card {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.material-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* Fix task badges */
+.fix-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-right: 4px;
+}
+
+.fix-todo {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.fix-doing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.fix-done {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Row highlighting */
+.row-late {
+    background: #fef2f2 !important;
+}
+
+.row-late:hover {
+    background: #fee2e2 !important;
+}
+
+.row-missing-material {
+    border-left: 3px solid #f97316;
+}
+
+/* Column Settings Modal Enhancements */
+#columnSettingsModal input[type="checkbox"] {
+    accent-color: #2563eb;
+}
+
+#columnSettingsModal label:hover {
+    background: #f3f4f6;
+}
+
+/* Loading animation for refresh button */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Notification animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Quantity column - highlight aluminum weight */
+.excel-table td[data-col="quantity"] {
+    font-weight: 500;
+    color: #2563eb;
+}
+
+/* Better tooltip for editable cells */
+.editable-cell::after {
+    content: '✎';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    color: #9ca3af;
+    font-size: 11px;
+    transition: opacity 0.2s;
+}
+
+.editable-cell:hover::after {
+    opacity: 1;
+}

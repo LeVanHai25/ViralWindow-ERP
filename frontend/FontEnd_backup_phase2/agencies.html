@@ -1,0 +1,1339 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đại lý - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/sidebar-menu-template.js"></script>
+    <script src="js/sidebar-enterprise.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .agency-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .agency-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+            border-color: #3b82f6;
+        }
+
+        .kpi-card {
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+        }
+
+        .kpi-blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .kpi-green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .kpi-orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .kpi-purple {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-20">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                        <i class="fas fa-building text-blue-600"></i>
+                        Quản lý Đại lý / Chi nhánh
+                    </h1>
+                    <p class="text-sm text-gray-500 mt-1">Quản lý hệ thống đại lý và theo dõi hiệu suất</p>
+                </div>
+                <button onclick="openAgencyModal()"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:shadow-lg transition-all">
+                    <i class="fas fa-plus"></i>
+                    Thêm đại lý
+                </button>
+            </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="px-6 pb-4">
+            <div class="bg-white rounded-xl shadow-sm p-4 flex flex-wrap items-center gap-4">
+                <div class="flex-1 min-w-[300px] relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm theo tên, mã đại lý, khu vực..."
+                        class="w-full pl-11 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                        onkeyup="searchAgencies()">
+                </div>
+                <select id="regionFilter"
+                    class="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                    onchange="filterAgencies()">
+                    <option value="">Tất cả khu vực</option>
+                </select>
+                <select id="statusFilter"
+                    class="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                    onchange="filterAgencies()">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="inactive">Ngừng hoạt động</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Agency Cards -->
+        <div class="px-6 pb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="agencyList">
+                <!-- Cards will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add/Edit Agency -->
+    <div id="agencyModal" class="hidden modal-backdrop">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold" id="modalTitle">Thêm đại lý mới</h2>
+                <button onclick="closeAgencyModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="agencyForm" onsubmit="saveAgency(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã đại lý <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="agencyCode" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="VD: HN01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên đại lý <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="agencyName" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Khu vực / Tỉnh thành</label>
+                        <select id="agencyRegion"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="">-- Chọn khu vực --</option>
+                            <optgroup label="Khu vực chung">
+                                <option value="Miền Bắc">Miền Bắc</option>
+                                <option value="Miền Trung">Miền Trung</option>
+                                <option value="Miền Nam">Miền Nam</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="Trụ sở">Trụ sở</option>
+                            </optgroup>
+                            <optgroup label="TP Trực thuộc TW">
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                                <option value="Hải Phòng">Hải Phòng (+ Hải Dương)</option>
+                                <option value="Đà Nẵng">Đà Nẵng (+ Quảng Nam)</option>
+                                <option value="Cần Thơ">Cần Thơ (+ Vĩnh Long)</option>
+                                <option value="TP. Huế">TP. Huế</option>
+                            </optgroup>
+                            <optgroup label="Tỉnh (sau sáp nhập 2025)">
+                                <option value="An Giang">An Giang (+ Kiên Giang)</option>
+                                <option value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</option>
+                                <option value="Bắc Ninh">Bắc Ninh (+ Bắc Giang)</option>
+                                <option value="Bình Thuận">Bình Thuận</option>
+                                <option value="Cà Mau">Cà Mau (+ Bạc Liêu)</option>
+                                <option value="Cao Bằng">Cao Bằng</option>
+                                <option value="Đắk Lắk">Đắk Lắk</option>
+                                <option value="Điện Biên">Điện Biên</option>
+                                <option value="Đồng Nai">Đồng Nai (+ Bình Phước)</option>
+                                <option value="Đồng Tháp">Đồng Tháp (+ Tiền Giang)</option>
+                                <option value="Gia Lai">Gia Lai (+ Kon Tum)</option>
+                                <option value="Hà Tĩnh">Hà Tĩnh</option>
+                                <option value="Hậu Giang">Hậu Giang (+ Sóc Trăng)</option>
+                                <option value="Hưng Yên">Hưng Yên (+ Thái Bình)</option>
+                                <option value="Khánh Hòa">Khánh Hòa (+ Ninh Thuận)</option>
+                                <option value="Lai Châu">Lai Châu</option>
+                                <option value="Lạng Sơn">Lạng Sơn</option>
+                                <option value="Lào Cai">Lào Cai (+ Yên Bái)</option>
+                                <option value="Lâm Đồng">Lâm Đồng (+ Đắk Nông)</option>
+                                <option value="Nghệ An">Nghệ An</option>
+                                <option value="Ninh Bình">Ninh Bình (+ Hà Nam)</option>
+                                <option value="Phú Thọ">Phú Thọ (+ Vĩnh Phúc + Hòa Bình)</option>
+                                <option value="Phú Yên">Phú Yên</option>
+                                <option value="Quảng Ngãi">Quảng Ngãi (+ Bình Định)</option>
+                                <option value="Quảng Ninh">Quảng Ninh</option>
+                                <option value="Quảng Trị">Quảng Trị (+ Quảng Bình)</option>
+                                <option value="Sơn La">Sơn La</option>
+                                <option value="Tây Ninh">Tây Ninh</option>
+                                <option value="Thái Nguyên">Thái Nguyên (+ Bắc Kạn)</option>
+                                <option value="Thanh Hóa">Thanh Hóa</option>
+                                <option value="Trà Vinh">Trà Vinh (+ Bến Tre + Vĩnh Long)</option>
+                                <option value="Tuyên Quang">Tuyên Quang (+ Hà Giang)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                        <input type="tel" id="agencyPhone"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                    <input type="text" id="agencyAddress"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Người quản lý</label>
+                        <input type="text" id="agencyManager"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SĐT quản lý</label>
+                        <input type="tel" id="agencyManagerPhone"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="agencyEmail"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                    <textarea id="agencyNotes" rows="2"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+                <input type="hidden" id="agencyId">
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeAgencyModal()"
+                        class="px-5 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Lưu đại
+                        lý</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Agency Dashboard -->
+    <div id="dashboardModal" class="hidden modal-backdrop">
+        <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
+            <div
+                class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <h2 class="text-xl font-bold" id="dashboardTitle">Dashboard Đại lý</h2>
+                <button onclick="closeDashboardModal()" class="text-white/80 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6" id="dashboardContent">
+                <!-- Stats will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Customers List -->
+    <div id="customersModal" class="hidden modal-backdrop">
+        <div class="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden mx-4 flex flex-col">
+            <div
+                class="sticky top-0 bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <h2 class="text-xl font-bold" id="customersTitle">Khách hàng</h2>
+                <button onclick="closeCustomersModal()" class="text-white/80 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4 bg-gray-50 border-b flex items-center justify-between">
+                <div class="relative flex-1 max-w-md">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="customerSearch" placeholder="Tìm khách hàng..."
+                        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                        onkeyup="filterCustomersList()">
+                </div>
+                <button onclick="openAddCustomerModal()"
+                    class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Thêm khách hàng
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1" id="customersList" style="max-height: calc(90vh - 180px)">
+                <!-- Customers will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Customer to Agency -->
+    <div id="addCustomerModal" class="hidden modal-backdrop">
+        <div class="bg-white rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+                <h2 class="text-lg font-bold" id="addCustomerTitle">Thêm khách hàng mới</h2>
+                <button onclick="closeAddCustomerModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="addCustomerForm" onsubmit="saveNewCustomer(event)" class="p-6 space-y-4">
+                <!-- Mã khách hàng -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">
+                        Mã khách hàng
+                        <span class="text-gray-400 text-xs ml-1">(có thể để trống để tự tạo)</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="text" id="newCustomerCode"
+                            class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                            placeholder="Ví dụ: KH-001 hoặc để trống">
+                        <button type="button" onclick="generateNewCustomerCode()"
+                            class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-1"
+                            title="Tạo mã tự động">
+                            <i class="fas fa-sync-alt"></i> Tự tạo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tên khách hàng -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">
+                        Tên khách hàng <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="newCustomerName" required
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                </div>
+
+                <!-- Số điện thoại -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">
+                        Số điện thoại <span class="text-red-500">*</span>
+                    </label>
+                    <input type="tel" id="newCustomerPhone" required
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    <input type="email" id="newCustomerEmail"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                </div>
+
+                <!-- Chi nhánh / Đại lý -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">
+                        Chi nhánh / Đại lý <span class="text-red-500">*</span>
+                    </label>
+                    <select id="newCustomerAgency" required
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none bg-white">
+                        <option value="">-- Chọn chi nhánh --</option>
+                    </select>
+                </div>
+
+                <!-- Địa chỉ -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Địa chỉ</label>
+                    <textarea id="newCustomerAddress" rows="2"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"></textarea>
+                </div>
+
+                <input type="hidden" id="currentAgencyId">
+                <div class="flex gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeAddCustomerModal()"
+                        class="flex-1 py-2.5 border rounded-lg hover:bg-gray-50 font-medium">Hủy</button>
+                    <button type="submit"
+                        class="flex-1 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">Thêm
+                        mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let allAgencies = [];
+        let allRegions = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAgencies();
+            loadOverview();
+            loadRegions();
+        });
+
+        // Load all agencies
+        async function loadAgencies() {
+            try {
+                const response = await fetch(`${API_BASE}/agencies`);
+                const result = await response.json();
+                if (result.success) {
+                    allAgencies = result.data;
+                    renderAgencies(allAgencies);
+                }
+            } catch (error) {
+                console.error('Error loading agencies:', error);
+                document.getElementById('agencyList').innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+                        <p>Không thể tải danh sách đại lý</p>
+                        <button onclick="loadAgencies()" class="mt-4 text-blue-600 hover:underline">Thử lại</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Load overview stats - DISABLED: KPI cards removed
+        async function loadOverview() {
+            // KPI cards have been removed, this function is no longer needed
+            return;
+        }
+
+        // Load regions for filter
+        async function loadRegions() {
+            try {
+                const response = await fetch(`${API_BASE}/agencies/regions`);
+                const result = await response.json();
+                if (result.success) {
+                    allRegions = result.data;
+                    const select = document.getElementById('regionFilter');
+                    result.data.forEach(r => {
+                        select.innerHTML += `<option value="${r}">${r}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading regions:', error);
+            }
+        }
+
+        // Render agency cards
+        function renderAgencies(agencies) {
+            const container = document.getElementById('agencyList');
+            if (agencies.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <i class="fas fa-building text-5xl mb-4 opacity-30"></i>
+                        <p>Chưa có đại lý nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = agencies.map(a => `
+                <div class="agency-card">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                                ${a.code.substring(0, 2)}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">${a.name}</h3>
+                                <p class="text-sm text-gray-500">${a.code}</p>
+                            </div>
+                        </div>
+                        <span class="stat-badge ${a.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
+                            <i class="fas fa-circle text-[6px]"></i>
+                            ${a.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="bg-blue-50 rounded-lg p-3 text-center">
+                            <p class="text-2xl font-bold text-blue-600">${a.customer_count || 0}</p>
+                            <p class="text-xs text-blue-600/70">Khách hàng</p>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-3 text-center">
+                            <p class="text-2xl font-bold text-green-600">${a.active_project_count || 0}</p>
+                            <p class="text-xs text-green-600/70">Dự án</p>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-3 text-center">
+                            <p class="text-2xl font-bold text-purple-600">${a.total_project_count || 0}</p>
+                            <p class="text-xs text-purple-600/70">Tổng DA</p>
+                        </div>
+                    </div>
+                    
+                    ${a.region ? `<p class="text-sm text-gray-500 mb-3"><i class="fas fa-map-marker-alt mr-2"></i>${a.region}</p>` : ''}
+                    ${a.manager_name ? `<p class="text-sm text-gray-500 mb-3"><i class="fas fa-user mr-2"></i>${a.manager_name}</p>` : ''}
+                    
+                    <div class="flex gap-2 pt-3 border-t">
+                        <button onclick="openDashboard(${a.id})" class="flex-1 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                            <i class="fas fa-chart-pie mr-1"></i> Dashboard
+                        </button>
+                        <button onclick="editAgency(${a.id})" class="flex-1 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg transition">
+                            <i class="fas fa-edit mr-1"></i> Sửa
+                        </button>
+                        <button onclick="viewCustomers(${a.id})" class="flex-1 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+                            <i class="fas fa-users mr-1"></i> KH
+                        </button>
+                        <button onclick="deleteAgency(${a.id}, '${a.name.replace(/'/g, "\\'")}')"
+                            class="py-2 px-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Xóa chi nhánh">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete agency (soft delete → inactive)
+        async function deleteAgency(id, name) {
+            const confirmed = await VWModal.confirm(
+                'Xóa chi nhánh',
+                `Bạn có chắc chắn muốn <strong>xóa vĩnh viễn</strong> chi nhánh <strong>${name}</strong>?<br><br><span class="text-sm text-red-500">⚠️ Hành động này không thể hoàn tác! Dữ liệu chi nhánh sẽ bị xóa khỏi hệ thống.</span>`
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/agencies/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await VWModal.alert('Thành công', 'Đã xóa chi nhánh thành công!');
+                    loadAgencies();
+                } else {
+                    await VWModal.alert('Lỗi', result.message || 'Không thể xóa chi nhánh');
+                }
+            } catch (error) {
+                console.error('Error deleting agency:', error);
+                await VWModal.alert('Lỗi', 'Lỗi kết nối server');
+            }
+        }
+
+        // Search & Filter
+        function searchAgencies() {
+            filterAgencies();
+        }
+
+        function filterAgencies() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const region = document.getElementById('regionFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            let filtered = allAgencies.filter(a => {
+                if (search && !`${a.name} ${a.code} ${a.region || ''}`.toLowerCase().includes(search)) return false;
+                if (region && a.region !== region) return false;
+                if (status && a.status !== status) return false;
+                return true;
+            });
+
+            renderAgencies(filtered);
+        }
+
+        // Modal functions
+        function openAgencyModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm đại lý mới';
+            document.getElementById('agencyForm').reset();
+            document.getElementById('agencyId').value = '';
+            document.getElementById('agencyModal').classList.remove('hidden');
+        }
+
+        function closeAgencyModal() {
+            document.getElementById('agencyModal').classList.add('hidden');
+        }
+
+        async function editAgency(id) {
+            const agency = allAgencies.find(a => a.id === id);
+            if (!agency) return;
+
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa đại lý';
+            document.getElementById('agencyId').value = agency.id;
+            document.getElementById('agencyCode').value = agency.code;
+            document.getElementById('agencyName').value = agency.name;
+            document.getElementById('agencyRegion').value = agency.region || '';
+            document.getElementById('agencyPhone').value = agency.phone || '';
+            document.getElementById('agencyAddress').value = agency.address || '';
+            document.getElementById('agencyManager').value = agency.manager_name || '';
+            document.getElementById('agencyManagerPhone').value = agency.manager_phone || '';
+            document.getElementById('agencyEmail').value = agency.email || '';
+            document.getElementById('agencyNotes').value = agency.notes || '';
+
+            document.getElementById('agencyModal').classList.remove('hidden');
+        }
+
+        async function saveAgency(event) {
+            event.preventDefault();
+            const id = document.getElementById('agencyId').value;
+            const data = {
+                code: document.getElementById('agencyCode').value,
+                name: document.getElementById('agencyName').value,
+                region: document.getElementById('agencyRegion').value,
+                phone: document.getElementById('agencyPhone').value,
+                address: document.getElementById('agencyAddress').value,
+                manager_name: document.getElementById('agencyManager').value,
+                manager_phone: document.getElementById('agencyManagerPhone').value,
+                email: document.getElementById('agencyEmail').value,
+                notes: document.getElementById('agencyNotes').value,
+                status: 'active'
+            };
+
+            try {
+                const url = id ? `${API_BASE}/agencies/${id}` : `${API_BASE}/agencies`;
+                const method = id ? 'PUT' : 'POST';
+                const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+                const response = await fetch(url, {
+                    method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    closeAgencyModal();
+                    loadAgencies();
+                    loadOverview();
+                    if (window.VWModal) {
+                        VWModal.toast(id ? 'Cập nhật thành công!' : 'Thêm đại lý thành công!', 'success');
+                    } else {
+                        alert(id ? 'Cập nhật thành công!' : 'Thêm đại lý thành công!');
+                    }
+                } else {
+                    if (window.VWModal) VWModal.alert('Lỗi', result.message);
+                    else alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                if (window.VWModal) VWModal.alert('Lỗi', 'Lỗi kết nối server');
+                else alert('Lỗi kết nối server');
+            }
+        }
+
+        // Dashboard
+        async function openDashboard(id) {
+            const agency = allAgencies.find(a => a.id === id);
+            document.getElementById('dashboardTitle').textContent = `Dashboard: ${agency?.name || ''}`;
+            document.getElementById('dashboardContent').innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+            document.getElementById('dashboardModal').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/agencies/${id}/dashboard`);
+                const result = await response.json();
+                if (result.success) {
+                    const d = result.data;
+                    document.getElementById('dashboardContent').innerHTML = `
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 rounded-xl p-4 text-center">
+                                <p class="text-3xl font-bold text-blue-600">${d.total_customers}</p>
+                                <p class="text-sm text-blue-600/70">Khách hàng</p>
+                            </div>
+                            <div class="bg-green-50 rounded-xl p-4 text-center">
+                                <p class="text-3xl font-bold text-green-600">${d.active_projects}</p>
+                                <p class="text-sm text-green-600/70">Dự án đang chạy</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-xl p-4 text-center">
+                                <p class="text-3xl font-bold text-purple-600">${d.completed_projects}</p>
+                                <p class="text-sm text-purple-600/70">Đã hoàn thành</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-xl p-4 text-center">
+                                <p class="text-2xl font-bold text-orange-600">${formatCurrency(d.month_revenue)}</p>
+                                <p class="text-sm text-orange-600/70">Doanh số tháng</p>
+                            </div>
+                            <div class="bg-teal-50 rounded-xl p-4 text-center">
+                                <p class="text-3xl font-bold text-teal-600">${d.on_time_rate}%</p>
+                                <p class="text-sm text-teal-600/70">Đúng hạn</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-4 text-center">
+                                <p class="text-3xl font-bold text-gray-600">${d.total_projects}</p>
+                                <p class="text-sm text-gray-600/70">Tổng dự án</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <a href="sales.html?agency=${id}" class="flex-1 py-3 bg-blue-600 text-white rounded-xl text-center font-medium hover:bg-blue-700 transition">
+                                <i class="fas fa-users mr-2"></i>Xem khách hàng
+                            </a>
+                            <button onclick="closeDashboardModal()" class="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition">Đóng</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('dashboardContent').innerHTML = '<p class="text-center text-red-500">Lỗi tải dữ liệu</p>';
+            }
+        }
+
+        function closeDashboardModal() {
+            document.getElementById('dashboardModal').classList.add('hidden');
+        }
+
+        // ========== CUSTOMERS MODAL ==========
+        let currentViewAgencyId = null;
+        let agencyCustomers = [];
+
+        async function viewCustomers(id) {
+            currentViewAgencyId = id;
+            const agency = allAgencies.find(a => a.id === id);
+            document.getElementById('customersTitle').textContent = `Khách hàng - ${agency?.name || ''}`;
+            document.getElementById('customersList').innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i></div>';
+            document.getElementById('customerSearch').value = '';
+            document.getElementById('customersModal').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/agencies/${id}/customers`);
+                const result = await response.json();
+                if (result.success) {
+                    agencyCustomers = result.data || [];
+                    renderCustomersList(agencyCustomers);
+                }
+            } catch (error) {
+                document.getElementById('customersList').innerHTML = '<p class="text-center text-red-500 py-8">Lỗi tải dữ liệu</p>';
+            }
+        }
+
+        function renderCustomersList(customers) {
+            const container = document.getElementById('customersList');
+            if (customers.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-users text-5xl mb-4 opacity-30"></i>
+                        <p>Chưa có khách hàng nào</p>
+                        <button onclick="openAddCustomerModal()" class="mt-4 text-green-600 hover:underline">+ Thêm khách hàng đầu tiên</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${customers.map(c => `
+                        <div class="bg-white border rounded-xl p-4 hover:shadow-md transition">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        ${(c.full_name || 'K')[0].toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">${c.full_name || 'N/A'}</h4>
+                                        <p class="text-xs text-gray-500">${c.customer_code || ''}</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">${c.project_count || 0} dự án</span>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                ${c.phone ? `<p><i class="fas fa-phone text-gray-400 w-4"></i> ${c.phone}</p>` : ''}
+                                ${c.email ? `<p><i class="fas fa-envelope text-gray-400 w-4"></i> ${c.email}</p>` : ''}
+                                ${c.address ? `<p class="truncate"><i class="fas fa-map-marker-alt text-gray-400 w-4"></i> ${c.address}</p>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function filterCustomersList() {
+            const search = document.getElementById('customerSearch').value.toLowerCase();
+            const filtered = agencyCustomers.filter(c =>
+                (c.full_name || '').toLowerCase().includes(search) ||
+                (c.phone || '').includes(search) ||
+                (c.email || '').toLowerCase().includes(search)
+            );
+            renderCustomersList(filtered);
+        }
+
+        function closeCustomersModal() {
+            document.getElementById('customersModal').classList.add('hidden');
+        }
+
+        // ========== ADD CUSTOMER MODAL ==========
+        function openAddCustomerModal() {
+            document.getElementById('addCustomerForm').reset();
+            document.getElementById('currentAgencyId').value = currentViewAgencyId;
+
+            // Populate agencies dropdown
+            const agencySelect = document.getElementById('newCustomerAgency');
+            agencySelect.innerHTML = '<option value="">-- Chọn chi nhánh --</option>';
+            allAgencies.forEach(a => {
+                agencySelect.innerHTML += `<option value="${a.id}">${a.code} - ${a.name}</option>`;
+            });
+
+            // Pre-select current agency if in customer list view
+            if (currentViewAgencyId) {
+                agencySelect.value = currentViewAgencyId;
+                const agency = allAgencies.find(a => a.id === currentViewAgencyId);
+                document.getElementById('addCustomerTitle').textContent = `Thêm khách hàng - ${agency?.name || ''}`;
+            } else {
+                document.getElementById('addCustomerTitle').textContent = 'Thêm khách hàng mới';
+            }
+
+            document.getElementById('addCustomerModal').classList.remove('hidden');
+        }
+
+        function closeAddCustomerModal() {
+            document.getElementById('addCustomerModal').classList.add('hidden');
+        }
+
+        // Generate customer code
+        async function generateNewCustomerCode() {
+            try {
+                const response = await fetch(`${API_BASE}/customers/next-code`);
+                const result = await response.json();
+                if (result.success && result.data?.customer_code) {
+                    document.getElementById('newCustomerCode').value = result.data.customer_code;
+                } else {
+                    alert('Không thể tạo mã tự động');
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        async function saveNewCustomer(event) {
+            event.preventDefault();
+            const agencyId = document.getElementById('newCustomerAgency').value;
+            const data = {
+                customer_code: document.getElementById('newCustomerCode').value.trim() || null,
+                full_name: document.getElementById('newCustomerName').value,
+                phone: document.getElementById('newCustomerPhone').value,
+                email: document.getElementById('newCustomerEmail').value || null,
+                address: document.getElementById('newCustomerAddress').value || null,
+                agency_id: agencyId || null
+            };
+
+            try {
+                const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/customers`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    closeAddCustomerModal();
+                    if (currentViewAgencyId) {
+                        viewCustomers(parseInt(currentViewAgencyId)); // Reload customers
+                    }
+                    loadAgencies(); // Update counts
+                    loadOverview();
+                    if (window.VWModal) {
+                        VWModal.toast('Thêm khách hàng thành công!', 'success');
+                    } else {
+                        alert('Thêm khách hàng thành công!');
+                    }
+                } else {
+                    if (window.VWModal) VWModal.alert('Lỗi', result.message);
+                    else alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                if (window.VWModal) VWModal.alert('Lỗi', 'Lỗi kết nối server');
+                else alert('Lỗi kết nối server');
+            }
+        }
+
+        function formatCurrency(value) {
+            if (value >= 1000000000) return (value / 1000000000).toFixed(1) + 'B';
+            if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
+            return new Intl.NumberFormat('vi-VN').format(value) + ' ₫';
+        }
+
+        // Sidebar user menu toggle (required for sidebar)
+        function toggleSidebarUserMenu() {
+            const dropdown = document.getElementById('sidebarUserMenuDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        }
+
+        // Logout handler
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    if (result.data.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg && logoIcon) {
+                            logoImg.src = result.data.logo_path;
+                            logoImg.classList.remove('hidden');
+                            logoIcon.classList.add('hidden');
+                        }
+                    }
+                    const companyNameEl = document.getElementById('companyName');
+                    if (companyNameEl && result.data.company_name) {
+                        companyNameEl.textContent = result.data.company_name;
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load logo:', error);
+            }
+        }
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) userNameEl.textContent = user.full_name || 'User';
+
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                    if (avatarInitial && avatarImage) {
+                        if (user.avatar_url) {
+                            avatarImage.src = user.avatar_url;
+                            avatarImage.classList.remove('hidden');
+                            avatarInitial.classList.add('hidden');
+                        } else {
+                            avatarInitial.textContent = (user.full_name || 'U').charAt(0).toUpperCase();
+                            avatarInitial.classList.remove('hidden');
+                            avatarImage.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load sidebar user info:', error);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCompanyLogo();
+            loadSidebarUserInfo();
+        });
+    </script>
+</body>
+
+</html>

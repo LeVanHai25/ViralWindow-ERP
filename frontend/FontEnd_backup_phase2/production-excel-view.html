@@ -1,0 +1,808 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theo dõi dự án - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <script src="js/sidebar-enterprise.js"></script>
+    <script src="js/notification-header.js"></script>
+    <link rel="stylesheet" href="css/production-excel-view.css">
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header Notification -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header">
+                <h3>Thông báo</h3>
+            </div>
+            <div id="headerNotificationsList" class="header-notifications-list"></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Tổng quan</span>
+                </a>
+                <a href="finance-receipts.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Phiếu thu</span>
+                </a>
+                <a href="finance-payments.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                    <span>Phiếu chi</span>
+                </a>
+                <a href="finance-debt.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Công nợ</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-800">Quản lý Sản xuất</h1>
+                <p class="text-gray-500 text-sm">Theo dõi tiến độ sản xuất theo từng đơn hàng</p>
+            </div>
+            <button onclick="window.location.href='production.html'"
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                ← Kanban View
+            </button>
+        </div>
+
+        <!-- KPI CARDS — Modern with accent borders -->
+        <div class="p-6">
+            <div class="grid grid-cols-5 gap-4 mb-6" id="kpiContainer">
+                <!-- Tổng đơn hàng -->
+                <div class="bg-white rounded-xl shadow-sm border-l-4 border-indigo-500 p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Tổng đơn hàng</p>
+                        <p class="text-3xl font-black text-indigo-600" id="kpiTotal">7</p>
+                    </div>
+                    <div style="width:44px;height:44px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#6366f1" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg>
+                    </div>
+                </div>
+                <!-- Đang sản xuất -->
+                <div class="bg-white rounded-xl shadow-sm border-l-4 border-amber-500 p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Đang sản xuất</p>
+                        <p class="text-3xl font-black text-amber-600" id="kpiProduction">0</p>
+                    </div>
+                    <div style="width:44px;height:44px;background:#fffbeb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#d97706" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/></svg>
+                    </div>
+                </div>
+                <!-- Hoàn thành -->
+                <div class="bg-white rounded-xl shadow-sm border-l-4 border-emerald-500 p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Hoàn thành</p>
+                        <p class="text-3xl font-black text-emerald-600" id="kpiComplete">0</p>
+                    </div>
+                    <div style="width:44px;height:44px;background:#ecfdf5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#10b981" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+                <!-- Trễ hạn -->
+                <div class="bg-white rounded-xl shadow-sm border-l-4 border-rose-500 p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Trễ hạn</p>
+                        <p class="text-3xl font-black text-rose-600" id="kpiLate">1</p>
+                    </div>
+                    <div style="width:44px;height:44px;background:#fff1f2;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#f43f5e" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                    </div>
+                </div>
+                <!-- Thiếu vật tư -->
+                <div class="bg-white rounded-xl shadow-sm border-l-4 border-orange-500 p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Thiếu vật tư</p>
+                        <p class="text-3xl font-black text-orange-600" id="kpiMaterial">1</p>
+                    </div>
+                    <div style="width:44px;height:44px;background:#fff7ed;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#f97316" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER TOOLBAR — 2-tier modern layout -->
+            <div class="bg-white rounded-xl shadow-sm mb-4" style="border:1px solid #f1f5f9;">
+                <!-- Tier 1: View toggle + Search + Actions -->
+                <div style="padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #f1f5f9;">
+                    <!-- View Toggle -->
+                    <div style="display:flex;gap:6px;background:#f8fafc;border-radius:8px;padding:4px;">
+                        <button onclick="window.location.href='production.html'" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;background:transparent;border:none;color:#64748b;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:15px;height:15px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                            Kanban
+                        </button>
+                        <button style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;background:#f97316;border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:15px;height:15px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+                            Theo dõi dự án
+                        </button>
+                    </div>
+                    <!-- Search -->
+                    <div style="flex:1;min-width:200px;position:relative;">
+                        <input type="text" placeholder="Tìm kiếm đơn hàng, khách hàng..." id="searchInput"
+                            style="width:100%;padding:9px 14px 9px 38px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;transition:all 0.2s;box-sizing:border-box;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                        <div style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#94a3b8" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                        </div>
+                    </div>
+                    <!-- Export Excel -->
+                    <button onclick="exportExcel()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#10b981;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;"
+                        onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                        Xuất Excel
+                    </button>
+                    <!-- Column Settings -->
+                    <button onclick="openColumnSettings()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:#f8fafc;color:#475569;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;"
+                        onmouseover="this.style.borderColor='#818cf8';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#475569'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z"/></svg>
+                        Cột hiển thị
+                    </button>
+                    <!-- Refresh -->
+                    <button onclick="loadOrders()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:#f8fafc;color:#475569;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;"
+                        onmouseover="this.style.borderColor='#818cf8';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#475569'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                        Refresh
+                    </button>
+                </div>
+                <!-- Tier 2: Advanced filters -->
+                <div style="padding:12px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fafbfc;border-radius:0 0 12px 12px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:14px;height:14px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"/></svg>
+                        <select id="stageFilter" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:12px;color:#374151;background:#fff;outline:none;cursor:pointer;transition:all 0.2s;" onfocus="this.style.borderColor='#818cf8'" onblur="this.style.borderColor='#e2e8f0'">
+                            <option value="">Giai đoạn (Tất cả)</option>
+                            <option value="quotation">Báo giá</option>
+                            <option value="design">Thiết kế</option>
+                            <option value="estimation">Bóc tách</option>
+                            <option value="production">Sản xuất</option>
+                            <option value="installation">Lắp đặt</option>
+                            <option value="handover">Bàn giao</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#10b981" style="width:14px;height:14px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <select id="statusFilter" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:12px;color:#374151;background:#fff;outline:none;cursor:pointer;transition:all 0.2s;" onfocus="this.style.borderColor='#818cf8'" onblur="this.style.borderColor='#e2e8f0'">
+                            <option value="">Trạng thái (Tất cả)</option>
+                            <option value="draft">Nháp</option>
+                            <option value="in_progress">Đang xử lý</option>
+                            <option value="on_hold">Tạm dừng</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="cancelled">Huỷ</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f43f5e" style="width:14px;height:14px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                        <select id="overdueFilter" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:12px;color:#374151;background:#fff;outline:none;cursor:pointer;transition:all 0.2s;" onfocus="this.style.borderColor='#818cf8'" onblur="this.style.borderColor='#e2e8f0'">
+                            <option value="">Trễ hạn (Tất cả)</option>
+                            <option value="true">Trễ hạn</option>
+                            <option value="false">Không trễ</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#8b5cf6" style="width:14px;height:14px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                        <span style="font-size:12px;color:#64748b;white-space:nowrap;">Từ ngày</span>
+                        <input type="date" id="filterFrom" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:12px;color:#374151;outline:none;transition:all 0.2s;" onfocus="this.style.borderColor='#818cf8'" onblur="this.style.borderColor='#e2e8f0'">
+                        <span style="font-size:12px;color:#94a3b8;">→</span>
+                        <input type="date" id="filterTo" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:12px;color:#374151;outline:none;transition:all 0.2s;" onfocus="this.style.borderColor='#818cf8'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column Settings Modal -->
+            <div id="columnSettingsModal"
+                class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+                    <div
+                        class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold">⚙ Cài đặt Cột hiển thị</h3>
+                        <button onclick="closeColumnSettings()"
+                            class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-gray-500 mb-4">Chọn các cột bạn muốn hiển thị trong bảng:</p>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_orderCode" checked class="w-4 h-4 text-blue-600">
+                                <span>Mã đơn</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_orderName" checked class="w-4 h-4 text-blue-600">
+                                <span>Đơn hàng</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_featuredProducts" checked class="w-4 h-4 text-blue-600">
+                                <span>Sản phẩm đặc chưng</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_customer" checked class="w-4 h-4 text-blue-600">
+                                <span>CN-Khách hàng</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_quantity" checked class="w-4 h-4 text-blue-600">
+                                <span>Khối lượng (kg)</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_projectValue" checked class="w-4 h-4 text-blue-600">
+                                <span>Giá trị DA</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_advanceAmount" checked class="w-4 h-4 text-blue-600">
+                                <span>Số tiền tạm ứng</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_remaining" checked class="w-4 h-4 text-blue-600">
+                                <span>Số tiền còn lại</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_workforce" checked class="w-4 h-4 text-blue-600">
+                                <span>Nhân lực</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_createdAt" checked class="w-4 h-4 text-blue-600">
+                                <span>Ngày chốt HĐ</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_deliveryDate" checked class="w-4 h-4 text-blue-600">
+                                <span>Kế hoạch giao</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_materialStatus" checked class="w-4 h-4 text-blue-600">
+                                <span>Tình trạng VT</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_materialDate" checked class="w-4 h-4 text-blue-600">
+                                <span>Lịch giao VT</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_fixCompatible" checked class="w-4 h-4 text-blue-600">
+                                <span>Fix tổ hợp inox, uốn vòm</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="col_note" checked class="w-4 h-4 text-blue-600">
+                                <span>Ghi chú & vướng mắc</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="border-t px-6 py-4 flex justify-between items-center bg-gray-50">
+                        <button onclick="resetColumnSettings()"
+                            class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">Đặt lại mặc định</button>
+                        <div class="flex gap-3">
+                            <button onclick="closeColumnSettings()"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-100">Huỷ</button>
+                            <button onclick="applyColumnSettings()"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Áp dụng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXCEL GRID + DETAIL PANEL -->
+            <div class="flex gap-4">
+                <!-- Excel Grid -->
+                <div class="flex-1 bg-white rounded-lg shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="excel-table w-full" id="excelGrid">
+                            <thead class="bg-gray-100 sticky top-0">
+                                <tr>
+                                    <th class="w-8"></th>
+                                    <th data-col="orderCode">Mã đơn</th>
+                                    <th data-col="orderName">Đơn hàng</th>
+                                    <th data-col="featuredProducts">Sản phẩm ĐC</th>
+                                    <th data-col="customer">CN-Khách hàng</th>
+                                    <th data-col="quantity">Khối lượng</th>
+                                    <th data-col="projectValue">Giá trị DA</th>
+                                    <th data-col="advanceAmount">Tạm ứng</th>
+                                    <th data-col="remaining">Còn lại</th>
+                                    <th data-col="workforce">Nhân lực</th>
+                                    <th data-col="createdAt">Ngày chốt HĐ</th>
+                                    <th data-col="deliveryDate">Kế hoạch giao</th>
+                                    <th data-col="materialStatus">Tình trạng VT</th>
+                                    <th data-col="exportStatus">Tình trạng XK</th>
+                                    <th data-col="materialDate">Lịch giao VT</th>
+                                    <th data-col="fixCompatible">Fix tổ hợp</th>
+                                    <th data-col="note">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gridBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="w-96 bg-white rounded-lg shadow detail-panel" id="detailPanel" style="display:none;">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-lg" id="detailTitle">Chi tiết đơn hàng</h3>
+                        <button onclick="closeDetail()" class="text-gray-500 hover:text-gray-700">✕</button>
+                    </div>
+                    <div class="p-4" id="detailContent">
+                        <!-- Timeline & Tabs -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/production-excel-view.js"></script>
+    <script>
+        const API_SETTINGS = window.API_BASE || '/api';
+
+        // Load company logo
+        async function loadCompanyLogo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(`${API_SETTINGS}/company-settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) return;
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const logoImg = document.getElementById('companyLogo');
+                    const logoIcon = document.getElementById('companyLogoIcon');
+                    const companyName = document.getElementById('companyName');
+
+                    if (result.data.logo_path || result.data.logo) {
+                        const logoUrl = result.data.logo_path || result.data.logo;
+                        if (logoImg && logoIcon) {
+                            logoImg.src = logoUrl;
+                            logoImg.classList.remove('hidden');
+                            logoIcon.classList.add('hidden');
+                        }
+                    }
+
+                    if (companyName && (result.data.company_name || result.data.name)) {
+                        companyName.textContent = result.data.company_name || result.data.name;
+                    }
+                }
+            } catch (error) { }
+        }
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            const avatarInitialEl = document.getElementById('sidebarUserAvatarInitial');
+            const avatarImageEl = document.getElementById('sidebarUserAvatarImage');
+            const userNameEl = document.getElementById('sidebarUserName');
+
+            function updateUserUI(user) {
+                if (!user) return;
+                const avatarUrl = user.avatar_url || user.avatar;
+                if (avatarUrl && avatarImageEl && avatarInitialEl) {
+                    avatarInitialEl.classList.add('hidden');
+                    avatarImageEl.src = avatarUrl;
+                    avatarImageEl.classList.remove('hidden');
+                } else if (avatarInitialEl) {
+                    const displayName = user.full_name || user.name || user.email || 'U';
+                    avatarInitialEl.textContent = displayName.charAt(0).toUpperCase();
+                }
+                if (userNameEl) {
+                    userNameEl.textContent = user.full_name || user.name || user.email || 'Người dùng';
+                }
+            }
+
+            try {
+                const savedUser = sessionStorage.getItem('user');
+                if (savedUser) updateUserUI(JSON.parse(savedUser));
+            } catch (e) { }
+
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) return;
+                const response = await fetch(`${API_SETTINGS}/users/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        updateUserUI(result.data);
+                        sessionStorage.setItem('user', JSON.stringify(result.data));
+                    }
+                }
+            } catch (error) { }
+        }
+
+        // Toggle sidebar user menu
+        function toggleSidebarUserMenu() {
+            const dropdown = document.getElementById('sidebarUserMenuDropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        // Handle logout
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCompanyLogo();
+            loadSidebarUserInfo();
+        });
+
+        // Click outside to close dropdown
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('sidebarUserMenuDropdown');
+            const userProfile = document.querySelector('.p-4.border-b.border-blue-600');
+            if (dropdown && userProfile && !userProfile.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

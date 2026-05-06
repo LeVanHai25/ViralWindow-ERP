@@ -1,0 +1,598 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cảnh báo tồn kho - Hệ thống quản lý cửa nhôm kính</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-100">
+    <!-- HEADER -->
+    <div class="bg-white shadow p-5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="icon-square bg-blue-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold">Cảnh báo tồn kho</h1>
+                <p class="text-gray-500 text-sm">Theo dõi và quản lý cảnh báo vật tư</p>
+            </div>
+        </div>
+        <button onclick="openPurchasePlanModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-700">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Tạo kế hoạch mua hàng
+        </button>
+    </div>
+
+    <div class="p-6">
+        <!-- SUMMARY CARDS -->
+        <div class="grid grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow p-5 border-l-4 border-red-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Cảnh báo nghiêm trọng</p>
+                        <p class="text-3xl font-bold text-red-600" id="seriousWarnings">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-red-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Cảnh báo thông thường</p>
+                        <p class="text-3xl font-bold text-orange-600" id="normalWarnings">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-orange-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Giá trị thiếu hụt</p>
+                        <p class="text-3xl font-bold text-purple-600" id="missingValue">0.0M</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-purple-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Vật tư thiếu cho SX</p>
+                        <p class="text-3xl font-bold text-blue-600" id="missingForProduction">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-blue-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="border-b border-gray-200 px-6">
+                <div class="flex gap-8">
+                    <button class="tab-button px-4 py-4 flex items-center gap-2 text-gray-600 hover:text-blue-600 active" onclick="switchTab('low-stock', this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        Tồn kho thấp <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs" id="lowStockCount">0</span>
+                    </button>
+                    <button class="tab-button px-4 py-4 flex items-center gap-2 text-gray-600 hover:text-blue-600" onclick="switchTab('production-demand', this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Nhu cầu sản xuất <span class="ml-2 px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs" id="productionDemandCount">0</span>
+                    </button>
+                    <button class="tab-button px-4 py-4 flex items-center gap-2 text-gray-600 hover:text-blue-600" onclick="switchTab('scraps', this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
+                        </svg>
+                        Nhôm thừa <span class="ml-2 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs" id="scrapsCount">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB: TỒN KHO THẤP -->
+            <div id="tab-low-stock" class="tab-content active p-6">
+                <div id="lowStockContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+
+            <!-- TAB: NHU CẦU SẢN XUẤT -->
+            <div id="tab-production-demand" class="tab-content p-6">
+                <div id="productionDemandContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+
+            <!-- TAB: NHÔM THỪA -->
+            <div id="tab-scraps" class="tab-content p-6">
+                <div id="scrapsContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Create Purchase Plan -->
+    <div id="purchasePlanModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Tạo kế hoạch mua hàng</h2>
+                <button onclick="closePurchasePlanModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="purchasePlanForm" onsubmit="savePurchasePlan(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tên kế hoạch *</label>
+                        <input type="text" id="planName" required placeholder="VD: Kế hoạch mua hàng tháng 1/2025" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ngày dự kiến mua</label>
+                        <input type="date" id="planDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Danh sách vật tư cần mua</h3>
+                        <div class="space-y-3" id="purchaseItemsList">
+                            <!-- Items will be added here -->
+                        </div>
+                        <button type="button" onclick="addPurchaseItem()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">
+                            + Thêm vật tư
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" onclick="closePurchasePlanModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">
+                        Hủy
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                        Tạo kế hoạch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+
+        function switchTab(tabName, buttonElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            }
+
+            // Load data when switching tabs
+            if (tabName === 'low-stock') {
+                loadLowStock();
+            } else if (tabName === 'production-demand') {
+                loadProductionDemand();
+            } else if (tabName === 'scraps') {
+                loadScraps();
+            }
+        }
+
+        async function loadLowStock() {
+            try {
+                const response = await fetch(`${API_BASE}/inventory`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const lowStockItems = result.data.filter(item => 
+                        item.stock_quantity < item.min_stock_level
+                    );
+
+                    // Calculate stats
+                    const serious = lowStockItems.filter(item => item.stock_quantity === 0).length;
+                    const normal = lowStockItems.filter(item => item.stock_quantity > 0).length;
+                    const missingValue = lowStockItems.reduce((sum, item) => {
+                        const needed = item.min_stock_level - item.stock_quantity;
+                        return sum + (needed * item.unit_price);
+                    }, 0);
+
+                    document.getElementById('seriousWarnings').textContent = serious;
+                    document.getElementById('normalWarnings').textContent = normal;
+                    document.getElementById('missingValue').textContent = (missingValue / 1000000).toFixed(1) + 'M';
+                    document.getElementById('lowStockCount').textContent = lowStockItems.length;
+
+                    displayLowStock(lowStockItems);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+
+        function displayLowStock(items) {
+            const container = document.getElementById('lowStockContent');
+            
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mb-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-lg">Tất cả vật tư đều đủ định mức</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên vật tư</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tồn kho</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Định mức</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thiếu</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            ${items.map(item => {
+                                const needed = item.min_stock_level - item.stock_quantity;
+                                const isSerious = item.stock_quantity === 0;
+                                return `
+                                    <tr class="${isSerious ? 'bg-red-50' : ''}">
+                                        <td class="px-4 py-3 text-sm font-medium">${item.item_name}</td>
+                                        <td class="px-4 py-3 text-sm">${getItemTypeLabel(item.item_type)}</td>
+                                        <td class="px-4 py-3 text-sm ${isSerious ? 'text-red-600 font-bold' : 'text-orange-600'}">${item.stock_quantity} ${item.unit || ''}</td>
+                                        <td class="px-4 py-3 text-sm">${item.min_stock_level} ${item.unit || ''}</td>
+                                        <td class="px-4 py-3 text-sm font-semibold text-red-600">${needed} ${item.unit || ''}</td>
+                                        <td class="px-4 py-3 text-sm">
+                                            <button onclick="addToPurchasePlan('${item.item_name}', ${needed}, '${item.unit || ''}')" 
+                                                    class="text-blue-600 hover:text-blue-800 font-medium">
+                                                Thêm vào kế hoạch
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function loadProductionDemand() {
+            try {
+                // Get production orders
+                const ordersResponse = await fetch(`${API_BASE}/production-orders`);
+                const ordersResult = await ordersResponse.json();
+                
+                if (ordersResult.success) {
+                    const activeOrders = ordersResult.data.filter(o => 
+                        o.status && !['completed'].includes(o.status)
+                    );
+                    
+                    document.getElementById('productionDemandCount').textContent = activeOrders.length;
+                    document.getElementById('missingForProduction').textContent = activeOrders.length;
+
+                    displayProductionDemand(activeOrders);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+
+        function displayProductionDemand(orders) {
+            const container = document.getElementById('productionDemandContent');
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mb-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-lg">Không có nhu cầu sản xuất</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    ${orders.map(order => `
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold">${order.order_code}</h4>
+                                    <p class="text-sm text-gray-600">${order.project_name || 'N/A'}</p>
+                                    <p class="text-xs text-gray-500">${formatDate(order.order_date)}</p>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                    ${getStatusLabel(order.status)}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function loadScraps() {
+            try {
+                const response = await fetch(`${API_BASE}/inventory/scraps`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const unused = result.data.filter(s => !s.is_used);
+                    document.getElementById('scrapsCount').textContent = unused.length;
+
+                    displayScraps(unused);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+
+        function displayScraps(scraps) {
+            const container = document.getElementById('scrapsContent');
+            
+            if (scraps.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mb-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
+                        </svg>
+                        <p class="text-lg">Không có nhôm thừa</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    ${scraps.map(scrap => `
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                            <div>
+                                <h4 class="font-semibold">${scrap.profile_name || 'Nhôm thừa'}</h4>
+                                <p class="text-sm text-gray-600">Chiều dài: ${scrap.length_cm} cm</p>
+                                <p class="text-xs text-gray-500">Ngày tạo: ${formatDate(scrap.created_at)}</p>
+                            </div>
+                            <button onclick="useScrap(${scrap.id})" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                                Sử dụng
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function getItemTypeLabel(type) {
+            const labels = {
+                'aluminum': 'Nhôm',
+                'glass': 'Kính',
+                'accessory': 'Phụ kiện',
+                'other': 'Khác'
+            };
+            return labels[type] || type;
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'pending': 'Chờ sản xuất',
+                'cutting': 'Cắt nhôm',
+                'welding': 'Ép góc',
+                'accessories': 'Lắp phụ kiện',
+                'packaging': 'Đóng gói',
+                'completed': 'Hoàn thành'
+            };
+            return labels[status] || status;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Purchase Plan Modal
+        let purchaseItemCounter = 0;
+
+        function openPurchasePlanModal() {
+            document.getElementById('purchasePlanModal').classList.remove('hidden');
+            document.getElementById('planDate').value = new Date().toISOString().split('T')[0];
+            purchaseItemCounter = 0;
+            document.getElementById('purchaseItemsList').innerHTML = '';
+        }
+
+        function closePurchasePlanModal() {
+            document.getElementById('purchasePlanModal').classList.add('hidden');
+            document.getElementById('purchasePlanForm').reset();
+        }
+
+        function addPurchaseItem(itemName = '', quantity = '', unit = '') {
+            purchaseItemCounter++;
+            const container = document.getElementById('purchaseItemsList');
+            const itemHTML = `
+                <div class="bg-gray-50 rounded-lg p-4 flex gap-4 items-end" id="purchase-item-${purchaseItemCounter}">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tên vật tư</label>
+                        <input type="text" value="${itemName}" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="w-32">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Số lượng</label>
+                        <input type="number" value="${quantity}" required step="1" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="w-32">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Đơn vị</label>
+                        <input type="text" value="${unit}" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="button" onclick="removePurchaseItem(${purchaseItemCounter})" 
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                        Xóa
+                    </button>
+                </div>
+            `;
+            container.innerHTML += itemHTML;
+        }
+
+        function removePurchaseItem(id) {
+            document.getElementById(`purchase-item-${id}`).remove();
+        }
+
+        function addToPurchasePlan(itemName, quantity, unit) {
+            openPurchasePlanModal();
+            setTimeout(() => {
+                addPurchaseItem(itemName, quantity, unit);
+            }, 100);
+        }
+
+        async function savePurchasePlan(event) {
+            event.preventDefault();
+            
+            const planName = document.getElementById('planName').value;
+            const planDate = document.getElementById('planDate').value;
+            const items = [];
+            
+            document.querySelectorAll('[id^="purchase-item-"]').forEach(itemDiv => {
+                const inputs = itemDiv.querySelectorAll('input');
+                if (inputs.length >= 3) {
+                    items.push({
+                        item_name: inputs[0].value,
+                        quantity: inputs[1].value,
+                        unit: inputs[2].value
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                alert('Vui lòng thêm ít nhất một vật tư vào kế hoạch!');
+                return;
+            }
+
+            // Save to localStorage or send to API
+            const planData = {
+                name: planName,
+                date: planDate,
+                items: items,
+                created_at: new Date().toISOString()
+            };
+
+            // Store in localStorage (can be replaced with API call)
+            const existingPlans = JSON.parse(localStorage.getItem('purchasePlans') || '[]');
+            existingPlans.push(planData);
+            localStorage.setItem('purchasePlans', JSON.stringify(existingPlans));
+
+            alert('Tạo kế hoạch mua hàng thành công!');
+            closePurchasePlanModal();
+        }
+
+        async function useScrap(id) {
+            if (!confirm('Bạn có chắc muốn đánh dấu nhôm thừa này đã sử dụng?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/inventory/scraps/${id}/mark-used`, {
+                    method: 'PUT'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Đã đánh dấu nhôm thừa đã sử dụng!');
+                    loadScraps();
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể cập nhật'));
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLowStock();
+        });
+    </script>
+
+    <style>
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+</body>
+</html>
+
+

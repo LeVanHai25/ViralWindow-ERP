@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "template_code": "SL13",
+    "template_name": "Cửa lùa 3 cánh + fix trên",
+    "category": "sliding",
+    "sub_type": "sliding",
+    "aluminum_system": "XINGFA_93",
+    "width_mm": 3000,
+    "height_mm": 2400,
+    "khoang_ho_mm": 10,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/SL13.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "vertical",
+    "children": [
+      {
+        "id": "fix",
+        "type": "panel",
+        "panelType": "fixed",
+        "heightRatio": 0.25,
+        "glassType": "6mm_clear"
+      },
+      {
+        "type": "container",
+        "direction": "horizontal",
+        "heightRatio": 0.75,
+        "children": [
+          {
+            "id": "s1",
+            "type": "panel",
+            "panelType": "sliding",
+            "widthRatio": 1,
+            "glassType": "6mm_clear"
+          },
+          {
+            "id": "s2",
+            "type": "panel",
+            "panelType": "sliding",
+            "widthRatio": 1,
+            "glassType": "6mm_clear"
+          },
+          {
+            "id": "s3",
+            "type": "panel",
+            "panelType": "sliding",
+            "widthRatio": 1,
+            "glassType": "6mm_clear"
+          }
+        ]
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

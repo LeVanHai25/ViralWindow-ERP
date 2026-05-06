@@ -1,0 +1,1777 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bàn giao dự án - Hệ thống quản lý cửa nhôm kính</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/notification-system.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-left: 3px solid #60a5fa;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .product-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+
+    <!-- Header Notification (Top Right) -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header">
+                <h3>Thông báo</h3>
+            </div>
+            <div id="headerNotificationsList" class="header-notifications-list">
+                <!-- Notifications will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="block p-6 border-b border-blue-600 hover:bg-blue-700 transition cursor-pointer">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Tổng quan</span>
+                </a>
+                <a href="finance-receipts.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Phiếu thu</span>
+                </a>
+                <a href="finance-payments.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                    <span>Phiếu chi</span>
+                </a>
+                <a href="finance-debt.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Công nợ</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Top Header Bar -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-800">Bàn giao dự án</h1>
+                <p class="text-sm text-gray-500 mt-1">Quản lý bàn giao và hoàn thành dự án</p>
+            </div>
+            <button onclick="loadProjects()"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold flex items-center gap-2 hover:bg-indigo-700 transition text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Làm mới
+            </button>
+        </div>
+
+        <!-- STATISTICS (Compact) -->
+        <div class="px-6 py-3">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="statistics">
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Tổng dự án</div>
+                        <div class="text-xl font-bold text-gray-800" id="total-projects">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center text-yellow-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Chờ bàn giao</div>
+                        <div class="text-xl font-bold text-yellow-600" id="pending-projects">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Đã bàn giao</div>
+                        <div class="text-xl font-bold text-emerald-600" id="handovered-projects">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center text-red-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg></div>
+                    <div>
+                        <div class="text-xs text-gray-500">Quá hạn</div>
+                        <div class="text-xl font-bold text-red-600" id="overdue-projects">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg></div>
+                    <div>
+                        <div class="text-xs text-gray-500">Tổng sản phẩm</div>
+                        <div class="text-xl font-bold text-blue-600" id="total-products">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="px-6 pb-3">
+            <div class="bg-white rounded-2xl shadow-sm border p-4 flex flex-col md:flex-row md:items-center gap-3">
+                <!-- Search -->
+                <div class="flex-1 relative">
+                    <input id="searchInput" type="text" onkeyup="filterProjects()"
+                        class="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        placeholder="Tìm theo tên dự án / mã / khách hàng / SĐT...">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
+                    </svg>
+                </div>
+                <!-- Filter Status -->
+                <select id="filterStatus" onchange="filterProjects()"
+                    class="py-2 px-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="pending">Chờ bàn giao</option>
+                    <option value="completed">Đã bàn giao</option>
+                    <option value="overdue">Quá hạn</option>
+                </select>
+                <!-- Sort -->
+                <select id="sortBy" onchange="filterProjects()"
+                    class="py-2 px-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <option value="deadline_asc">Gần hạn nhất</option>
+                    <option value="handover_desc">Mới bàn giao</option>
+                    <option value="products_desc">Nhiều sản phẩm</option>
+                    <option value="name_asc">Tên A-Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PROJECTS LIST -->
+        <div class="px-6 pb-6">
+            <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                <!-- List Header -->
+                <div
+                    class="px-6 py-3 bg-gray-50 border-b text-xs text-gray-500 font-medium hidden md:grid md:grid-cols-12 gap-4">
+                    <div class="md:col-span-5">Dự án</div>
+                    <div class="md:col-span-2">Sản phẩm</div>
+                    <div class="md:col-span-3">Ngày bàn giao / Hạn</div>
+                    <div class="md:col-span-2 text-right">Thao tác</div>
+                </div>
+                <!-- List Items -->
+                <div id="projects-container" class="divide-y">
+                    <div class="text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600">
+                        </div>
+                        <p class="mt-3 text-gray-500 text-sm">Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Handover Details -->
+        <div id="handoverModal"
+            class="fixed inset-0 bg-black bg-opacity-50 hidden z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Chi tiết bàn giao</h3>
+                    <button onclick="closeHandoverModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6" id="handoverModalContent">
+                    <!-- Content sẽ được điền bằng JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Thu tiền còn lại -->
+        <div id="collectPaymentModal"
+            class="fixed inset-0 bg-black bg-opacity-50 hidden z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-md w-full p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">💰 Thu tiền còn lại</h3>
+                <input id="paymentProjectId" type="hidden">
+                <input id="paymentCustomerId" type="hidden">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dự án:</label>
+                    <span id="paymentProjectName" class="font-bold text-gray-900"></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-blue-50 p-3 rounded-lg">
+                        <div class="text-xs text-gray-600">Giá trị HĐ</div>
+                        <div id="paymentContractValue" class="font-bold text-blue-600"></div>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg">
+                        <div class="text-xs text-gray-600">Đã thu</div>
+                        <div id="paymentPaidAmount" class="font-bold text-green-600"></div>
+                    </div>
+                </div>
+
+                <div class="mb-4 bg-red-50 p-3 rounded-lg border-2 border-red-200">
+                    <div class="text-sm font-medium text-red-700">Còn lại:</div>
+                    <div id="paymentRemainingAmount" class="text-2xl font-bold text-red-600"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Số tiền thu: <span class="text-red-500">*</span>
+                    </label>
+                    <input id="paymentAmount" type="number" min="0" step="1000"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Nhập số tiền">
+                    <small class="text-gray-500">Có thể thu một phần, không bắt buộc thu hết</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Phương thức thanh toán: <span class="text-red-500">*</span>
+                    </label>
+                    <select id="paymentMethod"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Chọn phương thức --</option>
+                        <option value="cash">💵 Tiền mặt</option>
+                        <option value="transfer">🏦 Chuyển khoản</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú:</label>
+                    <textarea id="paymentNote" rows="2"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Nhập ghi chú (tùy chọn)"></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeCollectPaymentModal()"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium">
+                        Hủy
+                    </button>
+                    <button onclick="submitCollectPayment(event)"
+                        class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+                        💳 Lập Phiếu Thu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            const API_BASE = window.API_BASE || '/api';
+
+            // Load sidebar user info
+            async function loadSidebarUserInfo() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        return;
+                    }
+
+                    const response = await fetch(`${API_BASE}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const user = result.data;
+                        const userNameEl = document.getElementById('sidebarUserName');
+                        if (userNameEl) {
+                            userNameEl.textContent = user.full_name || 'User';
+                        }
+
+                        const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                        const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                        if (avatarInitial && avatarImage) {
+                            if (user.avatar_url) {
+                                avatarImage.src = user.avatar_url;
+                                avatarImage.classList.remove('hidden');
+                                avatarInitial.classList.add('hidden');
+                            } else {
+                                const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                                avatarInitial.textContent = initial;
+                                avatarInitial.classList.remove('hidden');
+                                avatarImage.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi load sidebar user info:', error);
+                }
+            }
+
+            // Toggle sidebar user menu
+            function toggleSidebarUserMenu() {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                }
+            }
+
+            // Handle logout (shared function)
+            async function handleLogout() {
+                const confirmed = await VWModal.confirm('ÄÄƒng xuáº¥t', 'Bạn có chắc muốn đăng xuất?');
+                if (confirmed) {
+                    sessionStorage.removeItem('token');
+                    sessionStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function (event) {
+                const sidebarUserMenuDropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (sidebarUserMenuDropdown && !sidebarUserMenuDropdown.contains(event.target) && !event.target.closest('[onclick="toggleSidebarUserMenu()"]')) {
+                    sidebarUserMenuDropdown.classList.add('hidden');
+                }
+            });
+
+            // Load company logo and name
+            async function loadCompanyLogo() {
+                try {
+                    const response = await fetch(`${API_BASE}/company-settings`);
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        // Load logo
+                        if (result.data.logo_path) {
+                            const logoImg = document.getElementById('companyLogo');
+                            const logoIcon = document.getElementById('companyLogoIcon');
+                            if (logoImg && logoIcon) {
+                                logoImg.src = result.data.logo_path;
+                                logoImg.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            }
+                        }
+
+                        // Load company name
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl && result.data.company_name) {
+                            companyNameEl.textContent = result.data.company_name;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi load logo:', error);
+                }
+            }
+
+            // Escape HTML để tránh XSS
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Format date
+            // Hàm format số tiền với dấu chấm ngăn cách
+            function formatCurrency(amount) {
+                if (!amount) return '0 ₫';
+                const num = parseFloat(amount) || 0;
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₫';
+            }
+
+            // Hàm đọc số tiền bằng chữ tiếng Việt
+            function readNumberInVietnamese(num) {
+                const ones = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+                const tens = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+                const hundreds = ['', 'một trăm', 'hai trăm', 'ba trăm', 'bốn trăm', 'năm trăm', 'sáu trăm', 'bảy trăm', 'tám trăm', 'chín trăm'];
+
+                function readThreeDigits(n) {
+                    let result = '';
+                    const hundred = Math.floor(n / 100);
+                    const ten = Math.floor((n % 100) / 10);
+                    const one = n % 10;
+
+                    if (hundred > 0) {
+                        result += hundreds[hundred] + ' ';
+                    }
+
+                    if (ten === 0 && one > 0) {
+                        result += ones[one];
+                    } else if (ten === 1) {
+                        result += 'mười ';
+                        if (one === 5) {
+                            result += 'lăm';
+                        } else if (one > 0) {
+                            result += ones[one];
+                        }
+                    } else if (ten > 1) {
+                        result += tens[ten] + ' ';
+                        if (one === 1) {
+                            result += 'mốt';
+                        } else if (one === 5) {
+                            result += 'lăm';
+                        } else if (one > 0) {
+                            result += ones[one];
+                        }
+                    }
+
+                    return result.trim();
+                }
+
+                if (num === 0) return 'không';
+                if (num < 0) return 'âm ' + readNumberInVietnamese(-num);
+
+                let result = '';
+                const billions = Math.floor(num / 1000000000);
+                const millions = Math.floor((num % 1000000000) / 1000000);
+                const thousands = Math.floor((num % 1000000) / 1000);
+                const remainder = num % 1000;
+
+                if (billions > 0) {
+                    result += readThreeDigits(billions) + ' tỷ ';
+                }
+                if (millions > 0) {
+                    result += readThreeDigits(millions) + ' triệu ';
+                }
+                if (thousands > 0) {
+                    result += readThreeDigits(thousands) + ' nghìn ';
+                }
+                if (remainder > 0) {
+                    result += readThreeDigits(remainder);
+                }
+
+                return result.trim() || 'không';
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return 'Chưa có';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('vi-VN');
+            }
+
+            // Helper function để lấy địa chỉ dự án
+            // Ưu tiên: construction_address > customer_address
+            function getProjectAddress(project) {
+                if (project.construction_address || project.construction_district || project.construction_province) {
+                    const parts = [];
+                    if (project.construction_address) parts.push(project.construction_address);
+                    if (project.construction_district) parts.push(project.construction_district);
+                    if (project.construction_province) parts.push(project.construction_province);
+                    return parts.join(', ') || 'N/A';
+                }
+                return project.customer_address || 'N/A';
+            }
+
+            // Global data for filtering
+            let allProjects = [];
+
+            // Load projects
+            async function loadProjects() {
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        allProjects = result.data;
+                        filterProjects();
+                        updateStatistics(result.data);
+                    } else {
+                        document.getElementById('projects-container').innerHTML = `<div class="text-center py-12"><p class="text-red-600 text-sm">Lỗi: ${escapeHtml(result.message)}</p></div>`;
+                    }
+                } catch (error) {
+                    document.getElementById('projects-container').innerHTML = `<div class="text-center py-12"><p class="text-red-600 text-sm">Lỗi kết nối: ${error.message}</p></div>`;
+                }
+            }
+
+            // Filter, search, sort projects
+            function filterProjects() {
+                const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+                const status = document.getElementById('filterStatus')?.value || '';
+                const sortBy = document.getElementById('sortBy')?.value || 'deadline_asc';
+                const today = new Date();
+
+                let filtered = allProjects.filter(p => {
+                    // Search
+                    const text = `${p.project_name} ${p.project_code} ${p.customer_name} ${p.customer_phone}`.toLowerCase();
+                    if (search && !text.includes(search)) return false;
+
+                    // Status filter
+                    const isHandovered = p.handover_status === 'completed';
+                    const isOverdue = p.deadline && new Date(p.deadline) < today && !isHandovered;
+                    if (status === 'pending' && isHandovered) return false;
+                    if (status === 'completed' && !isHandovered) return false;
+                    if (status === 'overdue' && !isOverdue) return false;
+                    return true;
+                });
+
+                // Sort
+                filtered.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'deadline_asc': return new Date(a.deadline || '9999') - new Date(b.deadline || '9999');
+                        case 'handover_desc': return new Date(b.handover_date || 0) - new Date(a.handover_date || 0);
+                        case 'products_desc': return (b.total_products || 0) - (a.total_products || 0);
+                        case 'name_asc': return (a.project_name || '').localeCompare(b.project_name || '');
+                        default: return 0;
+                    }
+                });
+
+                displayProjects(filtered);
+            }
+
+            // Display projects as list
+            function displayProjects(projects) {
+                const container = document.getElementById('projects-container');
+                if (!projects.length) {
+                    container.innerHTML = `<div class="text-center py-12"><svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><p class="mt-3 text-gray-500 text-sm">Không có dự án nào</p></div>`;
+                    return;
+                }
+                container.innerHTML = projects.map(p => createProjectRow(p)).join('');
+            }
+
+            // Create project row (list item)
+            function createProjectRow(project) {
+                const isHandovered = project.handover_status === 'completed';
+                const handoverDate = project.handover_date ? formatDate(project.handover_date) : '—';
+                const deadline = project.deadline ? formatDate(project.deadline) : '—';
+                const today = new Date();
+                const isOverdue = project.deadline && new Date(project.deadline) < today && !isHandovered;
+                const daysLeft = project.deadline ? Math.ceil((new Date(project.deadline) - today) / (1000 * 60 * 60 * 24)) : null;
+                const initial = (project.project_name || 'P').substring(0, 2).toUpperCase();
+
+                // Badge
+                let badge = '';
+                if (isOverdue) badge = '<span class="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700 border border-red-100">⛔ Quá hạn</span>';
+                else if (isHandovered) badge = '<span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">✅ Đã bàn giao</span>';
+                else badge = '<span class="text-xs px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100">⏳ Chờ bàn giao</span>';
+
+                // Days indicator
+                let daysIndicator = '';
+                if (!isHandovered && daysLeft !== null) {
+                    if (daysLeft < 0) daysIndicator = `<span class="text-xs text-red-600 font-medium">Quá ${Math.abs(daysLeft)} ngày</span>`;
+                    else if (daysLeft === 0) daysIndicator = '<span class="text-xs text-red-600 font-medium">Hôm nay</span>';
+                    else if (daysLeft <= 3) daysIndicator = `<span class="text-xs text-orange-600 font-medium">Còn ${daysLeft} ngày</span>`;
+                    else daysIndicator = `<span class="text-xs text-gray-500">Còn ${daysLeft} ngày</span>`;
+                }
+
+                return `
+                <details class="group">
+                    <summary class="list-none cursor-pointer">
+                        <div class="px-6 py-4 hover:bg-gray-50 transition grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                            <!-- Left: Project Info -->
+                            <div class="md:col-span-5 flex items-start gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0 text-sm">${initial}</div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                        <div class="font-semibold text-gray-900 truncate">${escapeHtml(project.project_name || 'N/A')}</div>
+                                        ${badge}
+                                    </div>
+                                    <div class="text-xs text-gray-500 flex flex-wrap gap-x-3">
+                                        <span>Mã: ${escapeHtml(project.project_code || 'N/A')}</span>
+                                        <span>KH: ${escapeHtml(project.customer_name || 'N/A')}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Products -->
+                            <div class="md:col-span-2 text-sm">
+                                <div class="font-semibold text-gray-800">${project.total_products || 0}</div>
+                                <div class="text-gray-400 text-xs">sản phẩm</div>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="md:col-span-3 text-sm">
+                                <div class="text-xs text-gray-400">Bàn giao: <span class="font-semibold ${isHandovered ? 'text-emerald-600' : 'text-gray-600'}">${handoverDate}</span></div>
+                                <div class="text-xs text-gray-400 mt-0.5">Hạn: <span class="font-medium ${isOverdue ? 'text-red-600' : 'text-gray-600'}">${deadline}</span></div>
+                                ${daysIndicator}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="md:col-span-2 flex md:justify-end items-center gap-2">
+                                <button onclick="event.stopPropagation(); showHandoverDetails(${project.id})" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs hover:bg-indigo-700 font-medium">Chi tiết</button>
+                                ${isHandovered ?
+                        `<button onclick="event.stopPropagation(); exportHandoverToExcel(${project.id})" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs hover:bg-gray-50 font-medium">Excel</button>` :
+                        `<button onclick="event.stopPropagation(); completeHandover(${project.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs hover:bg-emerald-700 font-medium">Xác nhận</button>`
+                    }
+                                ${(() => {
+                        const totalValue = parseFloat(project.total_value || 0);
+                        const paidAmount = parseFloat(project.paid_amount || 0);
+                        const remaining = totalValue - paidAmount;
+                        if (remaining > 0) {
+                            return `<button onclick="event.stopPropagation(); openCollectPaymentModal(${project.id})" class="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs hover:bg-green-700 font-medium whitespace-nowrap">💰 Thu tiền</button>`;
+                        }
+                        return '';
+                    })()}
+                                <svg class="w-4 h-4 text-gray-400 transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                    </summary>
+
+                    <!-- Expanded Details -->
+                    <div class="px-6 pb-4 pt-1 bg-gray-50 text-sm grid grid-cols-1 md:grid-cols-4 gap-3 border-t">
+                        <div><span class="text-gray-400">Địa chỉ:</span> ${escapeHtml(getProjectAddress(project))}</div>
+                        <div><span class="text-gray-400">SĐT:</span> ${escapeHtml(project.customer_phone || 'N/A')}</div>
+                        <div><span class="text-gray-400">Ghi chú:</span> ${escapeHtml(project.handover_notes || '—')}</div>
+                        <div class="flex gap-2">
+                            <button onclick="showHandoverDetails(${project.id})" class="text-indigo-600 hover:underline text-xs font-medium">Xem chi tiết →</button>
+                        </div>
+                    </div>
+                </details>`;
+            }
+
+            // Update statistics
+            function updateStatistics(projects) {
+                const today = new Date();
+                let pending = 0, completed = 0, overdue = 0, totalProducts = 0;
+
+                projects.forEach(p => {
+                    totalProducts += p.total_products || 0;
+                    const isHandovered = p.handover_status === 'completed';
+                    const isOverdue = p.deadline && new Date(p.deadline) < today && !isHandovered;
+
+                    if (isHandovered) completed++;
+                    else if (isOverdue) overdue++;
+                    else pending++;
+                });
+
+                document.getElementById('total-projects').textContent = projects.length;
+                document.getElementById('pending-projects').textContent = pending;
+                document.getElementById('handovered-projects').textContent = completed;
+                document.getElementById('overdue-projects').textContent = overdue;
+                document.getElementById('total-products').textContent = totalProducts;
+            }
+
+            // Create product card
+            function createProductCard(product, projectId) {
+                const productName = product.template_name || product.spec || product.item_name || 'Sản phẩm';
+                const productCode = product.design_code || product.code || 'N/A';
+
+                return `
+                <div class="product-card bg-white rounded-lg p-4 border">
+                    <div class="mb-2">
+                        <h4 class="font-semibold text-gray-900 text-sm mb-1">
+                            ${escapeHtml(productCode)} - ${escapeHtml(productName)}
+                        </h4>
+                        <p class="text-xs text-gray-500">
+                            Kích thước: ${product.width_mm || 'N/A'} x ${product.height_mm || 'N/A'} mm
+                        </p>
+                    </div>
+                </div>
+            `;
+            }
+
+
+
+            // Show handover details modal
+            async function showHandoverDetails(projectId) {
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const project = result.data.find(p => p.id === projectId);
+                        if (project) {
+
+                            // Reset photo arrays
+                            window.pendingHandoverPhotos = [];
+                            window.existingHandoverPhotos = project.handover_photos || [];
+
+                            document.getElementById('handoverModalContent').innerHTML = `
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-800 mb-2">${escapeHtml(project.project_name || 'N/A')}</h4>
+                                    <p class="text-sm text-gray-600">Mã dự án: ${escapeHtml(project.project_code || 'N/A')}</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Ngày bàn giao</label>
+                                        <input type="date" id="handoverDate" value="${project.handover_date ? project.handover_date.split('T')[0] : ''}" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Người bàn giao</label>
+                                        <input type="text" id="handoverBy" value="${escapeHtml(project.handover_person || '')}" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Nhập tên người bàn giao">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Người nhận</label>
+                                        <input type="text" id="receivedBy" value="${escapeHtml(project.receiver_name || project.customer_name || '')}" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Nhập tên người nhận">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Số điện thoại người nhận</label>
+                                        <input type="text" id="receiverPhone" value="${escapeHtml(project.receiver_phone || project.customer_phone || '')}" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Nhập số điện thoại">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Ghi chú bàn giao</label>
+                                    <textarea id="handoverNotes" rows="4" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm" 
+                                        placeholder="Nhập ghi chú về bàn giao...">${escapeHtml(project.handover_notes || '')}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">📷 Hình ảnh bàn giao</label>
+                                    <div id="existingHandoverPhotosContainer" class="grid grid-cols-4 gap-2 mb-2">
+                                        ${(project.handover_photos || []).map((photo, idx) => `
+                                            <div class="relative">
+                                                <img src="${photo}" alt="Photo ${idx + 1}" class="w-full h-20 object-cover rounded border">
+                                                <button onclick="removeHandoverPhoto(${idx})" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs">✕</button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="flex gap-2 mb-2">
+                                        <input type="file" id="handoverPhotoInput" accept="image/*" multiple onchange="previewHandoverPhotos(this)" class="flex-1 text-sm border rounded-lg px-2 py-1">
+                                        <button onclick="captureHandoverPhoto()" class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold hover:bg-blue-600">
+                                            📸 Chụp ảnh
+                                        </button>
+                                    </div>
+                                    <div id="handoverPhotoPreview" class="grid grid-cols-4 gap-2"></div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Danh sách sản phẩm</label>
+                                    <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+                                        <ul class="space-y-2">
+                                            ${project.products.map((p, idx) => {
+                                const pName = p.template_name || p.spec || p.item_name || 'Sản phẩm';
+                                const pCode = p.design_code || p.code || 'N/A';
+                                return `<li class="text-sm text-gray-700">${idx + 1}. ${escapeHtml(pCode)} - ${escapeHtml(pName)} (${p.width_mm || 'N/A'} x ${p.height_mm || 'N/A'} mm)</li>`;
+                            }).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-2 pt-4">
+                                    <button onclick="saveHandoverInfo(${projectId})"
+                                        class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">
+                                        Lưu thông tin
+                                    </button>
+                                    <button onclick="closeHandoverModal()"
+                                        class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+
+                            document.getElementById('handoverModal').classList.remove('hidden');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading handover details:', error);
+                    alert('Lỗi khi tải chi tiết bàn giao: ' + error.message);
+                }
+            }
+
+            // Close handover modal
+            function closeHandoverModal() {
+                document.getElementById('handoverModal').classList.add('hidden');
+            }
+
+            // Global arrays for handover photos
+            window.existingHandoverPhotos = [];
+            window.pendingHandoverPhotos = [];
+
+            // Preview handover photos before upload
+            function previewHandoverPhotos(input) {
+                const preview = document.getElementById('handoverPhotoPreview');
+                if (!preview) return;
+                preview.innerHTML = '';
+
+                if (input.files) {
+                    Array.from(input.files).forEach((file, idx) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            window.pendingHandoverPhotos.push(e.target.result);
+                            preview.innerHTML += `
+                                <div class="relative">
+                                    <img src="${e.target.result}" alt="Preview ${idx + 1}" class="w-full h-20 object-cover rounded border">
+                                </div>
+                            `;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+
+            // Capture handover photo using camera
+            async function captureHandoverPhoto() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+
+                    const modal = document.createElement('div');
+                    modal.id = 'handoverCameraModal';
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-90 z-[9999] flex flex-col items-center justify-center';
+                    modal.innerHTML = `
+                        <video id="handoverCameraVideo" autoplay playsinline class="max-w-full max-h-[70vh] rounded-lg"></video>
+                        <div class="flex gap-4 mt-4">
+                            <button onclick="takeHandoverSnapshot()" class="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold text-lg">
+                                📸 Chụp ảnh
+                            </button>
+                            <button onclick="closeHandoverCamera()" class="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold text-lg">
+                                ✕ Đóng
+                            </button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+
+                    const video = document.getElementById('handoverCameraVideo');
+                    video.srcObject = stream;
+                    window.handoverCameraStream = stream;
+                } catch (error) {
+                    console.error('Camera error:', error);
+                    alert('Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập camera.');
+                }
+            }
+
+            // Take snapshot for handover
+            function takeHandoverSnapshot() {
+                const video = document.getElementById('handoverCameraVideo');
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+
+                const photoData = canvas.toDataURL('image/jpeg', 0.8);
+                window.pendingHandoverPhotos.push(photoData);
+
+                const preview = document.getElementById('handoverPhotoPreview');
+                if (preview) {
+                    preview.innerHTML += `
+                        <div class="relative">
+                            <img src="${photoData}" alt="Captured" class="w-full h-20 object-cover rounded border">
+                        </div>
+                    `;
+                }
+
+                closeHandoverCamera();
+                alert('Đã chụp ảnh thành công!');
+            }
+
+            // Close handover camera
+            function closeHandoverCamera() {
+                if (window.handoverCameraStream) {
+                    window.handoverCameraStream.getTracks().forEach(track => track.stop());
+                }
+                const modal = document.getElementById('handoverCameraModal');
+                if (modal) modal.remove();
+            }
+
+            // Remove existing handover photo
+            function removeHandoverPhoto(idx) {
+                VWModal.confirm('Xóa ảnh', 'Xác nhận xóa ảnh này?').then(confirmed => {
+                    if (confirmed) {
+                        window.existingHandoverPhotos.splice(idx, 1);
+                        const container = document.getElementById('existingHandoverPhotosContainer');
+                        if (container) {
+                            const imgs = container.querySelectorAll('div.relative');
+                            if (imgs[idx]) imgs[idx].remove();
+                        }
+                    }
+                });
+            }
+
+            // Save handover info
+            async function saveHandoverInfo(projectId) {
+                const handoverDate = document.getElementById('handoverDate').value;
+                const handoverPerson = document.getElementById('handoverBy').value;
+                const receiverName = document.getElementById('receivedBy').value;
+                const receiverPhone = document.getElementById('receiverPhone').value;
+                const notes = document.getElementById('handoverNotes').value;
+
+                // Collect photos
+                const allPhotos = [...(window.existingHandoverPhotos || []), ...(window.pendingHandoverPhotos || [])];
+
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects/${projectId}/info`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            handover_date: handoverDate,
+                            handover_person: handoverPerson,
+                            receiver_name: receiverName,
+                            receiver_phone: receiverPhone,
+                            handover_notes: notes,
+                            photos: allPhotos
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Đã lưu thông tin bàn giao!');
+                        closeHandoverModal();
+                        loadProjects();
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error saving handover info:', error);
+                    alert('Lỗi khi lưu thông tin: ' + error.message);
+                }
+            }
+
+            // Complete handover
+            async function completeHandover(projectId) {
+                // Use await for VWModal.confirm to ensure proper async flow
+                const confirmed = await VWModal.confirm('Xác nhận', 'Bạn có chắc chắn muốn xác nhận bàn giao dự án này? Dự án sẽ được đánh dấu là hoàn thành.');
+                if (!confirmed) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects/${projectId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        await VWModal.alert('Thông báo', 'Đã xác nhận bàn giao dự án!');
+                        loadProjects();
+                    } else {
+                        await VWModal.alert('Lỗi', result.message);
+                    }
+                } catch (error) {
+                    console.error('Error completing handover:', error);
+                    await VWModal.alert('Lỗi', 'Lỗi khi xác nhận bàn giao: ' + error.message);
+                }
+            }
+
+            // Export handover document to Excel
+            async function exportHandoverToExcel(projectId) {
+                try {
+                    // Lấy thông tin dự án
+                    const projectRes = await fetch(`${API_BASE}/handover/projects`);
+                    const projectResult = await projectRes.json();
+
+                    if (!projectResult.success || !projectResult.data) {
+                        alert('Không thể tải thông tin dự án!');
+                        return;
+                    }
+
+                    const project = projectResult.data.find(p => p.id === projectId);
+                    if (!project) {
+                        alert('Không tìm thấy dự án!');
+                        return;
+                    }
+
+                    // Lấy thông tin công ty
+                    const companyRes = await fetch(`${API_BASE}/company-settings`);
+                    const companyResult = await companyRes.json();
+                    const companyInfo = companyResult.success && companyResult.data ? companyResult.data : {
+                        company_name: 'CÔNG TY CỔ PHẦN VIRALWINDOW',
+                        address: 'KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, HN',
+                        phone: '1800 282839',
+                        email: 'viralwindow.vn@gmail.com',
+                        website: 'viralwindow.vn',
+                        logo_path: '' + (window.SERVER_BASE || '') + '/assets/LogoViralWindow.png'
+                    };
+
+                    // Tạo workbook
+                    const wb = XLSX.utils.book_new();
+
+                    // Tạo data array cho Excel
+                    const wsData = [];
+
+                    // Dòng trống đầu tiên
+                    wsData.push([]);
+
+                    // Header với logo (sẽ thêm logo sau nếu có thể)
+                    wsData.push([companyInfo.company_name || 'CÔNG TY CỔ PHẦN VIRALWINDOW']);
+                    wsData.push(['Địa chỉ:', companyInfo.address || '']);
+                    wsData.push(['Hotline:', companyInfo.phone || '']);
+                    wsData.push(['Email:', companyInfo.email || '']);
+                    wsData.push(['Website:', companyInfo.website || '']);
+                    wsData.push([]);
+
+                    // Tiêu đề
+                    wsData.push(['PHIẾU BÀN GIAO DỰ ÁN']);
+                    wsData.push([]);
+
+                    // Thông tin dự án
+                    wsData.push(['THÔNG TIN DỰ ÁN']);
+                    wsData.push(['Mã dự án:', project.project_code || '']);
+                    wsData.push(['Tên dự án:', project.project_name || '']);
+                    wsData.push(['Ngày bàn giao:', project.handover_date ? formatDate(project.handover_date) : '']);
+                    wsData.push(['Hạn hoàn thành:', project.deadline ? formatDate(project.deadline) : '']);
+                    wsData.push([]);
+
+                    // Thông tin khách hàng
+                    wsData.push(['THÔNG TIN KHÁCH HÀNG']);
+                    wsData.push(['Tên khách hàng:', project.customer_name || '']);
+                    wsData.push(['Địa chỉ:', project.customer_address || '']);
+                    wsData.push(['Số điện thoại:', project.customer_phone || '']);
+                    wsData.push(['Email:', project.customer_email || '']);
+                    wsData.push([]);
+
+                    // Thông tin bàn giao
+                    if (project.handover_person || project.receiver_name) {
+                        wsData.push(['THÔNG TIN BÀN GIAO']);
+                        if (project.handover_person) {
+                            wsData.push(['Người bàn giao:', project.handover_person]);
+                        }
+                        if (project.receiver_name) {
+                            wsData.push(['Người nhận:', project.receiver_name]);
+                        }
+                        if (project.receiver_phone) {
+                            wsData.push(['SĐT người nhận:', project.receiver_phone]);
+                        }
+                        wsData.push([]);
+                    }
+
+                    // Bảng sản phẩm
+                    wsData.push(['DANH SÁCH SẢN PHẨM']);
+                    wsData.push(['STT', 'Mã sản phẩm', 'Tên sản phẩm', 'Kích thước (mm)', 'Ghi chú']);
+
+                    if (project.products && project.products.length > 0) {
+                        project.products.forEach((product, index) => {
+                            const productName = product.template_name || product.spec || product.item_name || 'Sản phẩm';
+                            const productCode = product.design_code || product.code || 'N/A';
+                            const dimensions = `${product.width_mm || 'N/A'} x ${product.height_mm || 'N/A'}`;
+
+                            wsData.push([
+                                index + 1,
+                                productCode,
+                                productName,
+                                dimensions,
+                                product.notes || ''
+                            ]);
+                        });
+                    } else {
+                        wsData.push(['', 'Không có sản phẩm', '', '', '']);
+                    }
+
+                    wsData.push([]);
+                    wsData.push(['Tổng số sản phẩm:', project.total_products || 0]);
+
+                    // Tổng số tiền
+                    if (project.total_amount && project.total_amount > 0) {
+                        const totalAmount = parseFloat(project.total_amount) || 0;
+                        const formattedAmount = formatCurrency(totalAmount);
+                        const amountInWords = readNumberInVietnamese(totalAmount);
+
+                        wsData.push([]);
+                        wsData.push(['TỔNG SỐ TIỀN:', formattedAmount]);
+                        wsData.push(['(Bằng chữ:', amountInWords + ')']);
+                    }
+
+                    wsData.push([]);
+
+                    // Ghi chú
+                    if (project.handover_notes) {
+                        wsData.push(['GHI CHÚ']);
+                        wsData.push([project.handover_notes]);
+                        wsData.push([]);
+                    }
+
+                    // Chữ ký
+                    wsData.push([]);
+                    wsData.push([]);
+                    wsData.push(['', '', 'Người bàn giao', '', 'Người nhận']);
+                    wsData.push([]);
+                    wsData.push([]);
+                    wsData.push(['', '', '(Ký, ghi rõ họ tên)', '', '(Ký, ghi rõ họ tên)']);
+
+                    if (project.handover_person) {
+                        wsData.push(['', '', project.handover_person, '', '']);
+                    }
+                    if (project.receiver_name) {
+                        wsData.push(['', '', '', '', project.receiver_name]);
+                    }
+
+                    // Tạo worksheet
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                    // Set độ rộng cột
+                    ws['!cols'] = [
+                        { wch: 5 },   // STT
+                        { wch: 20 },  // Mã sản phẩm
+                        { wch: 40 },  // Tên sản phẩm
+                        { wch: 20 },  // Kích thước
+                        { wch: 30 }   // Ghi chú
+                    ];
+
+                    // Tính toán số dòng cho merge cells (tìm các dòng tiêu đề)
+                    const merges = [];
+                    for (let i = 0; i < wsData.length; i++) {
+                        const row = wsData[i];
+                        if (row && row.length > 0 && row[0]) {
+                            const firstCell = String(row[0]).trim();
+                            // Merge các dòng tiêu đề
+                            if (firstCell === 'PHIẾU BÀN GIAO DỰ ÁN' ||
+                                firstCell === 'THÔNG TIN DỰ ÁN' ||
+                                firstCell === 'THÔNG TIN KHÁCH HÀNG' ||
+                                firstCell === 'THÔNG TIN BÀN GIAO' ||
+                                firstCell === 'DANH SÁCH SẢN PHẨM' ||
+                                firstCell === 'GHI CHÚ') {
+                                merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 4 } });
+                            }
+                        }
+                    }
+
+                    ws['!merges'] = merges;
+
+                    // Append worksheet
+                    XLSX.utils.book_append_sheet(wb, ws, 'Phiếu bàn giao');
+
+                    // Download file
+                    const fileName = `Phieu_ban_giao_${project.project_code || projectId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+
+                    alert(`✅ Đã xuất file: ${fileName}`);
+                } catch (error) {
+                    console.error('Error exporting handover to Excel:', error);
+                    alert('Lỗi khi xuất file Excel: ' + error.message);
+                }
+            }
+
+            // ============================================
+            // PAYMENT COLLECTION FUNCTIONS
+            // ============================================
+
+            // Open payment collection modal
+            async function openCollectPaymentModal(projectId) {
+                try {
+                    const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+
+                    if (!result.success || !result.data) {
+                        alert('Không tìm thấy thông tin dự án');
+                        return;
+                    }
+
+                    const project = result.data;
+                    const totalValue = parseFloat(project.total_value || 0);
+                    const paidAmount = parseFloat(project.paid_amount || 0);
+                    const remaining = totalValue - paidAmount;
+
+                    if (remaining <= 0) {
+                        alert('Dự án đã thu đủ tiền!');
+                        return;
+                    }
+
+                    // Populate modal
+                    document.getElementById('paymentProjectId').value = project.id;
+                    document.getElementById('paymentCustomerId').value = project.customer_id || '';
+                    document.getElementById('paymentProjectName').textContent = project.project_code || 'N/A';
+                    document.getElementById('paymentContractValue').textContent = formatCurrency(totalValue);
+                    document.getElementById('paymentPaidAmount').textContent = formatCurrency(paidAmount);
+                    document.getElementById('paymentRemainingAmount').textContent = formatCurrency(remaining);
+                    document.getElementById('paymentAmount').value = Math.round(remaining); // Default = full remaining
+                    document.getElementById('paymentMethod').value = '';
+                    document.getElementById('paymentNote').value = '';
+
+                    // Show modal
+                    document.getElementById('collectPaymentModal').classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error opening payment modal:', error);
+                    alert('Lỗi khi mở form thu tiền: ' + error.message);
+                }
+            }
+
+            // Close payment collection modal
+            function closeCollectPaymentModal() {
+                document.getElementById('collectPaymentModal').classList.add('hidden');
+            }
+
+            // Submit payment collection
+            async function submitCollectPayment(e) {
+                e.preventDefault();
+
+                const projectId = document.getElementById('paymentProjectId').value;
+                const customerId = document.getElementById('paymentCustomerId').value;
+                const amount = parseFloat(document.getElementById('paymentAmount').value);
+                const paymentMethod = document.getElementById('paymentMethod').value;
+                const note = document.getElementById('paymentNote').value;
+
+                // Validation
+                if (!amount || amount <= 0) {
+                    alert('Vui lòng nhập số tiền hợp lệ');
+                    return;
+                }
+
+                if (!paymentMethod) {
+                    alert('Vui lòng chọn phương thức thanh toán');
+                    return;
+                }
+
+                try {
+                    // Create receipt transaction
+                    const response = await fetch(`${API_BASE}/financial/transactions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({
+                            transaction_date: new Date().toISOString().split('T')[0],
+                            transaction_type: 'revenue',  // Phiếu thu
+                            category: 'Công nợ khách hàng',
+                            amount: amount,
+                            description: note || 'Thu tiền bàn giao dự án',
+                            project_id: projectId,
+                            customer_id: customerId || null,
+                            payment_method: paymentMethod,
+                            status: 'posted'  // Ghi sổ ngay
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Lỗi tạo phiếu thu');
+                    }
+
+                    const result = await response.json();
+                    const receiptCode = result.data?.transaction_code || 'N/A';
+
+                    alert(`✅ Đã lập phiếu thu ${receiptCode} thành công!`);
+                    closeCollectPaymentModal();
+
+                    // Check if fully paid -> Auto complete handover
+                    await checkAndCompleteHandover(projectId);
+
+                    // Reload projects list
+                    loadProjects();
+
+                } catch (error) {
+                    console.error('Error creating receipt:', error);
+                    alert('Lỗi: ' + error.message);
+                }
+            }
+
+            // Auto-complete handover when fully paid
+            async function checkAndCompleteHandover(projectId) {
+                try {
+                    // Fetch updated project data
+                    const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+
+                    if (!result.success || !result.data) return;
+
+                    const project = result.data;
+                    const totalValue = parseFloat(project.total_value || 0);
+                    const paidAmount = parseFloat(project.paid_amount || 0);
+                    const remaining = totalValue - paidAmount;
+
+                    if (remaining <= 0) {
+                        // Fully paid -> Complete handover
+                        const updateResponse = await fetch(`${API_BASE}/projects/${projectId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                                handover_status: 'completed',
+                                status: 'completed',  // Close project
+                                handover_date: new Date().toISOString().split('T')[0]
+                            })
+                        });
+
+                        if (updateResponse.ok) {
+                            alert('🎉 Đã thu đủ tiền! Dự án tự động chuyển sang HOÀN THÀNH.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking payment completion:', error);
+                    // Don't show error to user - this is a background check
+                }
+            }
+
+            // Load projects on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                loadCompanyLogo();
+                loadSidebarUserInfo();
+                loadProjects();
+            });
+        </script>
+    </div> <!-- End main-content -->
+    <script src="js/sidebar-enterprise.js"></script>
+    <script src="js/notification-system.js"></script>
+    <script src="js/notification-header.js"></script>
+</body>
+
+</html>

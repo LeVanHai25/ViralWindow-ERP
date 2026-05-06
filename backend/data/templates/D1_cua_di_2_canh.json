@@ -1,0 +1,261 @@
+{
+  "meta": {
+    "template_code": "D1",
+    "template_name": "Cửa đi 2 cánh + Fix trên",
+    "category": "door",
+    "sub_type": "swing",
+    "description": "Cửa đi 2 cánh mở quay, phía trên có fix, hệ Xingfa 55",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 1800,
+    "height_mm": 2600,
+    "khoang_ho_mm": 7,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/D1.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "vertical",
+    "children": [
+      {
+        "id": "fix_top",
+        "type": "panel",
+        "panelType": "fixed",
+        "widthRatio": 1,
+        "heightRatio": 0.15,
+        "glassType": "6mm_clear"
+      },
+      {
+        "type": "container",
+        "direction": "horizontal",
+        "heightRatio": 0.85,
+        "children": [
+          {
+            "id": "leaf_left",
+            "type": "panel",
+            "panelType": "door-leaf",
+            "role": "active",
+            "widthRatio": 1,
+            "openDirection": "left",
+            "hingesSide": "left",
+            "handleSide": "right",
+            "glassType": "6mm_clear"
+          },
+          {
+            "id": "leaf_right",
+            "type": "panel",
+            "panelType": "door-leaf",
+            "role": "passive",
+            "widthRatio": 1,
+            "openDirection": "right",
+            "hingesSide": "right",
+            "handleSide": "left",
+            "glassType": "6mm_clear"
+          }
+        ]
+      }
+    ]
+  },
+  "bom_profiles": [
+    {
+      "group": "FRAME",
+      "name": "Khung bao cửa đi 100",
+      "position": "Ngang trên",
+      "code": "C38019",
+      "cut_angle": "45-45",
+      "qty": 1,
+      "length_mm": 1800
+    },
+    {
+      "group": "FRAME",
+      "name": "Khung bao cửa đi 100",
+      "position": "Đứng",
+      "code": "C38019",
+      "cut_angle": "90-45-90",
+      "qty": 2,
+      "length_mm": 2600
+    },
+    {
+      "group": "MULLION",
+      "name": "XF - Đố chia khung mở quay",
+      "position": "Ngang",
+      "code": "C3313",
+      "cut_angle": "90-90",
+      "qty": 1,
+      "length_mm": 1728
+    },
+    {
+      "group": "SASH",
+      "name": "XF - Cánh mở ngoài bản to 145",
+      "position": "Ngang",
+      "code": "C112592",
+      "cut_angle": "45-45",
+      "qty": 4,
+      "length_mm": 856.5
+    },
+    {
+      "group": "SASH",
+      "name": "XF - Cánh mở ngoài bản to 145",
+      "position": "Đứng",
+      "code": "C112592",
+      "cut_angle": "45-45",
+      "qty": 4,
+      "length_mm": 2230.5
+    },
+    {
+      "group": "SASH",
+      "name": "XF - Nẹp cánh, vách",
+      "position": "Ngang",
+      "code": "C3295",
+      "cut_angle": "90-90",
+      "qty": 4,
+      "length_mm": 604.5
+    },
+    {
+      "group": "SASH",
+      "name": "XF - Nẹp cánh, vách",
+      "position": "Đứng",
+      "code": "C3295",
+      "cut_angle": "90-90",
+      "qty": 4,
+      "length_mm": 1940.5
+    },
+    {
+      "group": "OTHERS",
+      "name": "XF - Ốp chân cánh",
+      "position": "Ngang",
+      "code": "C22900",
+      "cut_angle": "90-90",
+      "qty": 2,
+      "length_mm": 792.5
+    },
+    {
+      "group": "OTHERS",
+      "name": "XF - Đố động cửa đi và cửa sổ",
+      "position": "Đứng",
+      "code": "C22903",
+      "cut_angle": "90-90",
+      "qty": 1,
+      "length_mm": 2180.5
+    },
+    {
+      "group": "FIX",
+      "name": "XF - Nẹp vách liên cửa",
+      "position": "Ngang",
+      "code": "C3296",
+      "cut_angle": "90-90",
+      "qty": 2,
+      "length_mm": 246.5
+    }
+  ],
+  "bom_glass": [
+    {
+      "name": "Kính cánh",
+      "position": "cánh",
+      "qty": 2,
+      "width_mm": 597,
+      "height_mm": 1971,
+      "area_m2": 2.350865
+    },
+    {
+      "name": "Kính vách trên",
+      "position": "vách",
+      "qty": 1,
+      "width_mm": 1698,
+      "height_mm": 277,
+      "area_m2": 0.469497
+    }
+  ],
+  "bom_hardware": [
+    { "group": "HINGES", "name": "Bản lề 3D cửa đi", "code": "PK-HL-3D", "qty": 6 },
+    { "group": "LOCK", "name": "Khóa đa điểm cửa đi", "code": "PK-Khoa-DP", "qty": 1 },
+    { "group": "HANDLE", "name": "Tay nắm cửa đi", "code": "PK-TN-Door", "qty": 1 },
+    { "group": "ACCESSORY", "name": "Chốt âm cánh phụ", "code": "PK-Chot-Am", "qty": 2 },
+    { "group": "GASKET", "name": "Gioăng khung", "code": "PK-GX-Frame", "qty_formula": "chu_vi_khung / 1000" },
+    { "group": "GASKET", "name": "Gioăng kính", "code": "PK-GX-Glass", "qty_formula": "tong_chu_vi_kinh / 1000" }
+  ],
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,536 @@
+[
+  {
+    "id": "CS1_LEFT",
+    "code": "CS1",
+    "name": "Cửa sổ mở quay trái",
+    "type": "window_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "CS1_RIGHT",
+    "code": "CS1",
+    "name": "Cửa sổ mở quay phải",
+    "type": "window_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "WH",
+    "code": "WH",
+    "name": "Cửa sổ mở hất",
+    "type": "window_top_hung",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "out",
+        "hinge": "top",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "CS2",
+    "code": "CS2",
+    "name": "Cửa sổ 2 cánh mở quay",
+    "type": "window_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D1_LEFT_OUT",
+    "code": "D1",
+    "name": "Cửa đi 1 cánh mở trái ngoài",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D1_RIGHT_OUT",
+    "code": "D1",
+    "name": "Cửa đi 1 cánh mở phải ngoài",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D2",
+    "code": "D2",
+    "name": "Cửa đi 2 cánh mở ngoài",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D4",
+    "code": "D4",
+    "name": "Cửa đi 4 cánh mở ngoài",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 3,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 4,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D1_LEFT_IN",
+    "code": "D1_IN",
+    "name": "Cửa đi 1 cánh mở trái trong",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D1_RIGHT_IN",
+    "code": "D1_IN",
+    "name": "Cửa đi 1 cánh mở phải trong",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D2_IN",
+    "code": "D2_IN",
+    "name": "Cửa đi 2 cánh mở trong",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "D4_IN",
+    "code": "D4_IN",
+    "name": "Cửa đi 4 cánh mở trong",
+    "type": "door_swing",
+    "panels": [
+      {
+        "id": 1,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "swing",
+        "openDirection": "right",
+        "hinge": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 3,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 4,
+        "type": "swing",
+        "openDirection": "left",
+        "hinge": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "CSL2",
+    "code": "CSL2",
+    "name": "Cửa sổ lùa 2 cánh",
+    "type": "window_sliding",
+    "panels": [
+      {
+        "id": 1,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "CSL3",
+    "code": "CSL3",
+    "name": "Cửa sổ lùa 3 cánh",
+    "type": "window_sliding",
+    "panels": [
+      {
+        "id": 1,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.33,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "sliding",
+        "openDirection": "both",
+        "widthRatio": 0.34,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 3,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.33,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "CSL4",
+    "code": "CSL4",
+    "name": "Cửa sổ lùa 4 cánh",
+    "type": "window_sliding",
+    "panels": [
+      {
+        "id": 1,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 3,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 4,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "DL2",
+    "code": "DL2",
+    "name": "Cửa đi lùa 2 cánh",
+    "type": "door_sliding",
+    "panels": [
+      {
+        "id": 1,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.5,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "DL3",
+    "code": "DL3",
+    "name": "Cửa đi lùa 3 cánh",
+    "type": "door_sliding",
+    "panels": [
+      {
+        "id": 1,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.33,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "sliding",
+        "openDirection": "both",
+        "widthRatio": 0.34,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 3,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.33,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "DL4",
+    "code": "DL4",
+    "name": "Cửa đi lùa 4 cánh",
+    "type": "door_sliding",
+    "panels": [
+      {
+        "id": 1,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 2,
+        "type": "sliding",
+        "openDirection": "right",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 3,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      },
+      {
+        "id": 4,
+        "type": "sliding",
+        "openDirection": "left",
+        "widthRatio": 0.25,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  },
+  {
+    "id": "FIXED",
+    "code": "FX",
+    "name": "Vách kính cố định",
+    "type": "fixed",
+    "panels": [
+      {
+        "id": 1,
+        "type": "fixed",
+        "openDirection": "none",
+        "widthRatio": 1.0,
+        "heightRatio": 1.0,
+        "glassColor": "#87CEEB",
+        "glassOpacity": 0.3
+      }
+    ]
+  }
+]
+

@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giá thành & Lãi lỗ - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+<body class="bg-gray-50">
+    <!-- HEADER -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước" class="text-gray-600 hover:text-gray-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Giá thành & Lãi lỗ</h1>
+                    <p class="text-sm text-gray-500">Phân tích lãi lỗ theo dự án</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- FILTERS -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label>Dự án:</label>
+                    <select id="filterProject" class="form-select" onchange="loadProjects()">
+                        <option value="">Tất cả dự án</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Trạng thái:</label>
+                    <select id="filterStatus" class="form-select" onchange="loadProjects()">
+                        <option value="">Tất cả</option>
+                        <option value="profit">Có lãi</option>
+                        <option value="loss">Lỗ</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROJECTS TABLE -->
+        <div class="data-table">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th>Dự án</th>
+                        <th>Doanh thu</th>
+                        <th>Chi phí</th>
+                        <th>Lãi/Lỗ</th>
+                        <th>%</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="projectsTable">
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-500">Đang tải...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL: Project Detail -->
+    <div id="projectDetailModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="projectDetailTitle">Chi tiết giá thành & lãi lỗ</h2>
+                <button onclick="closeProjectDetailModal()" class="modal-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs mb-6">
+                    <button class="tab-button active" onclick="switchTab('overview')">Tổng quan</button>
+                    <button class="tab-button" onclick="switchTab('costs')">Chi phí chi tiết</button>
+                    <button class="tab-button" onclick="switchTab('comparison')">So sánh báo giá</button>
+                </div>
+                
+                <div id="tabOverview" class="tab-content active">
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Doanh thu</div>
+                            <div class="kpi-value text-green-600" id="detailRevenue">0 ₫</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tổng chi</div>
+                            <div class="kpi-value text-red-600" id="detailCost">0 ₫</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Lãi/Lỗ</div>
+                            <div class="kpi-value" id="detailProfit">0 ₫</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tabCosts" class="tab-content hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-semibold mb-2">Vật tư (từ xuất kho)</h3>
+                            <div class="data-table">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Vật tư</th>
+                                            <th>Số lượng</th>
+                                            <th>Đơn giá</th>
+                                            <th>Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="materialCostsTable">
+                                        <tr><td colspan="4" class="text-center py-4 text-gray-500">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Nhân công</h3>
+                            <div class="data-table">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Loại</th>
+                                            <th>Số lượng</th>
+                                            <th>Đơn giá</th>
+                                            <th>Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="laborCostsTable">
+                                        <tr><td colspan="4" class="text-center py-4 text-gray-500">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Chi khác</h3>
+                            <div class="data-table">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Khoản chi</th>
+                                            <th>Số tiền</th>
+                                            <th>Ghi chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="otherCostsTable">
+                                        <tr><td colspan="3" class="text-center py-4 text-gray-500">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tabComparison" class="tab-content hidden">
+                    <div class="data-table">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th>Hạng mục</th>
+                                    <th>Dự toán ban đầu</th>
+                                    <th>Thực tế</th>
+                                    <th>Chênh lệch</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTable">
+                                <tr><td colspan="4" class="text-center py-4 text-gray-500">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="finance-common.js"></script>
+    <script>
+        let currentProjectId = null;
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                const projectId = document.getElementById('filterProject').value;
+                const status = document.getElementById('filterStatus').value;
+                
+                const res = await fetch(`${API_BASE}/projects`);
+                const data = await res.json();
+
+                const tbody = document.getElementById('projectsTable');
+                if (!data.success || !data.data || data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Chưa có dự án nào</td></tr>';
+                    return;
+                }
+
+                // Calculate profit/loss for each project
+                const projectsWithProfit = await Promise.all(data.data.map(async (project) => {
+                    // Get revenue (from receipts)
+                    const revenueRes = await fetch(`${API_BASE}/financial/transactions?type=revenue&projectId=${project.id}`);
+                    const revenueData = await revenueRes.json();
+                    let revenue = 0;
+                    if (revenueData.success && revenueData.data) {
+                        revenue = revenueData.data.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+                    }
+
+                    // Get costs (from payments + material costs)
+                    const costRes = await fetch(`${API_BASE}/financial/transactions?type=expense&projectId=${project.id}`);
+                    const costData = await costRes.json();
+                    let cost = 0;
+                    if (costData.success && costData.data) {
+                        cost = costData.data.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+                    }
+
+                    const profit = revenue - cost;
+                    const profitPercent = revenue > 0 ? (profit / revenue * 100) : 0;
+
+                    return { ...project, revenue, cost, profit, profitPercent };
+                }));
+
+                // Filter by status
+                let filtered = projectsWithProfit;
+                if (status === 'profit') {
+                    filtered = filtered.filter(p => p.profit > 0);
+                } else if (status === 'loss') {
+                    filtered = filtered.filter(p => p.profit < 0);
+                }
+
+                // Filter by project
+                if (projectId) {
+                    filtered = filtered.filter(p => p.id == projectId);
+                }
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Không có dự án nào</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = filtered.map(project => {
+                    const profitClass = project.profit >= 0 ? 'money-positive' : 'money-negative';
+                    return `
+                        <tr onclick="viewProjectDetail(${project.id})" style="cursor: pointer;">
+                            <td>${escapeHtml(project.project_code)} - ${escapeHtml(project.project_name)}</td>
+                            <td class="money-positive">${formatCurrency(project.revenue)}</td>
+                            <td class="money-negative">${formatCurrency(project.cost)}</td>
+                            <td class="${profitClass}">${formatCurrency(project.profit)}</td>
+                            <td class="${profitClass}">${project.profitPercent.toFixed(1)}%</td>
+                            <td onclick="event.stopPropagation()">
+                                <button onclick="viewProjectDetail(${project.id})" class="text-blue-600 hover:text-blue-800 text-sm">Xem chi tiết</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectsTable').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Lỗi khi tải dữ liệu</td></tr>';
+            }
+        }
+
+        // View project detail
+        async function viewProjectDetail(projectId) {
+            currentProjectId = projectId;
+            document.getElementById('projectDetailModal').classList.remove('hidden');
+            await loadProjectDetail(projectId);
+        }
+
+        // Load project detail
+        async function loadProjectDetail(projectId) {
+            // Load overview
+            const revenueRes = await fetch(`${API_BASE}/financial/transactions?type=revenue&projectId=${projectId}`);
+            const revenueData = await revenueRes.json();
+            let revenue = 0;
+            if (revenueData.success && revenueData.data) {
+                revenue = revenueData.data.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+            }
+
+            const costRes = await fetch(`${API_BASE}/financial/transactions?type=expense&projectId=${projectId}`);
+            const costData = await costRes.json();
+            let cost = 0;
+            if (costData.success && costData.data) {
+                cost = costData.data.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+            }
+
+            const profit = revenue - cost;
+            document.getElementById('detailRevenue').textContent = formatCurrency(revenue);
+            document.getElementById('detailCost').textContent = formatCurrency(cost);
+            document.getElementById('detailProfit').textContent = formatCurrency(profit);
+            document.getElementById('detailProfit').className = profit >= 0 ? 'kpi-value text-green-600' : 'kpi-value text-red-600';
+
+            // Load costs detail
+            // TODO: Load material costs from inventory
+            // TODO: Load labor costs
+            // TODO: Load other costs
+        }
+
+        // Switch tab
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        // Close project detail modal
+        function closeProjectDetailModal() {
+            document.getElementById('projectDetailModal').classList.add('hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadProjects();
+            loadProjects(document.getElementById('filterProject'));
+        });
+    </script>
+    <style>
+        .tabs {
+            @apply flex border-b border-gray-200;
+        }
+        .tab-button {
+            @apply px-4 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600;
+        }
+        .tab-button.active {
+            @apply text-blue-600 border-blue-600;
+        }
+        .tab-content {
+            @apply py-4;
+        }
+    </style>
+</body>
+</html>
+
+

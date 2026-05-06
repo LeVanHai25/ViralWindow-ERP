@@ -1,0 +1,1062 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo/Sửa Phiếu Xuất Kho - ViralWindow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/success-notification.css">
+    <script src="js/success-notification.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Input styling */
+        input,
+        textarea,
+        select {
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Table styling */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table thead th {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 12px 8px;
+            border-bottom: 2px solid #86efac;
+            color: #166534;
+        }
+
+        .data-table tbody td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f0fdf4;
+        }
+
+        /* Make content column wider with text wrap */
+        .col-content {
+            min-width: 250px;
+        }
+
+        .col-content textarea {
+            width: 100%;
+            min-height: 32px;
+            overflow: hidden;
+            resize: none;
+            line-height: 1.4;
+        }
+
+        .auto-resize {
+            overflow: hidden;
+            resize: none;
+        }
+
+        /* Smaller columns */
+        .col-stt {
+            width: 50px;
+            text-align: center;
+        }
+
+        .col-code {
+            width: 100px;
+        }
+
+        .col-size {
+            width: 80px;
+        }
+
+        .col-unit {
+            width: 70px;
+        }
+
+        .col-qty {
+            width: 90px;
+        }
+
+        .col-area {
+            width: 100px;
+        }
+
+        .col-note {
+            width: 150px;
+        }
+
+        .col-action {
+            width: 40px;
+        }
+
+        /* Footer styling */
+        .table-footer {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .table-footer td {
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        /* Section headers */
+        .section-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-left: 4px solid #10b981;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Preview Modal Styles */
+        .preview-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-content {
+            background: white;
+            width: 210mm;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 15mm;
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .preview-company {
+            font-size: 11pt;
+        }
+
+        .preview-company-name {
+            font-weight: bold;
+            font-size: 13pt;
+        }
+
+        .preview-logo {
+            width: 150px;
+            text-align: right;
+        }
+
+        .preview-title {
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 15px 0 5px;
+        }
+
+        .preview-number {
+            text-align: center;
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .preview-info {
+            margin-bottom: 15px;
+        }
+
+        .preview-info-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+
+        .preview-info-label {
+            font-weight: bold;
+            width: 140px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            text-align: center;
+        }
+
+        .preview-table th {
+            background: #d9e1f2;
+            font-weight: bold;
+        }
+
+        .preview-table td.left {
+            text-align: left;
+        }
+
+        .preview-total-row {
+            background: #d9e1f2;
+            font-weight: bold;
+        }
+
+        .preview-date {
+            text-align: right;
+            font-style: italic;
+            margin: 15px 0;
+        }
+
+        .preview-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .preview-signature {
+            width: 18%;
+        }
+
+        .preview-signature-title {
+            font-weight: bold;
+            margin-bottom: 60px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #previewModal,
+            #previewModal * {
+                visibility: visible;
+            }
+
+            #previewModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+            }
+
+            .preview-content {
+                max-height: none;
+                box-shadow: none;
+            }
+
+            .preview-actions {
+                display: none !important;
+            }
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <nav class="bg-white shadow-md px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước" class="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="font-medium">Quay lại</span>
+            </a>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800" id="pageTitle">Tạo phiếu xuất kho mới</h1>
+        <div class="flex items-center gap-3">
+            <button onclick="saveExport()"
+                class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Lưu phiếu
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-6 max-w-7xl">
+        <form id="exportForm" onsubmit="saveExport(event)">
+            <input type="hidden" id="exportId">
+
+            <!-- Thông tin cơ bản -->
+            <div class="card p-6 mb-6">
+                <div class="section-header mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Thông tin phiếu
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số phiếu <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="exportNumber" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-semibold text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày xuất <span
+                                class="text-red-500">*</span></label>
+                        <input type="date" id="exportDate" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Đại lý</label>
+                        <input type="text" id="dealer"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Thời điểm vận chuyển</label>
+                        <input type="datetime-local" id="shippingTime"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Khách hàng</label>
+                        <input type="text" id="customerName" autocomplete="off"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="Nhập tên hoặc chọn khách hàng..." oninput="filterCustomers(this.value)"
+                            onfocus="showCustomerDropdown()">
+                        <input type="hidden" id="customerId">
+                        <!-- Customer dropdown -->
+                        <div id="customerDropdown"
+                            class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <div id="customerList" class="py-1">
+                                <!-- Customer options will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ký hiệu</label>
+                        <input type="text" id="customerCode" readonly
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                        <input type="text" id="customerAddress" readonly
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                        <input type="text" id="phone" readonly
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lý do xuất</label>
+                    <input type="text" id="reason"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Xuất tại kho</label>
+                    <input type="text" id="warehouseLocation"
+                        value="Công ty cổ phần Viralwindow, Số 36 Đường Miền Đông Củ Khê Thanh Oai Hà Nội"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+            </div>
+
+            <!-- Danh sách vật tư -->
+            <div class="card p-6 mb-6">
+                <div class="section-header mb-4 flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Danh sách vật tư xuất
+                    </h2>
+                    <button type="button" onclick="addItemRow()"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm vật tư
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="col-stt">STT</th>
+                                <th class="col-code">Mã hiệu</th>
+                                <th class="col-content">Nội dung</th>
+                                <th class="col-size">Rộng (mm)</th>
+                                <th class="col-size">Cao (mm)</th>
+                                <th class="col-unit">ĐVT</th>
+                                <th class="col-qty">Số lượng</th>
+                                <th class="col-area">Diện tích (m²)</th>
+                                <th class="col-note">Ghi chú</th>
+                                <th class="col-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTableBody">
+                            <!-- Items will be added here -->
+                        </tbody>
+                        <tfoot class="table-footer">
+                            <tr>
+                                <td colspan="6" class="text-center py-3 text-lg">CỘNG</td>
+                                <td class="text-center py-3 text-lg" id="totalQuantity">0</td>
+                                <td class="text-center py-3 text-lg" id="totalArea">0.000</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ghi chú chung -->
+            <div class="card p-6 mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú chung</label>
+                <textarea id="notes" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Nhập ghi chú cho phiếu xuất kho..."></textarea>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex justify-between items-center">
+                <a href="warehouse-export.html"
+                    class="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Hủy
+                </a>
+                <div class="flex gap-3">
+                    <button type="button" onclick="previewExport()"
+                        class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Xem trước
+                    </button>
+                    <button type="submit"
+                        class="btn-primary text-white px-8 py-2.5 rounded-lg font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Lưu phiếu
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="preview-modal hidden">
+        <div class="preview-content" id="previewContent">
+            <!-- Content will be generated by JS -->
+        </div>
+    </div>
+
+    <!-- Preview Actions (floating) -->
+    <div id="previewActions" class="hidden fixed top-4 right-4 z-[110] flex gap-2 preview-actions">
+        <button onclick="printPreview()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            In
+        </button>
+        <button onclick="closePreview()"
+            class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Đóng
+        </button>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let itemCounter = 0;
+        let allCustomers = [];
+
+        // On page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load customers list
+            await loadCustomers();
+
+            // Check if editing existing export
+            const urlParams = new URLSearchParams(window.location.search);
+            const exportId = urlParams.get('id');
+
+            if (exportId) {
+                document.getElementById('pageTitle').textContent = 'Chỉnh sửa phiếu xuất kho';
+                await loadExportData(exportId);
+            } else {
+                document.getElementById('exportDate').valueAsDate = new Date();
+                await getNextExportNumber();
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#customerName') && !e.target.closest('#customerDropdown')) {
+                    hideCustomerDropdown();
+                }
+            });
+        });
+
+        // Load customers from API
+        async function loadCustomers() {
+            try {
+                const response = await fetch(`${API_BASE}/customers`);
+                const result = await response.json();
+                if (result.success) {
+                    allCustomers = result.data || [];
+                }
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                allCustomers = [];
+            }
+        }
+
+        // Show customer dropdown
+        function showCustomerDropdown() {
+            const dropdown = document.getElementById('customerDropdown');
+            const list = document.getElementById('customerList');
+            const searchValue = document.getElementById('customerName').value.toLowerCase();
+
+            // Filter customers
+            const filtered = allCustomers.filter(c =>
+                (c.name || '').toLowerCase().includes(searchValue) ||
+                (c.customer_code || '').toLowerCase().includes(searchValue) ||
+                (c.phone || '').includes(searchValue)
+            );
+
+            // Build list
+            if (filtered.length > 0) {
+                list.innerHTML = filtered.map(c => `
+                    <div class="px-4 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 transition-colors"
+                        onclick="selectCustomer(${c.id})">
+                        <div class="font-medium text-gray-800">${c.name || ''}</div>
+                        <div class="text-sm text-gray-500 flex gap-2">
+                            <span>${c.customer_code || ''}</span>
+                            ${c.phone ? '<span>• ' + c.phone + '</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<div class="px-4 py-3 text-gray-500 text-center">Không tìm thấy khách hàng</div>';
+            }
+
+            dropdown.classList.remove('hidden');
+        }
+
+        // Hide customer dropdown
+        function hideCustomerDropdown() {
+            document.getElementById('customerDropdown').classList.add('hidden');
+        }
+
+        // Filter customers as user types
+        function filterCustomers(value) {
+            showCustomerDropdown();
+        }
+
+        // Select a customer
+        function selectCustomer(customerId) {
+            const customer = allCustomers.find(c => c.id === customerId);
+            if (customer) {
+                document.getElementById('customerId').value = customer.id;
+                document.getElementById('customerName').value = customer.name || '';
+                document.getElementById('customerCode').value = customer.customer_code || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+                document.getElementById('phone').value = customer.phone || '';
+            }
+            hideCustomerDropdown();
+        }
+
+        // Get next export number
+        async function getNextExportNumber() {
+            try {
+                const response = await fetch(`${API_BASE}/warehouse-export/next-number`);
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('exportNumber').value = result.data.number;
+                }
+            } catch (error) {
+                console.error('Error getting next number:', error);
+                document.getElementById('exportNumber').value = 'PXK-001';
+            }
+        }
+
+        // Load existing export data
+        async function loadExportData(id) {
+            try {
+                const response = await fetch(`${API_BASE}/warehouse-export/${id}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    document.getElementById('exportId').value = data.id;
+                    document.getElementById('exportNumber').value = data.export_number;
+                    document.getElementById('exportDate').value = data.export_date ? data.export_date.split('T')[0] : '';
+                    document.getElementById('customerName').value = data.customer_name || '';
+                    document.getElementById('customerCode').value = data.customer_code || '';
+                    document.getElementById('customerAddress').value = data.customer_address || '';
+                    document.getElementById('phone').value = data.phone || '';
+                    document.getElementById('reason').value = data.reason || '';
+                    document.getElementById('warehouseLocation').value = data.warehouse_location || '';
+                    document.getElementById('dealer').value = data.dealer || '';
+                    document.getElementById('notes').value = data.notes || '';
+
+                    // Format shipping_time
+                    if (data.shipping_time) {
+                        const shippingDate = new Date(data.shipping_time);
+                        if (!isNaN(shippingDate.getTime())) {
+                            const formatted = shippingDate.toISOString().slice(0, 16);
+                            document.getElementById('shippingTime').value = formatted;
+                        }
+                    }
+
+                    // Load items
+                    (data.items || []).forEach(item => addItemRow(item));
+                    updateTotals();
+                    // Initialize auto-resize for loaded items
+                    setTimeout(() => initAutoResize(), 100);
+                }
+            } catch (error) {
+                console.error('Error loading export:', error);
+                alert('Lỗi khi tải phiếu xuất');
+            }
+        }
+
+        // Add item row with textarea for content
+        function addItemRow(item = null) {
+            itemCounter++;
+            const tbody = document.getElementById('itemsTableBody');
+            const row = document.createElement('tr');
+            row.id = `item-row-${itemCounter}`;
+            row.innerHTML = `
+                <td class="col-stt text-center font-medium">${itemCounter}</td>
+                <td class="col-code">
+                    <input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded item-code text-sm" 
+                        value="${item?.material_code || ''}" placeholder="Mã">
+                </td>
+                <td class="col-content">
+                    <textarea class="w-full px-2 py-1.5 border border-gray-300 rounded item-name text-sm auto-resize" 
+                        rows="1" placeholder="Nhập nội dung..." oninput="autoResize(this)">${item?.material_name || ''}</textarea>
+                </td>
+                <td class="col-size">
+                    <input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded item-width text-sm text-center" 
+                        value="${item?.width_mm || ''}" step="1" onchange="calculateArea(this)" placeholder="0">
+                </td>
+                <td class="col-size">
+                    <input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded item-height text-sm text-center" 
+                        value="${item?.height_mm || ''}" step="1" onchange="calculateArea(this)" placeholder="0">
+                </td>
+                <td class="col-unit">
+                    <input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded item-unit text-sm text-center" 
+                        value="${item?.unit || 'Cái'}">
+                </td>
+                <td class="col-qty">
+                    <input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded item-quantity text-sm text-center font-medium" 
+                        value="${item?.quantity || 1}" step="1" min="1" onchange="updateTotals()">
+                </td>
+                <td class="col-area">
+                    <input type="number" class="w-full px-2 py-1.5 border border-gray-300 rounded item-area text-sm text-center bg-gray-50" 
+                        value="${item?.area || ''}" step="0.001" onchange="updateTotals()" placeholder="Tự tính">
+                </td>
+                <td class="col-note">
+                    <input type="text" class="w-full px-2 py-1.5 border border-gray-300 rounded item-notes text-sm" 
+                        value="${item?.notes || ''}" placeholder="Ghi chú">
+                </td>
+                <td class="col-action text-center">
+                    <button type="button" onclick="removeItemRow(${itemCounter})" 
+                        class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-full transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            // Auto-resize the textarea after adding
+            const textarea = row.querySelector('.auto-resize');
+            if (textarea) {
+                setTimeout(() => autoResize(textarea), 0);
+            }
+            updateTotals();
+        }
+
+        // Remove item row
+        function removeItemRow(counter) {
+            const row = document.getElementById(`item-row-${counter}`);
+            if (row) row.remove();
+            updateTotals();
+            renumberRows();
+        }
+
+        // Renumber rows
+        function renumberRows() {
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            rows.forEach((row, index) => {
+                row.querySelector('td:first-child').textContent = index + 1;
+            });
+        }
+
+        // Calculate area from width and height
+        function calculateArea(input) {
+            const row = input.closest('tr');
+            const width = parseFloat(row.querySelector('.item-width').value) || 0;
+            const height = parseFloat(row.querySelector('.item-height').value) || 0;
+            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 1;
+
+            // Calculate area in m² (from mm²)
+            const area = (width * height * quantity) / 1000000;
+            row.querySelector('.item-area').value = area.toFixed(3);
+            updateTotals();
+        }
+
+        // Update totals
+        function updateTotals() {
+            let totalQty = 0;
+            let totalArea = 0;
+
+            document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+                totalQty += parseFloat(row.querySelector('.item-quantity')?.value) || 0;
+                totalArea += parseFloat(row.querySelector('.item-area')?.value) || 0;
+            });
+
+            document.getElementById('totalQuantity').textContent = totalQty.toFixed(0);
+            document.getElementById('totalArea').textContent = totalArea.toFixed(3);
+        }
+
+        // Save export
+        async function saveExport(event) {
+            if (event) event.preventDefault();
+
+            const id = document.getElementById('exportId').value;
+            const items = [];
+
+            document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+                items.push({
+                    material_code: row.querySelector('.item-code').value,
+                    material_name: row.querySelector('.item-name').value,
+                    width_mm: parseFloat(row.querySelector('.item-width').value) || 0,
+                    height_mm: parseFloat(row.querySelector('.item-height').value) || 0,
+                    unit: row.querySelector('.item-unit').value,
+                    quantity: parseFloat(row.querySelector('.item-quantity').value) || 0,
+                    area: parseFloat(row.querySelector('.item-area').value) || 0,
+                    notes: row.querySelector('.item-notes').value,
+                    material_type: 'other',
+                    material_id: null
+                });
+            });
+
+            const data = {
+                export_number: document.getElementById('exportNumber').value,
+                export_date: document.getElementById('exportDate').value,
+                customer_name: document.getElementById('customerName').value,
+                customer_code: document.getElementById('customerCode').value,
+                customer_address: document.getElementById('customerAddress').value,
+                phone: document.getElementById('phone').value,
+                reason: document.getElementById('reason').value,
+                warehouse_location: document.getElementById('warehouseLocation').value,
+                shipping_time: document.getElementById('shippingTime').value,
+                dealer: document.getElementById('dealer').value,
+                notes: document.getElementById('notes').value,
+                items
+            };
+
+            try {
+                const url = id ? `${API_BASE}/warehouse-export/${id}` : `${API_BASE}/warehouse-export`;
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification(id ? 'Cập nhật phiếu thành công!' : 'Tạo phiếu thành công!');
+                    window.location.href = 'warehouse-export.html';
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving export:', error);
+                alert('Lỗi khi lưu phiếu');
+            }
+        }
+
+        // Preview export - generate print-ready view
+        function previewExport() {
+            const exportNumber = document.getElementById('exportNumber').value;
+            const exportDate = document.getElementById('exportDate').value;
+            const customerName = document.getElementById('customerName').value;
+            const customerCode = document.getElementById('customerCode').value;
+            const customerAddress = document.getElementById('customerAddress').value;
+            const phone = document.getElementById('phone').value;
+            const reason = document.getElementById('reason').value;
+            const warehouseLocation = document.getElementById('warehouseLocation').value;
+            const dealer = document.getElementById('dealer').value;
+            const shippingTime = document.getElementById('shippingTime').value;
+            const notes = document.getElementById('notes').value;
+
+            // Get items
+            const items = [];
+            let totalQty = 0;
+            let totalArea = 0;
+
+            document.querySelectorAll('#itemsTableBody tr').forEach((row, index) => {
+                const item = {
+                    stt: index + 1,
+                    code: row.querySelector('.item-code')?.value || '',
+                    name: row.querySelector('.item-name')?.value || '',
+                    width: row.querySelector('.item-width')?.value || '',
+                    height: row.querySelector('.item-height')?.value || '',
+                    unit: row.querySelector('.item-unit')?.value || 'Cái',
+                    quantity: parseFloat(row.querySelector('.item-quantity')?.value) || 0,
+                    area: parseFloat(row.querySelector('.item-area')?.value) || 0,
+                    notes: row.querySelector('.item-notes')?.value || ''
+                };
+                items.push(item);
+                totalQty += item.quantity;
+                totalArea += item.area;
+            });
+
+            // Format date
+            let dateStr = '';
+            if (exportDate) {
+                const d = new Date(exportDate);
+                dateStr = `Hà Nội, Ngày ${d.getDate()} tháng ${d.getMonth() + 1} năm ${d.getFullYear()}`;
+            } else {
+                const d = new Date();
+                dateStr = `Hà Nội, Ngày ${d.getDate()} tháng ${d.getMonth() + 1} năm ${d.getFullYear()}`;
+            }
+
+            // Build items HTML
+            const itemsHtml = items.map(item => `
+                <tr>
+                    <td>${item.stt}</td>
+                    <td>${item.code}</td>
+                    <td class="left">${item.name}</td>
+                    <td>${item.width}</td>
+                    <td>${item.height}</td>
+                    <td>${item.unit}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.area > 0 ? item.area.toFixed(3) : '-'}</td>
+                    <td class="left">${item.notes}</td>
+                </tr>
+            `).join('');
+
+            // Generate preview HTML
+            const previewHtml = `
+                <div class="preview-header">
+                    <div class="preview-company">
+                        <div class="preview-company-name">CÔNG TY CỔ PHẦN VIRALWINDOW</div>
+                        <div>Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, HN</div>
+                        <div>Hotline: 1800 282839</div>
+                        <div>Email: viralwindow.vn@gmail.com</div>
+                        <div>Website: viralwindow.vn</div>
+                    </div>
+                    <div class="preview-logo">
+                        <img src="' + (window.SERVER_BASE || '') + '/assets/LogoViralWindow.png" alt="Logo" style="max-width: 140px; max-height: 80px;" onerror="this.style.display='none'">
+                    </div>
+                </div>
+
+                <div class="preview-title">PHIẾU XUẤT KHO</div>
+                <div class="preview-number">Số: ${exportNumber}</div>
+
+                <div class="preview-info">
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Khách hàng:</span>
+                        <span>${customerName}</span>
+                        <span style="margin-left: 100px;"><b>Đại lý:</b> ${dealer}</span>
+                    </div>
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Ký hiệu:</span>
+                        <span>${customerCode}</span>
+                    </div>
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Địa chỉ:</span>
+                        <span>${customerAddress}</span>
+                    </div>
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Số điện thoại:</span>
+                        <span>${phone}</span>
+                    </div>
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Lý do xuất:</span>
+                        <span>${reason}</span>
+                    </div>
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Xuất tại kho:</span>
+                        <span>${warehouseLocation}</span>
+                    </div>
+                    <div class="preview-info-row">
+                        <span class="preview-info-label">Thời điểm vận chuyển:</span>
+                        <span>${shippingTime ? new Date(shippingTime).toLocaleString('vi-VN') : ''}</span>
+                    </div>
+                </div>
+
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width:40px">STT</th>
+                            <th rowspan="2" style="width:80px">Mã hiệu</th>
+                            <th rowspan="2">Nội dung</th>
+                            <th colspan="2">Kích thước</th>
+                            <th rowspan="2" style="width:50px">ĐVT</th>
+                            <th rowspan="2" style="width:70px">Tổng số lượng</th>
+                            <th rowspan="2" style="width:70px">Diện tích</th>
+                            <th rowspan="2" style="width:100px">Ghi chú</th>
+                        </tr>
+                        <tr>
+                            <th style="width:60px">Rộng (mm)</th>
+                            <th style="width:60px">Cao (mm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml || '<tr><td colspan="9" style="padding: 20px; color: #666;">Chưa có vật tư</td></tr>'}
+                    </tbody>
+                    <tfoot>
+                        <tr class="preview-total-row">
+                            <td colspan="6"><b>CỘNG</b></td>
+                            <td><b>${totalQty}</b></td>
+                            <td><b>${totalArea > 0 ? totalArea.toFixed(3) : '-'}</b></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                ${notes ? `<div style="margin-bottom: 15px;"><b>Ghi chú:</b> ${notes}</div>` : ''}
+
+                <div class="preview-date">${dateStr}</div>
+
+                <div class="preview-signatures">
+                    <div class="preview-signature">
+                        <div class="preview-signature-title">Vận chuyển</div>
+                        <div></div>
+                    </div>
+                    <div class="preview-signature">
+                        <div class="preview-signature-title">Người kiểm hàng</div>
+                        <div></div>
+                    </div>
+                    <div class="preview-signature">
+                        <div class="preview-signature-title">Khách hàng</div>
+                        <div></div>
+                    </div>
+                    <div class="preview-signature">
+                        <div class="preview-signature-title">Kế toán</div>
+                        <div></div>
+                    </div>
+                    <div class="preview-signature">
+                        <div class="preview-signature-title">Người lập phiếu</div>
+                        <div></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('previewContent').innerHTML = previewHtml;
+            document.getElementById('previewModal').classList.remove('hidden');
+            document.getElementById('previewActions').classList.remove('hidden');
+        }
+
+        // Close preview
+        function closePreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('previewActions').classList.add('hidden');
+        }
+
+        // Print preview
+        function printPreview() {
+            window.print();
+        }
+
+        // Auto-resize textarea based on content
+        function autoResize(textarea) {
+            // Reset height to recalculate
+            textarea.style.height = 'auto';
+            // Set to scrollHeight to fit content
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // Initialize auto-resize for all textareas on page load
+        function initAutoResize() {
+            document.querySelectorAll('.auto-resize').forEach(textarea => {
+                autoResize(textarea);
+            });
+        }
+    </script>
+</body>
+
+</html>

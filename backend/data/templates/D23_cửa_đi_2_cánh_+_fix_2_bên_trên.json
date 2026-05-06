@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "template_code": "D23",
+    "template_name": "Cửa đi 2 cánh + Fix 2 bên trên",
+    "category": "door",
+    "sub_type": "swing",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 2400,
+    "height_mm": 2500,
+    "khoang_ho_mm": 7,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/D23.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "horizontal",
+    "children": [
+      {
+        "id": "leaf_left",
+        "type": "panel",
+        "panelType": "door-leaf",
+        "widthRatio": 1,
+        "openDirection": "left",
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "leaf_right",
+        "type": "panel",
+        "panelType": "door-leaf",
+        "widthRatio": 1,
+        "openDirection": "right",
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

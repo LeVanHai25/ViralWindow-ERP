@@ -1,0 +1,543 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow - Luồng hoạt động - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .workflow-step {
+            transition: all 0.3s ease;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .workflow-arrow {
+            transition: all 0.3s ease;
+        }
+
+        .workflow-arrow.active {
+            color: #10b981;
+        }
+
+        .workflow-card {
+            position: relative;
+        }
+
+        .workflow-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 4px 0 0 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .workflow-card:hover::before {
+            opacity: 1;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-100">
+    <!-- HEADER -->
+    <div class="bg-white shadow p-5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
+                class="icon-square bg-blue-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold">Workflow - Luồng hoạt động</h1>
+                <p class="text-gray-500 text-sm">Theo dõi và quản lý luồng công việc</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- WORKFLOW DASHBOARD -->
+        <div class="grid grid-cols-5 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow p-5 workflow-step">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Báo giá chờ duyệt</p>
+                        <p class="text-2xl font-bold text-yellow-600" id="pendingQuotations">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-yellow-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 workflow-step">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Đã duyệt chưa có LSX</p>
+                        <p class="text-2xl font-bold text-blue-600" id="approvedWithoutOrder">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-blue-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 workflow-step">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">LSX chờ xuất kho</p>
+                        <p class="text-2xl font-bold text-orange-600" id="ordersPendingInventory">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-orange-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 workflow-step">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Công nợ quá hạn</p>
+                        <p class="text-2xl font-bold text-red-600" id="overdueDebts">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-red-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5 workflow-step">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Dự án đang SX</p>
+                        <p class="text-2xl font-bold text-green-600" id="projectsInProgress">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-green-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKFLOW VISUALIZATION -->
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+            <h2 class="text-lg font-bold mb-4">Luồng hoạt động</h2>
+            <div class="flex items-center justify-between overflow-x-auto pb-4">
+                <div class="workflow-step bg-blue-50 rounded-lg p-4 min-w-[150px] text-center">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <p class="font-semibold text-sm">Báo giá</p>
+                </div>
+                <div class="workflow-arrow text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="workflow-step bg-green-50 rounded-lg p-4 min-w-[150px] text-center">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <p class="font-semibold text-sm">Lệnh SX</p>
+                </div>
+                <div class="workflow-arrow text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="workflow-step bg-purple-50 rounded-lg p-4 min-w-[150px] text-center">
+                    <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <p class="font-semibold text-sm">Xuất kho</p>
+                </div>
+                <div class="workflow-arrow text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="workflow-step bg-orange-50 rounded-lg p-4 min-w-[150px] text-center">
+                    <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <p class="font-semibold text-sm">Sản xuất</p>
+                </div>
+                <div class="workflow-arrow text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <div class="workflow-step bg-teal-50 rounded-lg p-4 min-w-[150px] text-center">
+                    <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="font-semibold text-sm">Hoàn thành</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROJECTS WORKFLOW -->
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold">Workflow theo dự án</h2>
+                <select id="projectFilter" onchange="loadProjectsWorkflow()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg">
+                    <option value="">Tất cả dự án</option>
+                </select>
+            </div>
+
+            <div id="projectsWorkflowList" class="space-y-4">
+                <!-- Projects workflow will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+
+        // Load workflow dashboard
+        async function loadWorkflowDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/workflow/dashboard`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    document.getElementById('pendingQuotations').textContent = data.pending_quotations || 0;
+                    document.getElementById('approvedWithoutOrder').textContent = data.approved_without_order || 0;
+                    document.getElementById('ordersPendingInventory').textContent = data.orders_pending_inventory || 0;
+                    document.getElementById('overdueDebts').textContent = data.overdue_debts || 0;
+                    document.getElementById('projectsInProgress').textContent = data.projects_in_progress || 0;
+                }
+            } catch (error) {
+                console.error('Error loading workflow dashboard:', error);
+            }
+        }
+
+        // Load projects workflow
+        async function loadProjectsWorkflow() {
+            try {
+                const projectId = document.getElementById('projectFilter').value;
+                let url = `${API_BASE}/projects`;
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+                    document.getElementById('projectsWorkflowList').innerHTML = '<p class="text-gray-500 text-center py-8">Không có dự án nào</p>';
+                    return;
+                }
+
+                const projects = projectId
+                    ? result.data.filter(p => p.id == projectId)
+                    : result.data;
+
+                // Load workflow for each project
+                const container = document.getElementById('projectsWorkflowList');
+                container.innerHTML = '';
+
+                for (const project of projects) {
+                    try {
+                        const workflowResponse = await fetch(`${API_BASE}/workflow/projects/${project.id}`);
+                        const workflowResult = await workflowResponse.json();
+
+                        if (workflowResult.success) {
+                            displayProjectWorkflow(workflowResult.data);
+                        }
+                    } catch (err) {
+                        console.error(`Error loading workflow for project ${project.id}:`, err);
+                    }
+                }
+
+                // Load projects for filter
+                const select = document.getElementById('projectFilter');
+                select.innerHTML = '<option value="">Tất cả dự án</option>';
+                result.data.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.project_code} - ${project.project_name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading projects workflow:', error);
+                document.getElementById('projectsWorkflowList').innerHTML = '<p class="text-red-500 text-center py-8">Lỗi khi tải dữ liệu</p>';
+            }
+        }
+
+        function displayProjectWorkflow(data) {
+            const { project, workflow } = data;
+            const container = document.getElementById('projectsWorkflowList');
+
+            const hasQuotation = workflow.quotations && workflow.quotations.length > 0;
+            const hasOrder = workflow.production_orders && workflow.production_orders.length > 0;
+            const hasDebt = workflow.debts && workflow.debts.length > 0;
+            const hasBOM = workflow.bom_status.doors_with_bom > 0;
+            const hasInventoryIssue = workflow.inventory_issues > 0;
+
+            const cardHtml = `
+                <div class="workflow-card bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${escapeHtml(project.project_code || 'N/A')}</h3>
+                            <p class="text-sm text-gray-600">${escapeHtml(project.project_name || 'N/A')}</p>
+                            <p class="text-xs text-gray-500 mt-1">Trạng thái: <span class="font-medium">${getProjectStatusLabel(project.status)}</span></p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${getProjectStatusColor(project.status)}">${project.progress_percent || 0}%</span>
+                    </div>
+
+                    <div class="grid grid-cols-5 gap-4 mt-4">
+                        <div class="text-center">
+                            <div class="w-10 h-10 rounded-full ${hasQuotation ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <p class="text-xs font-medium">Báo giá</p>
+                            <p class="text-xs text-gray-500">${workflow.quotations?.length || 0}</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 rounded-full ${hasOrder ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
+                            <p class="text-xs font-medium">Lệnh SX</p>
+                            <p class="text-xs text-gray-500">${workflow.production_orders?.length || 0}</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 rounded-full ${hasBOM ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-xs font-medium">BOM</p>
+                            <p class="text-xs text-gray-500">${workflow.bom_status.doors_with_bom || 0}</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 rounded-full ${hasInventoryIssue ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                            </div>
+                            <p class="text-xs font-medium">Xuất kho</p>
+                            <p class="text-xs text-gray-500">${workflow.inventory_issues || 0}</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 rounded-full ${hasDebt ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <p class="text-xs font-medium">Công nợ</p>
+                            <p class="text-xs text-gray-500">${workflow.debts?.length || 0}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex gap-2">
+                        ${hasQuotation && !hasOrder ? `<button onclick="createProductionOrderFromQuotation(${workflow.quotations[0].id})" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Tạo Lệnh SX</button>` : ''}
+                        ${hasOrder && !hasInventoryIssue ? `<button onclick="createInventoryIssueFromOrder(${workflow.production_orders[0].id})" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Tạo phiếu xuất kho</button>` : ''}
+                        ${hasOrder && workflow.production_orders.some(o => o.status !== 'completed') ? `<button onclick="completeProductionOrder(${workflow.production_orders[0].id})" class="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">Hoàn thành SX</button>` : ''}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML += cardHtml;
+        }
+
+        function getProjectStatusLabel(status) {
+            const labels = {
+                'new': 'Mới',
+                'designing': 'Đang thiết kế',
+                'quotation_pending': 'Chờ báo giá',
+                'quotation_approved': 'Đã duyệt báo giá',
+                'in_production': 'Đang sản xuất',
+                'completed': 'Hoàn thành',
+                'paused': 'Tạm dừng',
+                'cancelled': 'Hủy'
+            };
+            return labels[status] || status;
+        }
+
+        function getProjectStatusColor(status) {
+            const colors = {
+                'new': 'bg-gray-100 text-gray-800',
+                'designing': 'bg-blue-100 text-blue-800',
+                'quotation_pending': 'bg-yellow-100 text-yellow-800',
+                'quotation_approved': 'bg-green-100 text-green-800',
+                'in_production': 'bg-orange-100 text-orange-800',
+                'completed': 'bg-green-100 text-green-800',
+                'paused': 'bg-gray-100 text-gray-800',
+                'cancelled': 'bg-red-100 text-red-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        async function createProductionOrderFromQuotation(quotationId) {
+            if (!(await confirm('Tạo lệnh sản xuất từ báo giá này?'))) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/workflow/quotations/${quotationId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        createProductionOrder: true,
+                        createDebt: true,
+                        createCommission: false
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Tạo lệnh sản xuất thành công!');
+                    loadProjectsWorkflow();
+                    loadWorkflowDashboard();
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể tạo lệnh sản xuất'));
+                }
+            } catch (error) {
+                console.error('Error creating production order:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        async function createInventoryIssueFromOrder(orderId) {
+            if (!(await confirm('Tạo phiếu xuất kho từ lệnh sản xuất này?'))) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/workflow/production-orders/${orderId}/create-inventory-issue`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(`Tạo ${result.data.issues.length} phiếu xuất kho thành công!`);
+                    loadProjectsWorkflow();
+                    loadWorkflowDashboard();
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể tạo phiếu xuất kho'));
+                }
+            } catch (error) {
+                console.error('Error creating inventory issue:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        async function completeProductionOrder(orderId) {
+            if (!(await confirm('Hoàn thành lệnh sản xuất này?'))) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/workflow/production-orders/${orderId}/complete`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Hoàn thành lệnh sản xuất thành công!');
+                    loadProjectsWorkflow();
+                    loadWorkflowDashboard();
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể hoàn thành lệnh sản xuất'));
+                }
+            } catch (error) {
+                console.error('Error completing production order:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            if (typeof text !== 'string') text = String(text);
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            loadWorkflowDashboard();
+            loadProjectsWorkflow();
+        });
+    </script>
+
+    <style>
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+</body>
+
+</html>

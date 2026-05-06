@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "template_code": "D7",
+    "template_name": "Cửa đi 1 cánh mở phải",
+    "category": "door",
+    "sub_type": "swing",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 850,
+    "height_mm": 2200,
+    "khoang_ho_mm": 7,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/D7.png"
+  },
+  "panel_tree": {
+    "type": "panel",
+    "panelType": "door-leaf",
+    "id": "K1",
+    "openDirection": "right",
+    "glassType": "6mm_clear"
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

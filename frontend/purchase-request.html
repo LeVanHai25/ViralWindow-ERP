@@ -1,0 +1,2762 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Yêu Cầu Vật Tư - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/success-notification.css">
+    <script src="js/success-notification.js"></script>
+    <script src="js/sidebar-enterprise.js" defer></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #f97316;
+            color: #f97316;
+            background: #fff7ed;
+        }
+
+        .form-input {
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        @media print {
+
+            .no-print,
+            .sidebar {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Autocomplete Styles */
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .autocomplete-input {
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .autocomplete-input:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+        }
+
+        .autocomplete-dropdown {
+            position: fixed;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            max-height: 350px;
+            min-width: 350px;
+            overflow-y: auto;
+            z-index: 99999;
+            display: none;
+        }
+
+        .autocomplete-dropdown.active {
+            display: block;
+            animation: dropdownFadeIn 0.15s ease-out;
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .autocomplete-item {
+            padding: 0.625rem 0.75rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.15s;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.highlighted {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .autocomplete-item-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.875rem;
+        }
+
+        .autocomplete-item-code {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .autocomplete-item-stock {
+            font-size: 0.7rem;
+            color: #059669;
+            margin-top: 2px;
+        }
+
+        .autocomplete-item-stock.low {
+            color: #dc2626;
+        }
+
+        .autocomplete-new-item {
+            padding: 0.625rem 0.75rem;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-top: 2px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #1e40af;
+            font-weight: 500;
+        }
+
+        .autocomplete-new-item:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+        }
+
+        .autocomplete-loading {
+            padding: 0.75rem;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .autocomplete-no-results {
+            padding: 0.75rem;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        /* Badge for source */
+        .source-badge {
+            display: inline-block;
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 9999px;
+            margin-left: 0.375rem;
+            font-weight: 500;
+        }
+
+        .source-badge.inventory {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .source-badge.aluminum_systems {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .source-badge.aluminum_profiles {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .source-badge.glass_items {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .source-badge.accessories {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white no-print">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">VIRALWINDOW</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Người dùng</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-4 right-4 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg><span>Khách hàng</span></a>
+                <a href="projects-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg><span>Dự án</span></a>
+                <a href="production.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg><span>Quy trình dự án</span></a>
+
+                <a href="product-catalog-v2.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg><span>Sản phẩm</span></a>
+                <a href="quotation-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg><span>Báo giá</span></a>
+                <a href="pending-quotations.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg><span>Báo giá chờ duyệt</span></a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="design-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg><span>Thiết kế & Bóc tách</span></a>
+                <a href="material-requests.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg><span>Yêu cầu vật tư</span></a>
+                <a href="purchase-request.html" class="submenu-item active"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg><span>Tạo phiếu yêu cầu VT</span></a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg><span>Kho vật tư</span></a>
+                <a href="exported-materials.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg><span>Xuất vật tư</span></a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg><span>Sản xuất sản phẩm</span></a>
+                <a href="installation.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg><span>Lắp đặt</span></a>
+                <a href="handover.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg><span>Bàn giao</span></a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg><span>Tài chính</span></a>
+
+                <!-- QUẢN TRỊ -->
+                <div class="nav-item has-submenu">
+                    <div class="flex items-center gap-3 flex-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>QUẢN TRỊ</span>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <div class="submenu">
+                    <a href="admin-management.html" class="submenu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        <span>Phân quyền</span>
+                    </a>
+                    <a href="settings.html" class="submenu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                    <a href="agencies.html" class="submenu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span>Chi nhánh</span>
+                    </a>
+                </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <div class="bg-white shadow-sm border-b border-gray-200 no-print">
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Phiếu Yêu Cầu Vật Tư</h1>
+                        <p class="text-sm text-gray-500">Tạo phiếu yêu cầu vật tư cho dự án</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportCurrentTab()"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Xuất Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Project Info Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="text-2xl"></span> Thông tin dự án
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Dự án <span
+                                class="text-red-500">*</span></label>
+                        <select id="projectSelect"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                            onchange="onProjectSelect()">
+                            <option value="">-- Chọn dự án --</option>
+                        </select>
+                        <input type="hidden" id="projectName">
+                        <input type="hidden" id="selectedProjectId">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Mã đơn hàng</label>
+                        <input type="text" id="orderCode"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                            placeholder="Tự động sinh hoặc nhập tay">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Chủng loại</label>
+                        <input type="text" id="productType"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                            placeholder="Viralwindow" value="Viralwindow">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Màu sắc</label>
+                        <input type="text" id="color"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                            placeholder="Xám Sần Metalic">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Địa chỉ giao hàng</label>
+                        <input type="text" id="deliveryAddress"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                            placeholder="Địa chỉ giao hàng">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Ngày tạo</label>
+                        <input type="date" id="createdDate"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Ngày cần vật tư về</label>
+                        <input type="date" id="requiredDate"
+                            class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="flex border-b border-gray-200 no-print">
+                    <button onclick="switchTab('nhom')"
+                        class="tab-btn active flex-1 px-6 py-4 text-center font-medium flex items-center justify-center gap-2"
+                        data-tab="nhom">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <rect x="4" y="4" width="6" height="16" rx="1" stroke-width="2" />
+                            <rect x="14" y="4" width="6" height="16" rx="1" stroke-width="2" />
+                        </svg> Nhôm
+                    </button>
+                    <button onclick="switchTab('vattu')"
+                        class="tab-btn flex-1 px-6 py-4 text-center font-medium text-gray-600 flex items-center justify-center gap-2"
+                        data-tab="vattu">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <circle cx="12" cy="12" r="3" stroke-width="2" />
+                        </svg> Vật tư phụ
+                    </button>
+                    <button onclick="switchTab('phukien')"
+                        class="tab-btn flex-1 px-6 py-4 text-center font-medium text-gray-600 flex items-center justify-center gap-2"
+                        data-tab="phukien">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg> Phụ kiện
+                    </button>
+                    <button onclick="switchTab('kinh')"
+                        class="tab-btn flex-1 px-6 py-4 text-center font-medium text-gray-600 flex items-center justify-center gap-2"
+                        data-tab="kinh">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" />
+                            <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                            <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                        </svg> Kính
+                    </button>
+                </div>
+
+                <!-- Tab Content: NHÔM -->
+                <div id="tabNhom" class="tab-content p-6">
+                    <div class="flex justify-between items-center mb-4 no-print">
+                        <h3 class="text-lg font-semibold text-blue-600">PHIẾU YÊU CẦU VẬT TƯ - NHÔM</h3>
+                        <div class="flex gap-2">
+                            <button onclick="saveCurrentTab('nhom')"
+                                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                Lưu Yêu Cầu
+                            </button>
+                            <button onclick="addRow('nhom')"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Thêm dòng
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-sm" id="tableNhom">
+                            <thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                                <tr>
+                                    <th class="px-3 py-3 text-center w-12">TT</th>
+                                    <th class="px-3 py-3 text-left">Tên vật tư</th>
+                                    <th class="px-3 py-3 text-center w-28">Mã vật tư</th>
+                                    <th class="px-3 py-3 text-center w-24">Tỷ trọng</th>
+                                    <th class="px-3 py-3 text-center w-20">Mét (M)</th>
+                                    <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                    <th class="px-3 py-3 text-center w-24">Số lượng</th>
+                                    <th class="px-3 py-3 text-center w-28">Khối lượng</th>
+                                    <th class="px-3 py-3 text-left w-32">Ghi chú</th>
+                                    <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="nhomTableBody" class="divide-y divide-gray-200 bg-white">
+                                <!-- Rows will be added here -->
+                            </tbody>
+                            <tfoot class="bg-blue-50 font-semibold">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 text-right">TỔNG CỘNG:</td>
+                                    <td class="px-4 py-3 text-center text-blue-600" id="nhomTotalQty">0</td>
+                                    <td class="px-4 py-3 text-center text-blue-600" id="nhomTotalWeight">0.00</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab Content: VẬT TƯ PHỤ -->
+                <div id="tabVattu" class="tab-content p-6 hidden">
+                    <div class="flex justify-between items-center mb-4 no-print">
+                        <h3 class="text-lg font-semibold text-amber-600">PHIẾU YÊU CẦU VẬT TƯ - VẬT TƯ PHỤ</h3>
+                        <div class="flex gap-2">
+                            <button onclick="saveCurrentTab('vattu')"
+                                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                Lưu Yêu Cầu
+                            </button>
+                            <button onclick="addRow('vattu')"
+                                class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Thêm dòng
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-sm" id="tableVattu">
+                            <thead class="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                                <tr>
+                                    <th class="px-3 py-3 text-center w-12">TT</th>
+                                    <th class="px-3 py-3 text-center w-28">Mã VT</th>
+                                    <th class="px-3 py-3 text-left">Tên vật tư</th>
+                                    <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                    <th class="px-3 py-3 text-center w-24">Số lượng</th>
+                                    <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vattuTableBody" class="divide-y divide-gray-200 bg-white">
+                                <!-- Rows will be added here -->
+                            </tbody>
+                            <tfoot class="bg-amber-50 font-semibold">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-right">TỔNG CỘNG:</td>
+                                    <td class="px-4 py-3 text-center text-amber-600" id="vattuTotalQty">0</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab Content: PHỤ KIỆN -->
+                <div id="tabPhukien" class="tab-content p-6 hidden">
+                    <div class="flex justify-between items-center mb-4 no-print">
+                        <h3 class="text-lg font-semibold text-purple-600">PHIẾU YÊU CẦU VẬT TƯ - PHỤ KIỆN</h3>
+                        <div class="flex gap-2">
+                            <button onclick="saveCurrentTab('phukien')"
+                                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                Lưu Yêu Cầu
+                            </button>
+                            <button onclick="addGroupRow('phukien')"
+                                class="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg hover:bg-purple-200 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                Thêm nhóm
+                            </button>
+                            <button onclick="addRow('phukien')"
+                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Thêm dòng
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-sm" id="tablePhukien">
+                            <thead class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
+                                <tr>
+                                    <th class="px-3 py-3 text-center w-12">TT</th>
+                                    <th class="px-3 py-3 text-center w-32">Mã VT</th>
+                                    <th class="px-3 py-3 text-left">Tên vật tư</th>
+                                    <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                    <th class="px-3 py-3 text-center w-24">Số lượng</th>
+                                    <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="phukienTableBody" class="divide-y divide-gray-200 bg-white">
+                                <!-- Rows will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab Content: KÍNH -->
+                <div id="tabKinh" class="tab-content p-6 hidden">
+                    <div class="flex justify-between items-center mb-4 no-print">
+                        <h3 class="text-lg font-semibold text-cyan-600">PHIẾU YÊU CẦU VẬT TƯ - KÍNH</h3>
+                        <div class="flex gap-2">
+                            <button onclick="saveCurrentTab('kinh')"
+                                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                Lưu Yêu Cầu
+                            </button>
+                            <button onclick="addRow('kinh')"
+                                class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Thêm dòng
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-sm" id="tableKinh">
+                            <thead class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white">
+                                <tr>
+                                    <th class="px-3 py-3 text-center w-12">TT</th>
+                                    <th class="px-3 py-3 text-center w-36">Mã Kính</th>
+                                    <th class="px-3 py-3 text-left">Loại kính</th>
+                                    <th class="px-3 py-3 text-center w-24">Rộng (mm)</th>
+                                    <th class="px-3 py-3 text-center w-24">Cao (mm)</th>
+                                    <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                    <th class="px-3 py-3 text-center w-20">Số tấm</th>
+                                    <th class="px-3 py-3 text-center w-28">Diện tích (m²)</th>
+                                    <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kinhTableBody" class="divide-y divide-gray-200 bg-white">
+                                <!-- Rows will be added here -->
+                            </tbody>
+                            <tfoot class="bg-cyan-50 font-semibold">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 text-right">TỔNG:</td>
+                                    <td class="px-4 py-3 text-center text-cyan-600" id="kinhTotalPanels">0</td>
+                                    <td class="px-4 py-3 text-center text-cyan-600" id="kinhTotalArea">0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex justify-end items-center no-print">
+                <div class="flex gap-3">
+                    <button onclick="saveAllForms()"
+                        class="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                        </svg>
+                        Lưu tất cả phiếu
+                    </button>
+                    <button onclick="exportAllToExcel()"
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Xuất tất cả Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End main-content -->
+
+    <script>
+        // =============================================
+        // DATA & STATE
+        // =============================================
+        let currentTab = 'nhom';
+        let projectData = null;
+        let bocTachData = null;
+
+        const tableData = {
+            nhom: [],
+            vattu: [],
+            phukien: [],
+            kinh: []
+        };
+
+        // Row counter for each table
+        let rowCounters = {
+            nhom: 0,
+            vattu: 0,
+            phukien: 0,
+            kinh: 0
+        };
+
+        // =============================================
+        // COMPANY DEFAULT ADDRESS
+        // =============================================
+        const COMPANY_DEFAULT_ADDRESS = 'KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội';
+
+        // =============================================
+        // INITIALIZATION
+        // =============================================
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set default date
+            document.getElementById('createdDate').valueAsDate = new Date();
+
+            // Set default delivery address (company address)
+            const addressField = document.getElementById('deliveryAddress');
+            if (addressField && !addressField.value) {
+                addressField.value = COMPANY_DEFAULT_ADDRESS;
+            }
+
+            // Auto-generate order code
+            generateOrderCode();
+
+            // Load projects list for dropdown
+            loadProjectsList();
+
+            // Check for URL parameters from material-requests.html modal
+            loadFromURLParams();
+
+            // Load data from sessionStorage if available
+            loadDataFromSession();
+        });
+
+        // =============================================
+        // AUTO-GENERATE ORDER CODE
+        // =============================================
+        function generateOrderCode() {
+            const orderCodeField = document.getElementById('orderCode');
+            if (orderCodeField && !orderCodeField.value) {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = String(now.getFullYear()).slice(-2);
+                const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                orderCodeField.value = `DH-${day}${month}${year}-${random}`;
+            }
+        }
+
+        // =============================================
+        // LOAD PROJECTS LIST
+        // =============================================
+        async function loadProjectsList() {
+            const projectSelect = document.getElementById('projectSelect');
+            if (!projectSelect) return;
+
+            try {
+                const SERVER_URL = window.SERVER_BASE || '';
+                const response = await fetch(`${SERVER_URL}/api/projects`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // Clear existing options
+                    projectSelect.innerHTML = '<option value="">-- Chọn dự án --</option>';
+
+                    // Add projects to dropdown
+                    result.data.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.project_code || ''} - ${project.project_name}`;
+                        option.dataset.projectCode = project.project_code || '';
+                        option.dataset.projectName = project.project_name || '';
+                        option.dataset.customerName = project.customer_name || '';
+                        option.dataset.address = project.construction_address || project.customer_address || '';
+                        projectSelect.appendChild(option);
+                    });
+
+                    console.log('✅ Loaded', result.data.length, 'projects');
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+
+        // Handle project selection
+        function onProjectSelect() {
+            const projectSelect = document.getElementById('projectSelect');
+            const selectedOption = projectSelect.options[projectSelect.selectedIndex];
+
+            if (selectedOption && selectedOption.value) {
+                // Fill form fields from selected project
+                document.getElementById('selectedProjectId').value = selectedOption.value;
+                document.getElementById('projectName').value = selectedOption.dataset.projectName || '';
+
+                // Do NOT auto-fill order code from project - let user input or auto-generate
+                // If order code is empty, generate a new one
+                const orderCodeField = document.getElementById('orderCode');
+                if (!orderCodeField.value) {
+                    generateOrderCode();
+                }
+
+                // Do NOT change delivery address - always keep company default
+                // User can manually change if needed
+
+                // Store for later use
+                window.selectedProjectId = selectedOption.value;
+
+                console.log('📋 Selected project:', {
+                    id: selectedOption.value,
+                    name: selectedOption.dataset.projectName
+                });
+            } else {
+                // Clear fields when no project selected
+                document.getElementById('selectedProjectId').value = '';
+                document.getElementById('projectName').value = '';
+                window.selectedProjectId = null;
+                // Keep order code - don't clear it
+                // Keep delivery address as is (company default or user-modified)
+            }
+        }
+
+        // Load data from URL parameters (from material-requests.html modal)
+        function loadFromURLParams() {
+            const params = new URLSearchParams(window.location.search);
+
+            // Check if we have URL params
+            if (params.has('type') || params.has('orderCode')) {
+                console.log('📥 Loading from URL params:', Object.fromEntries(params));
+
+                // Set request type/tab
+                const type = params.get('type');
+                if (type && ['nhom', 'kinh', 'vattu', 'phukien'].includes(type)) {
+                    switchTab(type);
+                }
+
+                // Fill form fields
+                if (params.get('orderCode')) {
+                    document.getElementById('orderCode').value = params.get('orderCode');
+                }
+                if (params.get('projectName')) {
+                    document.getElementById('projectName').value = params.get('projectName');
+                }
+                if (params.get('createdDate')) {
+                    document.getElementById('createdDate').value = params.get('createdDate');
+                }
+                if (params.get('requiredDate')) {
+                    const requiredDateEl = document.getElementById('requiredDate');
+                    if (requiredDateEl) {
+                        requiredDateEl.value = params.get('requiredDate');
+                    }
+                }
+                if (params.get('deliveryAddress')) {
+                    document.getElementById('deliveryAddress').value = params.get('deliveryAddress');
+                }
+                if (params.get('notes')) {
+                    const notesEl = document.getElementById('notes');
+                    if (notesEl) {
+                        notesEl.value = params.get('notes');
+                    }
+                }
+                if (params.get('projectId')) {
+                    // Store project ID for later use when saving
+                    window.selectedProjectId = params.get('projectId');
+                    document.getElementById('selectedProjectId').value = params.get('projectId');
+
+                    // Wait for projects list to load then select the project
+                    setTimeout(() => {
+                        const projectSelect = document.getElementById('projectSelect');
+                        if (projectSelect) {
+                            projectSelect.value = params.get('projectId');
+                            // Trigger change event to fill other fields
+                            if (projectSelect.value === params.get('projectId')) {
+                                onProjectSelect();
+                            }
+                        }
+                    }, 500);
+                }
+
+                // Clear URL params after loading (optional - keeps URL clean)
+                // window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        function loadDataFromSession() {
+            try {
+                // Load project data
+                const projectStr = sessionStorage.getItem('purchaseRequest_project');
+                if (projectStr) {
+                    projectData = JSON.parse(projectStr);
+                    populateProjectInfo(projectData);
+                }
+
+                // Load material request data from design-new.html (saved by submitMaterialRequest)
+                const nhomStr = sessionStorage.getItem('purchaseRequest_nhom');
+                const kinhStr = sessionStorage.getItem('purchaseRequest_kinh');
+                const phukienStr = sessionStorage.getItem('purchaseRequest_phukien');
+
+                console.log('📦 Loading from sessionStorage:', {
+                    nhomStr: nhomStr ? 'found' : 'not found',
+                    kinhStr: kinhStr ? 'found' : 'not found',
+                    phukienStr: phukienStr ? 'found' : 'not found'
+                });
+
+                if (nhomStr) {
+                    const nhomData = JSON.parse(nhomStr);
+                    console.log('📦 nhomData:', nhomData);
+                    if (nhomData.required_date) {
+                        document.getElementById('requiredDate').value = nhomData.required_date;
+                    }
+                    if (nhomData.request_date || nhomData.created_date) {
+                        document.getElementById('createdDate').value = nhomData.request_date || nhomData.created_date;
+                    }
+                    if (nhomData.order_code) {
+                        document.getElementById('orderCode').value = nhomData.order_code;
+                    }
+                    // Hỗ trợ cả format mới (nhom) và format cũ (items)
+                    const nhomItems = nhomData.nhom || nhomData.items || [];
+                    if (nhomItems.length > 0) {
+                        console.log('✅ Loading nhom items:', nhomItems.length);
+                        populateMaterialRequestData('nhom', nhomItems);
+                    }
+                }
+
+                if (kinhStr) {
+                    const kinhData = JSON.parse(kinhStr);
+                    console.log('📦 kinhData:', kinhData);
+                    // Hỗ trợ cả format mới (kinh) và format cũ (items)
+                    const kinhItems = kinhData.kinh || kinhData.items || [];
+                    if (kinhItems.length > 0) {
+                        console.log('✅ Loading kinh items:', kinhItems.length);
+                        populateMaterialRequestData('kinh', kinhItems);
+                    }
+                }
+
+                if (phukienStr) {
+                    const phukienData = JSON.parse(phukienStr);
+                    console.log('📦 phukienData:', phukienData);
+                    // Hỗ trợ cả format mới (phukien) và format cũ (items)
+                    const phukienItems = phukienData.phukien || phukienData.items || [];
+                    if (phukienItems.length > 0) {
+                        console.log('✅ Loading phukien items:', phukienItems.length);
+                        populateMaterialRequestData('phukien', phukienItems);
+                    }
+                }
+
+                // Fallback: Load boc tach data (shortage materials) - old format
+                if (!nhomStr && !kinhStr && !phukienStr) {
+                    const bocTachStr = sessionStorage.getItem('purchaseRequest_bocTach');
+                    if (bocTachStr) {
+                        bocTachData = JSON.parse(bocTachStr);
+                        populateBocTachData(bocTachData);
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading data from session:', e);
+            }
+        }
+
+        // Populate material request data from design-new.html format
+        function populateMaterialRequestData(category, items) {
+            if (!items || items.length === 0) return;
+
+            items.forEach(item => {
+                if (category === 'nhom') {
+                    addRow('nhom', {
+                        name: item.name || '',
+                        code: item.code || '',
+                        density: item.density || 0,
+                        length: item.length || 6,
+                        unit: item.unit || 'cây',
+                        quantity: item.quantity || item.requestQty || item.shortage || 0,
+                        weight: item.weight || 0,
+                        note: item.notes || ''
+                    });
+                } else if (category === 'vattu') {
+                    addRow('vattu', {
+                        code: item.code || '',
+                        name: item.name || '',
+                        unit: item.unit || 'cái',
+                        quantity: item.quantity || item.requestQty || item.shortage || 0
+                    });
+                } else if (category === 'phukien') {
+                    addRow('phukien', {
+                        code: item.code || '',
+                        name: item.name || '',
+                        unit: item.unit || 'chiếc',
+                        quantity: item.quantity || item.requestQty || item.shortage || 0
+                    });
+                } else if (category === 'kinh') {
+                    // Ưu tiên width_mm/height_mm vì đó là format trong bocTachData
+                    const width = item.width_mm || item.width || 0;
+                    const height = item.height_mm || item.height || 0;
+                    const area = item.area_m2 || item.area || 0;
+                    const panels = item.quantity || item.panels || item.requestQty || item.shortage || 0;
+
+                    addRow('kinh', {
+                        code: item.code || '',
+                        type: item.name || item.type || '',
+                        width: width,
+                        height: height,
+                        unit: 'tấm',
+                        panels: panels,
+                        area: area
+                    });
+                }
+            });
+
+            // Recalculate totals and weights/areas - delay để đảm bảo DOM đã render xong
+            setTimeout(() => {
+                if (category === 'nhom') {
+                    // Tính lại weight cho từng dòng nhôm
+                    tableData.nhom.forEach((item) => {
+                        if (item.stt) {
+                            calculateNhomWeight(item.stt);
+                        }
+                    });
+                    calculateNhomTotals();
+                }
+                if (category === 'vattu') {
+                    calculateVattuTotals();
+                }
+                if (category === 'kinh') {
+                    // Tính lại area cho từng dòng kính
+                    tableData.kinh.forEach((item) => {
+                        if (item.stt) {
+                            calculateKinhArea(item.stt);
+                        }
+                    });
+                    calculateKinhTotals();
+                }
+            }, 100);
+        }
+
+        function populateProjectInfo(project) {
+            if (!project) return;
+
+            document.getElementById('projectName').value = project.name || project.project_name || '';
+            document.getElementById('orderCode').value = project.order_code || project.project_code || '';
+            document.getElementById('deliveryAddress').value = project.location || project.address || '';
+        }
+
+        function populateBocTachData(data) {
+            if (!data) return;
+
+            // Populate Nhom (Aluminum)
+            if (data.nhom && data.nhom.length > 0) {
+                data.nhom.forEach(item => {
+                    addRow('nhom', {
+                        name: item.material_name || item.ten_vat_tu,
+                        code: item.material_code || item.ma_vat_tu,
+                        density: item.density || item.ty_trong || 0,
+                        length: item.length || item.length_m || 6,
+                        unit: item.unit || 'cây',
+                        quantity: item.quantity || item.so_luong || 0,
+                        weight: item.weight || item.khoi_luong || 0,
+                        note: item.note || item.ghi_chu || ''
+                    });
+                });
+                // Tính lại weight sau khi load xong
+                setTimeout(() => {
+                    tableData.nhom.forEach((item) => {
+                        if (item.stt) {
+                            calculateNhomWeight(item.stt);
+                        }
+                    });
+                    calculateNhomTotals();
+                }, 100);
+            }
+
+            // Populate Vattu (Consumables)
+            if (data.vattu && data.vattu.length > 0) {
+                data.vattu.forEach(item => {
+                    addRow('vattu', {
+                        code: item.material_code || item.ma_vat_tu,
+                        name: item.material_name || item.ten_vat_tu,
+                        unit: item.unit || 'cái',
+                        quantity: item.quantity || item.so_luong || 0
+                    });
+                });
+                setTimeout(() => calculateVattuTotals(), 100);
+            }
+
+            // Populate Kinh (Glass)
+            if (data.kinh && data.kinh.length > 0) {
+                data.kinh.forEach(item => {
+                    addRow('kinh', {
+                        code: item.glass_code || item.ma_kinh || item.code,
+                        type: item.glass_type || item.loai_kinh || item.type || item.name,
+                        width: item.width || item.width_mm || item.chieu_rong || 0,
+                        height: item.height || item.height_mm || item.chieu_cao || 0,
+                        unit: 'tấm',
+                        panels: item.panels || item.so_tam || item.qty || item.quantity || 0,
+                        area: item.area || item.area_m2 || item.dien_tich || 0
+                    });
+                });
+                // Tính lại area sau khi load xong
+                setTimeout(() => {
+                    tableData.kinh.forEach((item) => {
+                        if (item.stt) {
+                            calculateKinhArea(item.stt);
+                        }
+                    });
+                    calculateKinhTotals();
+                }, 100);
+            }
+        }
+
+        // =============================================
+        // TAB SWITCHING
+        // =============================================
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            const tabMap = {
+                'nhom': 'tabNhom',
+                'vattu': 'tabVattu',
+                'phukien': 'tabPhukien',
+                'kinh': 'tabKinh'
+            };
+
+            document.getElementById(tabMap[tab]).classList.remove('hidden');
+        }
+
+        // =============================================
+        // AUTOCOMPLETE - TÌM KIẾM NHANH TỪ KHO
+        // =============================================
+        const API_BASE = window.API_BASE || '/api';
+        let autocompleteCache = {};
+        let autocompleteTimeout = null;
+
+        // Debounce function for search
+        function debounce(func, wait) {
+            return function (...args) {
+                clearTimeout(autocompleteTimeout);
+                autocompleteTimeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Search materials from API
+        async function searchMaterials(query, type) {
+            if (query.length < 1) return [];
+
+            const cacheKey = `${type}-${query}`;
+            if (autocompleteCache[cacheKey]) {
+                return autocompleteCache[cacheKey];
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/materials/search?type=${type}&q=${encodeURIComponent(query)}&limit=15`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    autocompleteCache[cacheKey] = result.data;
+                    return result.data;
+                }
+            } catch (error) {
+                console.error('Error searching materials:', error);
+            }
+            return [];
+        }
+
+        // Initialize autocomplete for an input
+        function initAutocomplete(inputId, type, stt, callbacks = {}) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            const container = input.parentElement;
+            container.classList.add('autocomplete-container');
+
+            // Create dropdown and append to body for proper z-index handling
+            const dropdown = document.createElement('div');
+            dropdown.className = 'autocomplete-dropdown';
+            dropdown.id = `${inputId}-dropdown`;
+            document.body.appendChild(dropdown);
+
+            let highlightedIndex = -1;
+            let currentResults = [];
+
+            // Position dropdown below input
+            function positionDropdown() {
+                const rect = input.getBoundingClientRect();
+                const dropdownHeight = dropdown.offsetHeight || 350;
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const spaceAbove = rect.top;
+
+                dropdown.style.left = `${rect.left}px`;
+                dropdown.style.width = `${Math.max(rect.width, 400)}px`;
+
+                // Show above or below depending on space
+                if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                    dropdown.style.top = 'auto';
+                    dropdown.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+                } else {
+                    dropdown.style.top = `${rect.bottom + 4}px`;
+                    dropdown.style.bottom = 'auto';
+                }
+            }
+
+            // Search handler with debounce
+            const handleSearch = debounce(async (e) => {
+                const query = e.target.value.trim();
+                dropdown.innerHTML = '<div class="autocomplete-loading">🔍 Đang tìm kiếm...</div>';
+                dropdown.classList.add('active');
+                positionDropdown();
+
+                if (query.length < 1) {
+                    dropdown.classList.remove('active');
+                    return;
+                }
+
+                currentResults = await searchMaterials(query, type);
+                highlightedIndex = -1;
+                renderDropdown(dropdown, currentResults, query, type, stt, callbacks);
+                positionDropdown();
+            }, 300);
+
+            input.addEventListener('input', handleSearch);
+
+            // Keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                if (!dropdown.classList.contains('active')) return;
+
+                const items = dropdown.querySelectorAll('.autocomplete-item');
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                    updateHighlight(items, highlightedIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                    updateHighlight(items, highlightedIndex);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && items[highlightedIndex]) {
+                        items[highlightedIndex].click();
+                    } else {
+                        // Use current input value as new item
+                        dropdown.classList.remove('active');
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            // Close dropdown on blur (with delay for click events)
+            input.addEventListener('blur', () => {
+                setTimeout(() => dropdown.classList.remove('active'), 200);
+            });
+
+            // Focus shows dropdown if has results
+            input.addEventListener('focus', () => {
+                positionDropdown();
+                if (input.value.trim().length >= 1) {
+                    handleSearch({ target: input });
+                }
+            });
+
+            // Reposition on scroll/resize
+            window.addEventListener('scroll', () => {
+                if (dropdown.classList.contains('active')) {
+                    positionDropdown();
+                }
+            }, true);
+
+            window.addEventListener('resize', () => {
+                if (dropdown.classList.contains('active')) {
+                    positionDropdown();
+                }
+            });
+        }
+
+        // Update highlight state
+        function updateHighlight(items, index) {
+            items.forEach((item, i) => {
+                item.classList.toggle('highlighted', i === index);
+            });
+        }
+
+        // Render autocomplete dropdown
+        function renderDropdown(dropdown, results, query, type, stt, callbacks) {
+            if (results.length === 0) {
+                dropdown.innerHTML = `
+                    <div class="autocomplete-no-results">Không tìm thấy "${query}" trong kho</div>
+                    <div class="autocomplete-new-item" onclick="selectNewItem('${type}', ${stt}, '${escapeHtml(query)}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Thêm mới: "${query}"
+                    </div>
+                `;
+                dropdown.classList.add('active');
+                return;
+            }
+
+            let html = results.map((item, index) => {
+                const stockInfo = item.stock_quantity !== null && item.stock_quantity !== undefined
+                    ? `<span class="autocomplete-item-stock ${item.stock_quantity < 10 ? 'low' : ''}">Tồn kho: ${item.stock_quantity} ${item.unit || ''}</span>`
+                    : '';
+                const sourceBadge = getSourceBadge(item.source);
+
+                const isInventory = item.is_stock || item.source === 'inventory' || item.source === 'materials';
+                return `
+                    <div class="autocomplete-item ${isInventory ? 'is-inventory' : ''}" data-index="${index}" 
+                         onclick="selectMaterial('${type}', ${stt}, ${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                        <div class="autocomplete-item-name">
+                            ${escapeHtml(item.name || '')}
+                            ${sourceBadge}
+                            ${isInventory ? '<span class="inventory-hint">✔ TRONG KHO</span>' : ''}
+                        </div>
+                        <div class="autocomplete-item-code">Mã: ${escapeHtml(item.code || 'N/A')}</div>
+                        ${stockInfo}
+                    </div>
+                `;
+            }).join('');
+
+            // Add "new item" option at the bottom
+            html += `
+                <div class="autocomplete-new-item" onclick="selectNewItem('${type}', ${stt}, '${escapeHtml(query)}')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Nhập thủ công: "${query}"
+                </div>
+            `;
+
+            dropdown.innerHTML = html;
+            dropdown.classList.add('active');
+        }
+
+        // Get source badge HTML
+        function getSourceBadge(source) {
+            const badges = {
+                'inventory': '<span class="source-badge inventory">Kho</span>',
+                'materials': '<span class="source-badge inventory">Kho</span>',
+                'aluminum_systems': '<span class="source-badge aluminum_systems">Hệ nhôm</span>',
+                'aluminum_profiles': '<span class="source-badge aluminum_profiles">Profile</span>',
+                'glass_items': '<span class="source-badge glass_items">Kính</span>',
+                'accessories': '<span class="source-badge accessories">Phụ kiện</span>'
+            };
+            return badges[source] || '';
+        }
+
+        // Select material from dropdown
+        function selectMaterial(type, stt, item) {
+            console.log('✅ Selected material:', item);
+            const row = document.querySelector(`#${type}TableBody tr[data-index="${stt}"]`);
+            if (!row) return;
+
+            const inputs = row.querySelectorAll('input');
+
+            if (type === 'nhom') {
+                if (inputs[0]) inputs[0].value = item.name || '';
+                if (inputs[1]) inputs[1].value = item.code || '';
+                if (inputs[2]) inputs[2].value = item.density || '';
+                if (inputs[4]) inputs[4].value = item.unit || 'cây';
+                updateData('nhom', stt, 'name', item.name);
+                updateData('nhom', stt, 'code', item.code);
+                updateData('nhom', stt, 'density', item.density);
+                updateData('nhom', stt, 'unit', item.unit || 'cây');
+                calculateNhomWeight(stt);
+            } else if (type === 'vattu') {
+                if (inputs[0]) inputs[0].value = item.code || '';
+                if (inputs[1]) inputs[1].value = item.name || '';
+                if (inputs[2]) inputs[2].value = item.unit || 'cái';
+                updateData('vattu', stt, 'code', item.code);
+                updateData('vattu', stt, 'name', item.name);
+                updateData('vattu', stt, 'unit', item.unit || 'cái');
+            } else if (type === 'phukien') {
+                if (inputs[0]) inputs[0].value = item.code || '';
+                if (inputs[1]) inputs[1].value = item.name || '';
+                if (inputs[2]) inputs[2].value = item.unit || 'chiếc';
+                updateData('phukien', stt, 'code', item.code);
+                updateData('phukien', stt, 'name', item.name);
+                updateData('phukien', stt, 'unit', item.unit || 'chiếc');
+            } else if (type === 'kinh') {
+                if (inputs[0]) inputs[0].value = item.code || '';
+                if (inputs[1]) inputs[1].value = item.name || '';
+                if (inputs[5]) inputs[5].value = item.unit || 'tấm';
+                updateData('kinh', stt, 'code', item.code);
+                updateData('kinh', stt, 'type', item.name);
+                updateData('kinh', stt, 'unit', item.unit || 'tấm');
+            }
+
+            // Close dropdown (now in body)
+            closeAllDropdowns();
+        }
+
+        // Close all autocomplete dropdowns
+        function closeAllDropdowns() {
+            document.querySelectorAll('.autocomplete-dropdown.active').forEach(d => {
+                d.classList.remove('active');
+            });
+        }
+
+        // Select new item (manual input)
+        function selectNewItem(type, stt, name) {
+            console.log('✏️ New item entered:', name);
+            const row = document.querySelector(`#${type}TableBody tr[data-index="${stt}"]`);
+            if (!row) return;
+
+            // Update data
+            if (type === 'nhom') {
+                updateData('nhom', stt, 'name', name);
+            } else if (type === 'vattu' || type === 'phukien') {
+                updateData(type, stt, 'name', name);
+            } else if (type === 'kinh') {
+                updateData('kinh', stt, 'type', name);
+            }
+
+            // Close dropdown (now in body)
+            closeAllDropdowns();
+        }
+
+        // =============================================
+        // TABLE ROW OPERATIONS
+        // =============================================
+        function addRow(type, data = null) {
+            rowCounters[type]++;
+            const stt = rowCounters[type];
+            let html = '';
+
+            if (type === 'nhom') {
+                const inputId = `nhomName${stt}`;
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2">
+                            <div class="autocomplete-container">
+                                <input type="text" id="${inputId}" class="autocomplete-input" 
+                                    value="${data?.name || ''}" 
+                                    placeholder="Gõ để tìm kiếm từ Kho..."
+                                    onchange="updateData('nhom', ${stt}, 'name', this.value)">
+                            </div>
+                        </td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('nhom', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.001" class="w-full px-2 py-1 border rounded text-center" value="${data?.density || ''}" onchange="updateData('nhom', ${stt}, 'density', this.value); calculateNhomWeight(${stt})"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.1" class="w-full px-2 py-1 border rounded text-center" id="nhomLength${stt}" value="${data?.length || '6'}" onchange="updateData('nhom', ${stt}, 'length', this.value); calculateNhomWeight(${stt})"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'cây'}" onchange="updateData('nhom', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.quantity || ''}" onchange="updateData('nhom', ${stt}, 'quantity', this.value); calculateNhomWeight(${stt}); calculateNhomTotals()"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.01" class="w-full px-2 py-1 border rounded text-center" id="nhomWeight${stt}" value="${data?.weight || ''}" readonly></td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded" value="${data?.note || ''}" onchange="updateData('nhom', ${stt}, 'note', this.value)"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('nhom', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.nhom.push({ stt, length: data?.length || 6, ...data });
+            } else if (type === 'vattu') {
+                const inputId = `vattuName${stt}`;
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('vattu', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2">
+                            <div class="autocomplete-container">
+                                <input type="text" id="${inputId}" class="autocomplete-input" 
+                                    value="${data?.name || ''}" 
+                                    placeholder="Gõ để tìm kiếm từ Kho..."
+                                    onchange="updateData('vattu', ${stt}, 'name', this.value)">
+                            </div>
+                        </td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'cái'}" onchange="updateData('vattu', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.quantity || ''}" onchange="updateData('vattu', ${stt}, 'quantity', this.value); calculateVattuTotals()"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('vattu', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.vattu.push({ stt, ...data });
+            } else if (type === 'phukien') {
+                const inputId = `phukienName${stt}`;
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('phukien', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2">
+                            <div class="autocomplete-container">
+                                <input type="text" id="${inputId}" class="autocomplete-input" 
+                                    value="${data?.name || ''}" 
+                                    placeholder="Gõ để tìm kiếm từ Kho..."
+                                    onchange="updateData('phukien', ${stt}, 'name', this.value)">
+                            </div>
+                        </td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'chiếc'}" onchange="updateData('phukien', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.quantity || ''}" onchange="updateData('phukien', ${stt}, 'quantity', this.value)"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('phukien', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.phukien.push({ stt, ...data });
+            } else if (type === 'kinh') {
+                const inputId = `kinhType${stt}`;
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('kinh', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2">
+                            <div class="autocomplete-container">
+                                <input type="text" id="${inputId}" class="autocomplete-input" 
+                                    value="${data?.type || ''}" 
+                                    placeholder="Gõ để tìm kiếm từ Kho..."
+                                    onchange="updateData('kinh', ${stt}, 'type', this.value)">
+                            </div>
+                        </td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.width || ''}" onchange="updateData('kinh', ${stt}, 'width', this.value); calculateKinhArea(${stt})"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.height || ''}" onchange="updateData('kinh', ${stt}, 'height', this.value); calculateKinhArea(${stt})"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'tấm'}" onchange="updateData('kinh', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.panels || ''}" onchange="updateData('kinh', ${stt}, 'panels', this.value); calculateKinhArea(${stt})"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.0001" class="w-full px-2 py-1 border rounded text-center" id="kinhArea${stt}" value="${data?.area || ''}" onchange="updateData('kinh', ${stt}, 'area', this.value); calculateKinhTotals()"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('kinh', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.kinh.push({ stt, ...data });
+            }
+
+            document.getElementById(`${type}TableBody`).insertAdjacentHTML('beforeend', html);
+
+            // Initialize autocomplete after adding row
+            setTimeout(() => {
+                if (type === 'nhom') {
+                    initAutocomplete(`nhomName${stt}`, 'nhom', stt);
+                } else if (type === 'vattu') {
+                    initAutocomplete(`vattuName${stt}`, 'vattu', stt);
+                } else if (type === 'phukien') {
+                    initAutocomplete(`phukienName${stt}`, 'phukien', stt);
+                } else if (type === 'kinh') {
+                    initAutocomplete(`kinhType${stt}`, 'kinh', stt);
+                }
+            }, 50);
+        }
+
+        function addGroupRow(type) {
+            const groupName = prompt('Nhập tên nhóm (VD: CỬA ĐI MỞ QUAY 1 CÁNH : VRA 55)');
+            if (!groupName) return;
+
+            const html = `
+                <tr class="bg-purple-100 font-semibold">
+                    <td class="px-3 py-2"></td>
+                    <td colspan="5" class="px-3 py-2 text-purple-800">${escapeHtml(groupName)}</td>
+                    <td class="px-3 py-2 no-print">
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 text-xs">Xóa</button>
+                    </td>
+                </tr>
+            `;
+            document.getElementById(`${type}TableBody`).insertAdjacentHTML('beforeend', html);
+        }
+
+        function deleteRow(type, index) {
+            const row = document.querySelector(`#${type}TableBody tr[data-index="${index}"]`);
+            if (row) {
+                // Remove associated dropdown from body
+                const inputId = type === 'nhom' ? `nhomName${index}` :
+                    type === 'vattu' ? `vattuName${index}` :
+                        type === 'phukien' ? `phukienName${index}` : `kinhType${index}`;
+                const dropdown = document.getElementById(`${inputId}-dropdown`);
+                if (dropdown) dropdown.remove();
+
+                row.remove();
+                tableData[type] = tableData[type].filter(item => item.stt !== index);
+
+                // Recalculate totals
+                if (type === 'nhom') calculateNhomTotals();
+                if (type === 'vattu') calculateVattuTotals();
+                if (type === 'kinh') calculateKinhTotals();
+            }
+        }
+
+        function updateData(type, index, field, value) {
+            const item = tableData[type].find(item => item.stt === index);
+            if (item) {
+                item[field] = value;
+            }
+        }
+
+        // Sync data from DOM to tableData before saving
+        function syncTableDataFromDOM() {
+            console.log('🔄 syncTableDataFromDOM started...');
+            console.log('📊 tableData before sync:', JSON.parse(JSON.stringify(tableData)));
+
+            // Sync nhom data
+            const nhomRows = document.querySelectorAll('#nhomTableBody tr[data-index]');
+            console.log(`📋 Found ${nhomRows.length} nhom rows in DOM`);
+
+            nhomRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.nhom.find(item => item.stt === index);
+                if (!item) {
+                    // Create new item if not found
+                    item = { stt: index };
+                    tableData.nhom.push(item);
+                    console.log(`➕ Created new nhom item with stt=${index}`);
+                }
+                const inputs = row.querySelectorAll('input');
+                console.log(`🔍 Row ${index} has ${inputs.length} inputs`);
+
+                // Sync tất cả inputs có sẵn, không yêu cầu đủ 8
+                if (inputs.length > 0) {
+                    item.name = inputs[0]?.value || item.name || '';
+                    item.code = inputs[1]?.value || item.code || '';
+                    item.density = inputs[2]?.value || item.density || '';
+                    item.length = inputs[3]?.value || item.length || '';
+                    item.unit = inputs[4]?.value || item.unit || '';
+                    item.quantity = inputs[5]?.value || item.quantity || '';
+                    item.weight = inputs[6]?.value || item.weight || '';
+                    item.note = inputs[7]?.value || item.note || '';
+                    console.log(`✅ Synced row ${index}:`, item);
+                } else {
+                    console.warn(`⚠️ Row ${index} has no inputs, keeping existing data`);
+                }
+            });
+
+            // Sync vattu data
+            const vattuRows = document.querySelectorAll('#vattuTableBody tr[data-index]');
+            vattuRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.vattu.find(item => item.stt === index);
+                if (!item) {
+                    item = { stt: index };
+                    tableData.vattu.push(item);
+                }
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 4) {
+                    item.code = inputs[0]?.value || '';
+                    item.name = inputs[1]?.value || '';
+                    item.unit = inputs[2]?.value || '';
+                    item.quantity = inputs[3]?.value || '';
+                }
+            });
+
+            // Sync phukien data
+            const phukienRows = document.querySelectorAll('#phukienTableBody tr[data-index]');
+            phukienRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.phukien.find(item => item.stt === index);
+                if (!item) {
+                    item = { stt: index };
+                    tableData.phukien.push(item);
+                }
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 4) {
+                    item.code = inputs[0]?.value || '';
+                    item.name = inputs[1]?.value || '';
+                    item.unit = inputs[2]?.value || '';
+                    item.quantity = inputs[3]?.value || '';
+                }
+            });
+
+            // Sync kinh data
+            const kinhRows = document.querySelectorAll('#kinhTableBody tr[data-index]');
+            kinhRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.kinh.find(item => item.stt === index);
+                if (!item) {
+                    item = { stt: index };
+                    tableData.kinh.push(item);
+                }
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 7) {
+                    item.code = inputs[0]?.value || '';
+                    item.type = inputs[1]?.value || '';
+                    item.width = inputs[2]?.value || '';
+                    item.height = inputs[3]?.value || '';
+                    item.unit = inputs[4]?.value || '';
+                    item.panels = inputs[5]?.value || '';
+                    item.area = inputs[6]?.value || '';
+                }
+            });
+
+            console.log('Synced tableData:', tableData);
+        }
+
+        // =============================================
+        // CALCULATIONS
+        // =============================================
+        function calculateNhomWeight(rowIndex) {
+            const row = document.querySelector(`#nhomTableBody tr[data-index="${rowIndex}"]`);
+            if (!row) return;
+
+            const density = parseFloat(row.querySelector('input[onchange*="density"]').value) || 0;
+            const length = parseFloat(document.getElementById(`nhomLength${rowIndex}`).value) || 0;
+            const quantity = parseFloat(row.querySelector('input[onchange*="quantity"]').value) || 0;
+
+            // Khối lượng = Tỷ trọng * Mét * Số lượng
+            const weight = density * length * quantity;
+            document.getElementById(`nhomWeight${rowIndex}`).value = weight.toFixed(2);
+            updateData('nhom', rowIndex, 'weight', weight.toFixed(2));
+        }
+
+        function calculateNhomTotals() {
+            let totalQty = 0;
+            let totalWeight = 0;
+
+            tableData.nhom.forEach(item => {
+                totalQty += parseFloat(item.quantity) || 0;
+                totalWeight += parseFloat(item.weight) || 0;
+            });
+
+            document.getElementById('nhomTotalQty').textContent = totalQty;
+            document.getElementById('nhomTotalWeight').textContent = totalWeight.toFixed(2);
+        }
+
+        function calculateVattuTotals() {
+            let totalQty = 0;
+
+            tableData.vattu.forEach(item => {
+                totalQty += parseInt(item.quantity) || 0;
+            });
+
+            document.getElementById('vattuTotalQty').textContent = totalQty;
+        }
+
+        function calculateKinhArea(rowIndex) {
+            const row = document.querySelector(`#kinhTableBody tr[data-index="${rowIndex}"]`);
+            if (!row) return;
+
+            const width = parseFloat(row.querySelector('input[onchange*="width"]').value) || 0;
+            const height = parseFloat(row.querySelector('input[onchange*="height"]').value) || 0;
+            const panels = parseFloat(row.querySelector('input[onchange*="panels"]').value) || 1;
+
+            const area = (width / 1000) * (height / 1000) * panels;
+            document.getElementById(`kinhArea${rowIndex}`).value = area.toFixed(6);
+            updateData('kinh', rowIndex, 'area', area.toFixed(6));
+            calculateKinhTotals();
+        }
+
+        function calculateKinhTotals() {
+            let totalPanels = 0;
+            let totalArea = 0;
+
+            tableData.kinh.forEach(item => {
+                totalPanels += parseInt(item.panels) || 0;
+                totalArea += parseFloat(item.area) || 0;
+            });
+
+            document.getElementById('kinhTotalPanels').textContent = totalPanels;
+            document.getElementById('kinhTotalArea').textContent = totalArea.toFixed(6);
+        }
+
+        // =============================================
+        // PRINT & EXPORT
+        // =============================================
+        function printForm() {
+            window.print();
+        }
+
+        async function exportCurrentTab() {
+            const projectName = document.getElementById('projectName').value || 'Công trình';
+            const API_BASE = window.API_BASE || '/api';
+
+            try {
+                const projectInfo = {
+                    projectName: document.getElementById('projectName').value || '',
+                    orderCode: document.getElementById('orderCode').value || '',
+                    productType: document.getElementById('productType').value || '',
+                    color: document.getElementById('color').value || '',
+                    deliveryAddress: document.getElementById('deliveryAddress').value || ''
+                };
+
+                const response = await fetch(`${API_BASE}/bom-export/purchase-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: currentTab,
+                        data: tableData[currentTab],
+                        projectInfo: projectInfo
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Lỗi khi xuất Excel');
+                }
+
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `Phieu_Yeu_Cau_${currentTab}.xlsx`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = decodeURIComponent(filename);
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error exporting Excel:', error);
+                alert('Lỗi khi xuất Excel: ' + error.message);
+            }
+        }
+
+        async function exportAllToExcel() {
+            const projectName = document.getElementById('projectName').value || 'Công trình';
+            const API_BASE = window.API_BASE || '/api';
+
+            const projectInfo = {
+                projectName: document.getElementById('projectName').value || '',
+                orderCode: document.getElementById('orderCode').value || '',
+                productType: document.getElementById('productType').value || '',
+                color: document.getElementById('color').value || '',
+                deliveryAddress: document.getElementById('deliveryAddress').value || ''
+            };
+
+            // Export each tab that has data
+            for (const type of ['nhom', 'vattu', 'phukien', 'kinh']) {
+                if (tableData[type] && tableData[type].length > 0) {
+                    try {
+                        const response = await fetch(`${API_BASE}/bom-export/purchase-request`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                type: type,
+                                data: tableData[type],
+                                projectInfo: projectInfo
+                            })
+                        });
+
+                        if (response.ok) {
+                            const contentDisposition = response.headers.get('Content-Disposition');
+                            let filename = `Phieu_Yeu_Cau_${type}.xlsx`;
+                            if (contentDisposition) {
+                                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                if (filenameMatch && filenameMatch[1]) {
+                                    filename = filenameMatch[1].replace(/['"]/g, '');
+                                }
+                            }
+
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = decodeURIComponent(filename);
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+
+                            // Wait a bit before next download
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    } catch (error) {
+                        console.error(`Error exporting ${type}:`, error);
+                    }
+                }
+            }
+        }
+
+        function createWorksheet(type) {
+            const projectName = document.getElementById('projectName').value || '';
+            const orderCode = document.getElementById('orderCode').value || '';
+            const productType = document.getElementById('productType').value || '';
+            const color = document.getElementById('color').value || '';
+            const deliveryAddress = document.getElementById('deliveryAddress').value || '';
+            const createdDate = document.getElementById('createdDate').value || '';
+
+            // Format date
+            const dateObj = new Date(createdDate);
+            const day = dateObj.getDate();
+            const month = dateObj.getMonth() + 1;
+            const year = dateObj.getFullYear();
+
+            const data = [];
+
+            // Header rows
+            const titles = {
+                'nhom': 'PHIẾU YÊU CẦU VẬT TƯ- PHỤ KIỆN (NHÔM)',
+                'vattu': 'PHIẾU YÊU CẦU VẬT TƯ',
+                'phukien': 'PHIẾU YÊU CẦU VẬT TƯ- PHỤ KIỆN ĐI CÔNG TRÌNH',
+                'kinh': 'PHIẾU YÊU CẦU VẬT TƯ KÍNH'
+            };
+
+            data.push([`  ${titles[type]}`]);
+            data.push([null, ` Ngày ..${day}..tháng ..${month}.. năm ${year}`]);
+            data.push([`Dự án : ${projectName}`]);
+            data.push([`Mã Đơn Hàng : ${orderCode}`]);
+            data.push([`Chủng loại : ${productType}`]);
+            data.push([`Màu sắc : ${color}`]);
+            data.push([`Địa chỉ giao hàng : ${deliveryAddress}`]);
+            const requiredDate = document.getElementById('requiredDate').value;
+            if (requiredDate) {
+                const reqDateObj = new Date(requiredDate);
+                const reqDay = reqDateObj.getDate();
+                const reqMonth = reqDateObj.getMonth() + 1;
+                const reqYear = reqDateObj.getFullYear();
+                data.push([`Ngày cần vật tư về : ${reqDay}/${reqMonth}/${reqYear}`]);
+            }
+            data.push([]);
+
+            // Determine header row index and column count
+            let headerRowIndex = data.length;
+            let colCount = 0;
+            let dataStartRow = 0;
+            let dataEndRow = 0;
+
+            // Table headers and data based on type
+            if (type === 'nhom') {
+                data.push(['TT', 'Tên vật tư', 'Mã vật tư', 'Tỷ trọng', 'Mét (M)', 'Đơn vị', 'Số lượng', 'Khối lượng', 'Ghi chú']);
+                colCount = 9;
+                dataStartRow = data.length;
+                tableData.nhom.forEach(item => {
+                    data.push([item.stt, item.name, item.code, item.density, item.length || 6, item.unit, item.quantity, item.weight, item.note]);
+                });
+                // Total row
+                let totalQty = 0, totalWeight = 0;
+                tableData.nhom.forEach(item => {
+                    totalQty += parseFloat(item.quantity) || 0;
+                    totalWeight += parseFloat(item.weight) || 0;
+                });
+                dataEndRow = data.length;
+                data.push([null, 'TỔNG CỘNG', null, null, null, null, totalQty, totalWeight.toFixed(2)]);
+            } else if (type === 'vattu') {
+                data.push(['TT', 'Mã VT', 'Tên vật tư', 'Đơn vị', 'Số lượng']);
+                colCount = 5;
+                dataStartRow = data.length;
+                tableData.vattu.forEach(item => {
+                    data.push([item.stt, item.code, item.name, item.unit, item.quantity]);
+                });
+                dataEndRow = data.length;
+            } else if (type === 'phukien') {
+                data.push(['TT', 'Mã VT', 'Tên vật tư', 'Đơn vị', 'Số lượng']);
+                colCount = 5;
+                dataStartRow = data.length;
+                tableData.phukien.forEach(item => {
+                    data.push([item.stt, item.code, item.name, item.unit, item.quantity]);
+                });
+                dataEndRow = data.length;
+            } else if (type === 'kinh') {
+                data.push(['TT', 'Mã Kính', 'Loại kính', 'Chiều rộng', 'Chiều cao', 'ĐVT', 'Số tấm', 'Diện tích']);
+                colCount = 8;
+                dataStartRow = data.length;
+                tableData.kinh.forEach(item => {
+                    data.push([item.stt, item.code, item.type, item.width, item.height, item.unit, item.panels, item.area]);
+                });
+                // Total row
+                let totalPanels = 0, totalArea = 0;
+                tableData.kinh.forEach(item => {
+                    totalPanels += parseInt(item.panels) || 0;
+                    totalArea += parseFloat(item.area) || 0;
+                });
+                dataEndRow = data.length;
+                data.push([null, 'TỔNG', null, null, null, null, totalPanels, totalArea.toFixed(6)]);
+            }
+
+            // Add date and location
+            data.push([]);
+            data.push([null, null, `          Hà Nội, Ngày ${day} tháng ${month} năm ${year}`]);
+            data.push([]);
+
+            // Add signature section
+            const signatureRow1 = data.length;
+            data.push([' Người lập', 'Kiểm tra', 'Kế toán', 'Vật tư', 'Người nhận', 'Duyệt']);
+            const signatureRow2 = data.length;
+            data.push(['  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)']);
+
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Apply styles
+            const range = XLSX.utils.decode_range(ws['!ref']);
+
+            // Style title row (row 0) - Bold
+            const titleCell = XLSX.utils.encode_cell({ r: 0, c: 0 });
+            if (!ws[titleCell]) ws[titleCell] = { t: 's', v: data[0][0] };
+            ws[titleCell].s = {
+                font: { bold: true, sz: 14 },
+                alignment: { horizontal: 'center', vertical: 'center' }
+            };
+
+            // Style header row - Bold and border
+            for (let c = 0; c < colCount; c++) {
+                const cell = XLSX.utils.encode_cell({ r: headerRowIndex, c: c });
+                if (!ws[cell]) ws[cell] = { t: 's', v: data[headerRowIndex][c] || '' };
+                ws[cell].s = {
+                    font: { bold: true },
+                    border: {
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } }
+                    },
+                    alignment: { horizontal: 'center', vertical: 'center' },
+                    fill: { fgColor: { rgb: 'E0E0E0' } }
+                };
+            }
+
+            // Style data rows - Border
+            for (let r = dataStartRow; r < dataEndRow; r++) {
+                for (let c = 0; c < colCount; c++) {
+                    const cell = XLSX.utils.encode_cell({ r: r, c: c });
+                    if (!ws[cell]) ws[cell] = { t: 's', v: data[r][c] || '' };
+                    if (!ws[cell].s) ws[cell].s = {};
+                    ws[cell].s.border = {
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } }
+                    };
+                }
+            }
+
+            // Style total row - Bold and border
+            const totalRowIndex = dataEndRow;
+            for (let c = 0; c < colCount; c++) {
+                const cell = XLSX.utils.encode_cell({ r: totalRowIndex, c: c });
+                if (!ws[cell]) ws[cell] = { t: 's', v: data[totalRowIndex][c] || '' };
+                if (!ws[cell].s) ws[cell].s = {};
+                ws[cell].s.font = { bold: true };
+                ws[cell].s.border = {
+                    top: { style: 'thin', color: { rgb: '000000' } },
+                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                    left: { style: 'thin', color: { rgb: '000000' } },
+                    right: { style: 'thin', color: { rgb: '000000' } }
+                };
+                ws[cell].s.fill = { fgColor: { rgb: 'E0E0E0' } };
+            }
+
+            // Style signature rows - Bold
+            for (let c = 0; c < 6; c++) {
+                const cell1 = XLSX.utils.encode_cell({ r: signatureRow1, c: c });
+                if (!ws[cell1]) ws[cell1] = { t: 's', v: data[signatureRow1][c] || '' };
+                ws[cell1].s = {
+                    font: { bold: true },
+                    alignment: { horizontal: 'center', vertical: 'center' }
+                };
+
+                const cell2 = XLSX.utils.encode_cell({ r: signatureRow2, c: c });
+                if (!ws[cell2]) ws[cell2] = { t: 's', v: data[signatureRow2][c] || '' };
+                ws[cell2].s = {
+                    alignment: { horizontal: 'center', vertical: 'center' }
+                };
+            }
+
+            return ws;
+        }
+
+        // =============================================
+        // SAVE
+        // =============================================
+
+        // Save current tab only
+        async function saveCurrentTab(type) {
+            // Validate project selection
+            const projectSelect = document.getElementById('projectSelect');
+            const projectId = document.getElementById('selectedProjectId').value || window.selectedProjectId;
+            const projectName = document.getElementById('projectName').value;
+
+            if (!projectId || !projectName) {
+                VWModal.warning('Vui lòng chọn dự án trước khi lưu!');
+                if (projectSelect) projectSelect.focus();
+                return;
+            }
+
+            // Sync data from DOM first
+            syncTableDataFromDOM();
+
+            // Get data for current tab only
+            let items = [];
+            if (type === 'nhom' && tableData.nhom.length > 0) {
+                items = tableData.nhom;
+            } else if (type === 'vattu' && tableData.vattu.length > 0) {
+                items = tableData.vattu;
+            } else if (type === 'phukien' && tableData.phukien.length > 0) {
+                items = tableData.phukien;
+            } else if (type === 'kinh' && tableData.kinh.length > 0) {
+                items = tableData.kinh;
+            }
+
+            if (items.length === 0) {
+                VWModal.warning(`Không có vật tư nào trong tab ${getTabName(type)}. Vui lòng thêm vật tư trước khi lưu.`);
+                return;
+            }
+
+            // Get created_date, set to today if empty
+            let createdDate = document.getElementById('createdDate').value;
+            if (!createdDate) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                createdDate = `${year}-${month}-${day}`;
+                document.getElementById('createdDate').value = createdDate;
+            }
+
+            // Prepare payload with only current tab data
+            const payload = {
+                project_id: projectId,
+                project_name: projectName,
+                order_code: document.getElementById('orderCode').value,
+                product_type: document.getElementById('productType').value,
+                color: document.getElementById('color').value,
+                delivery_address: document.getElementById('deliveryAddress').value,
+                created_date: createdDate,
+                required_date: document.getElementById('requiredDate').value,
+                status: 'draft'
+            };
+
+            console.log('saveCurrentTab payload:', payload);
+            console.log('Items to save:', items);
+
+            // Format data for backend
+            const formatNhomData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    density: item.density || '',
+                    length: item.length || item.length_m || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    weight: item.weight || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatVattuData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatPhukienData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatKinhData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    type: item.type || item.name || '',
+                    width: item.width || item.width_mm || '',
+                    height: item.height || item.height_mm || '',
+                    unit: item.unit || '',
+                    panels: parseFloat(item.panels || item.quantity) || 0,
+                    area: item.area || item.area_m2 || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            // Add only current tab data with proper formatting
+            if (type === 'nhom') {
+                payload.nhom = formatNhomData(items);
+                payload.vattu = null;
+                payload.phukien = null;
+                payload.kinh = null;
+            } else if (type === 'vattu') {
+                payload.nhom = null;
+                payload.vattu = formatVattuData(items);
+                payload.phukien = null;
+                payload.kinh = null;
+            } else if (type === 'phukien') {
+                payload.nhom = null;
+                payload.vattu = null;
+                payload.phukien = formatPhukienData(items);
+                payload.kinh = null;
+            } else if (type === 'kinh') {
+                payload.nhom = null;
+                payload.vattu = null;
+                payload.phukien = null;
+                payload.kinh = formatKinhData(items);
+            }
+
+            try {
+                const API_BASE = window.API_BASE || '/api';
+                const token = sessionStorage.getItem('token');
+
+                if (!token) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Log the complete payload before sending
+                console.log('📤 FINAL PAYLOAD TO SEND:', JSON.stringify(payload, null, 2));
+                console.log('📋 payload.nhom:', payload.nhom);
+                console.log('📋 payload.vattu:', payload.vattu);
+                console.log('📋 payload.phukien:', payload.phukien);
+                console.log('📋 payload.kinh:', payload.kinh);
+
+                const response = await fetch(`${API_BASE}/purchase-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification(`Đã lưu phiếu yêu cầu vật tư ${getTabName(type)} thành công!`);
+                    console.log('Save successful, result:', result);
+                    // Optionally redirect to material requests page
+                    setTimeout(() => {
+                        VWModal.confirm('Xem danh sách', 'Bạn có muốn xem danh sách phiếu đã lưu không?').then(confirmed => {
+                            if (confirmed) {
+                                window.location.href = 'material-requests.html';
+                            }
+                        });
+                    }, 1500);
+                } else {
+                    console.error('Save failed:', result);
+                    alert('Lỗi khi lưu phiếu: ' + (result.message || 'Lỗi không xác định'));
+                }
+            } catch (error) {
+                console.error('Error saving purchase request:', error);
+                alert('Lỗi kết nối server: ' + error.message);
+            }
+        }
+
+        function getTabName(type) {
+            const names = {
+                'nhom': 'Nhôm',
+                'vattu': 'Vật tư phụ',
+                'phukien': 'Phụ kiện',
+                'kinh': 'Kính'
+            };
+            return names[type] || type;
+        }
+
+        async function saveAllForms() {
+            // Validate project selection
+            const projectSelect = document.getElementById('projectSelect');
+            const projectId = document.getElementById('selectedProjectId').value || window.selectedProjectId;
+            const projectName = document.getElementById('projectName').value;
+
+            if (!projectId || !projectName) {
+                VWModal.warning('Vui lòng chọn dự án trước khi lưu!');
+                if (projectSelect) projectSelect.focus();
+                return;
+            }
+
+            // Sync data from DOM first to ensure all changes are captured
+            syncTableDataFromDOM();
+
+            // Check if there's any data to save
+            const hasData = tableData.nhom.length > 0 ||
+                tableData.vattu.length > 0 ||
+                tableData.phukien.length > 0 ||
+                tableData.kinh.length > 0;
+
+            if (!hasData) {
+                VWModal.warning('Không có vật tư nào để lưu. Vui lòng thêm vật tư trước khi lưu.');
+                return;
+            }
+
+            // Get created_date, set to today if empty
+            let createdDate = document.getElementById('createdDate').value;
+            if (!createdDate) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                createdDate = `${year}-${month}-${day}`;
+                document.getElementById('createdDate').value = createdDate;
+            }
+
+            // Format data for backend
+            const formatNhomData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    density: item.density || '',
+                    length: item.length || item.length_m || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    weight: item.weight || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatVattuData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatPhukienData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatKinhData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    type: item.type || item.name || '',
+                    width: item.width || item.width_mm || '',
+                    height: item.height || item.height_mm || '',
+                    unit: item.unit || '',
+                    panels: parseFloat(item.panels || item.quantity) || 0,
+                    area: item.area || item.area_m2 || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const payload = {
+                project_id: projectId,
+                project_name: projectName,
+                order_code: document.getElementById('orderCode').value,
+                product_type: document.getElementById('productType').value,
+                color: document.getElementById('color').value,
+                delivery_address: document.getElementById('deliveryAddress').value,
+                created_date: createdDate,
+                required_date: document.getElementById('requiredDate').value,
+                nhom: tableData.nhom.length > 0 ? formatNhomData(tableData.nhom) : null,
+                vattu: tableData.vattu.length > 0 ? formatVattuData(tableData.vattu) : null,
+                phukien: tableData.phukien.length > 0 ? formatPhukienData(tableData.phukien) : null,
+                kinh: tableData.kinh.length > 0 ? formatKinhData(tableData.kinh) : null,
+                status: 'draft'
+            };
+
+            try {
+                const API_BASE = window.API_BASE || '/api';
+                const token = sessionStorage.getItem('token');
+
+                if (!token) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                console.log('Saving payload:', payload);
+                console.log('Nhom items:', payload.nhom);
+                console.log('Vattu items:', payload.vattu);
+                console.log('Phukien items:', payload.phukien);
+                console.log('Kinh items:', payload.kinh);
+
+                const response = await fetch(`${API_BASE}/purchase-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã lưu phiếu yêu cầu vật tư thành công!');
+                    // Có thể chuyển đến trang quản lý phiếu
+                    setTimeout(() => {
+                        VWModal.confirm('Xem danh sách', 'Bạn có muốn xem danh sách phiếu đã lưu không?').then(confirmed => {
+                            if (confirmed) {
+                                window.location.href = 'material-requests.html';
+                            }
+                        });
+                    }, 1500);
+                } else {
+                    alert('Lỗi khi lưu phiếu: ' + (result.message || 'Lỗi không xác định'));
+                }
+            } catch (error) {
+                console.error('Error saving purchase request:', error);
+                alert('Lỗi kết nối server: ' + error.message);
+            }
+        }
+
+        // =============================================
+        // UTILITIES
+        // =============================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // =============================================
+        // SIDEBAR FUNCTIONS
+        // =============================================
+        function toggleSidebarUserMenu() {
+            const menu = document.getElementById('sidebarUserMenuDropdown');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Load user info for sidebar
+        async function loadSidebarUserInfo() {
+            try {
+                const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+                if (user) {
+                    // Update name
+                    const nameEl = document.getElementById('sidebarUserName');
+                    if (nameEl && user.full_name) {
+                        nameEl.textContent = user.full_name;
+                    }
+
+                    // Update role
+                    const roleEl = document.querySelector('.sidebar .text-xs.text-blue-200');
+                    if (roleEl && user.role) {
+                        const roleNames = {
+                            'admin': 'Quản trị viên',
+                            'manager': 'Quản lý',
+                            'sales': 'Kinh doanh',
+                            'accountant': 'Kế toán',
+                            'warehouse': 'Kho',
+                            'production': 'Sản xuất',
+                            'viewer': 'Xem'
+                        };
+                        roleEl.textContent = roleNames[user.role] || user.role;
+                    }
+
+                    // Update avatar
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                    if (user.avatar_url || user.avatar) {
+                        const avatarUrl = user.avatar_url || user.avatar;
+                        if (avatarImage) {
+                            avatarImage.src = avatarUrl;
+                            avatarImage.onload = () => {
+                                avatarImage.classList.remove('hidden');
+                                if (avatarInitial) avatarInitial.classList.add('hidden');
+                            };
+                            avatarImage.onerror = () => {
+                                avatarImage.classList.add('hidden');
+                                if (avatarInitial) {
+                                    avatarInitial.classList.remove('hidden');
+                                    avatarInitial.textContent = (user.full_name || 'U').charAt(0).toUpperCase();
+                                }
+                            };
+                        }
+                    } else if (avatarInitial) {
+                        avatarInitial.textContent = (user.full_name || user.name || 'U').charAt(0).toUpperCase();
+                        avatarInitial.classList.remove('hidden');
+                        if (avatarImage) avatarImage.classList.add('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading user info:', e);
+            }
+        }
+
+        // Load company logo
+        async function loadCompanyLogo() {
+            try {
+                const API_BASE = window.API_BASE || '/api';
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    if (result.data.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg && logoIcon) {
+                            logoImg.src = result.data.logo_path;
+                            logoImg.onerror = () => {
+                                logoImg.classList.add('hidden');
+                                logoIcon.classList.remove('hidden');
+                            };
+                            logoImg.onload = () => {
+                                logoImg.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            };
+                        }
+                    }
+                    if (result.data.company_name) {
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl) companyNameEl.textContent = result.data.company_name;
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading company logo:', e);
+            }
+        }
+
+        // Initialize sidebar
+        document.addEventListener('DOMContentLoaded', function () {
+            loadSidebarUserInfo();
+            loadCompanyLogo();
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                const userMenu = e.target.closest('[onclick="toggleSidebarUserMenu()"]');
+                if (dropdown && !dropdown.contains(e.target) && !userMenu) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

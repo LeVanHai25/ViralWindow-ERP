@@ -1,0 +1,1171 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục sản phẩm - Product Catalog | ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/success-notification.css">
+    <script src="js/success-notification.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Full-height layout */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Override sidebar width to match other pages */
+        .sidebar {
+            width: 260px;
+        }
+
+        .main-content {
+            margin-left: 260px;
+        }
+
+        /* Glassmorphism header */
+        .glass-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Modern tabs */
+        .tab-btn {
+            position: relative;
+            padding: 12px 20px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .tab-btn:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: #4f46e5;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #4f46e5;
+            font-weight: 600;
+            box-shadow: 0 -4px 20px rgba(79, 70, 229, 0.15);
+        }
+
+        .tab-btn .count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            margin-left: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 10px;
+            background: rgba(99, 102, 241, 0.15);
+            color: #4f46e5;
+        }
+
+        .tab-btn.active .count {
+            background: #4f46e5;
+            color: white;
+        }
+
+        /* Product cards */
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border-color: #818cf8;
+        }
+
+        .product-card .image-container {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-card:hover .image-container {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+        }
+
+        .product-card .image-container .placeholder-icon {
+            font-size: 4rem;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover .placeholder-icon {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Type badges */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* Search input */
+        .search-input {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px 12px 44px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.15);
+            outline: none;
+        }
+
+        /* Filter selects */
+        .filter-select {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 36px 10px 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236366f1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 18px;
+        }
+
+        .filter-select:hover {
+            border-color: #a5b4fc;
+        }
+
+        .filter-select:focus {
+            border-color: #818cf8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Fade animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        /* Stats badge */
+        .stats-badge {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #86efac;
+            color: #15803d;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100">
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+            
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+                
+                <a href="product-catalog-v2.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế &amp; Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO &amp; VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG &amp; NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <header class="glass-header text-white sticky top-0 z-50 shadow-lg">
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">Danh mục sản phẩm</h1>
+                            <p class="text-white/70 text-sm">Quản lý tất cả mẫu sản phẩm - Cửa, Lan can, Mái, Cầu thang
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="stats-badge px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            <span id="totalProductCount">0</span> sản phẩm
+                        </div>
+                        <button onclick="openAddModal()"
+                            class="px-5 py-2.5 bg-white text-indigo-600 rounded-xl hover:bg-indigo-50 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm sản phẩm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- TABS + FILTERS -->
+        <div class="bg-gradient-to-r from-slate-100 to-indigo-100/50 border-b border-slate-200 sticky top-[76px] z-40">
+            <div class="px-6">
+                <!-- Product Type Tabs -->
+                <div class="flex items-center gap-1 overflow-x-auto pt-3" id="productTypeTabs">
+                    <button onclick="selectType('')" data-type="" class="tab-btn active">
+                        📦 Tất cả <span class="count" id="countAll">0</span>
+                    </button>
+                    <button onclick="selectType('door')" data-type="door" class="tab-btn">
+                        🚪 Cửa đi <span class="count" id="countDoor">0</span>
+                    </button>
+                    <button onclick="selectType('window')" data-type="window" class="tab-btn">
+                        🪟 Cửa sổ <span class="count" id="countWindow">0</span>
+                    </button>
+                    <button onclick="selectType('railing')" data-type="railing" class="tab-btn">
+                        🏗️ Lan can <span class="count" id="countRailing">0</span>
+                    </button>
+                    <button onclick="selectType('glass_wall')" data-type="glass_wall" class="tab-btn">
+                        🧱 Vách kính <span class="count" id="countGlassWall">0</span>
+                    </button>
+                    <button onclick="selectType('roof')" data-type="roof" class="tab-btn">
+                        🏠 Mái kính <span class="count" id="countRoof">0</span>
+                    </button>
+                    <button onclick="selectType('stair')" data-type="stair" class="tab-btn">
+                        🪜 Cầu thang <span class="count" id="countStair">0</span>
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex items-center gap-4 py-4 bg-white -mx-6 px-6 rounded-t-2xl mt-2 shadow-sm">
+                    <div class="relative flex-1 max-w-md">
+                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Tìm theo tên, mã sản phẩm..."
+                            class="search-input w-full" oninput="filterProducts()">
+                    </div>
+                    <select id="categoryFilter" class="filter-select min-w-[180px]" onchange="filterProducts()">
+                        <option value="">Tất cả category</option>
+                    </select>
+                    <select id="systemFilter" class="filter-select min-w-[160px]" onchange="filterProducts()">
+                        <option value="">Tất cả hệ nhôm</option>
+                    </select>
+                    <div class="ml-auto flex items-center gap-2 text-sm text-slate-500">
+                        <span>Hiển thị</span>
+                        <span id="visibleCount" class="font-bold text-indigo-600">0</span>
+                        <span>sản phẩm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <main class="p-6 bg-white min-h-[calc(100vh-250px)]">
+            <div id="productGrid"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-5">
+                <!-- Products loaded here -->
+            </div>
+
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20">
+                <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-600 mb-2">Chưa có sản phẩm nào</h3>
+                <p class="text-slate-400 mb-6">Bắt đầu bằng cách thêm sản phẩm đầu tiên</p>
+                <button onclick="openAddModal()"
+                    class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Thêm sản phẩm mới
+                </button>
+            </div>
+        </main>
+
+        <!-- ADD/EDIT MODAL -->
+        <div id="productModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden animate-fade-in">
+                <div
+                    class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-5 flex justify-between items-center">
+                    <h2 id="modalTitle" class="text-xl font-bold">Thêm sản phẩm mới</h2>
+                    <button onclick="closeModal()" class="p-2 hover:bg-white/20 rounded-lg transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="productForm" class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                    <input type="hidden" id="productId">
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Mã sản phẩm <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="productCode" required
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                                placeholder="VD: RAIL_GLASS_01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Tên sản phẩm <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="productName" required
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                                placeholder="VD: Lan can kính">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Loại sản phẩm <span
+                                    class="text-red-500">*</span></label>
+                            <select id="productType" required onchange="updateCategoryOptions()"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all">
+                                <option value="">-- Chọn loại --</option>
+                                <option value="door">🚪 Cửa đi</option>
+                                <option value="window">🪟 Cửa sổ</option>
+                                <option value="railing">🏗️ Lan can</option>
+                                <option value="glass_wall">🧱 Vách kính</option>
+                                <option value="roof">🏠 Mái kính</option>
+                                <option value="stair">🪜 Cầu thang</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Category <span
+                                    class="text-red-500">*</span></label>
+                            <select id="productCategory" required
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all">
+                                <option value="">-- Chọn category --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Hệ nhôm</label>
+                            <select id="productAluminumSystem"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all">
+                                <option value="">-- Chọn hệ --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Loại kính</label>
+                            <input type="text" id="productGlassType"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all"
+                                placeholder="Kính cường lực 10mm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Rộng (mm)</label>
+                            <input type="number" id="productWidth"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all"
+                                placeholder="1200" value="1200">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Cao (mm)</label>
+                            <input type="number" id="productHeight"
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all"
+                                placeholder="2200" value="2200">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Mô tả</label>
+                        <textarea id="productDescription" rows="2"
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-indigo-500 transition-all resize-none"
+                            placeholder="Mô tả chi tiết..."></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="closeModal()"
+                            class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-all">Hủy</button>
+                        <button type="submit"
+                            class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all shadow-lg">Lưu
+                            sản phẩm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- DETAIL MODAL -->
+        <div id="detailModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-fade-in">
+                <div
+                    class="bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-6 py-5 flex justify-between items-center">
+                    <h2 id="detailTitle" class="text-xl font-bold">Chi tiết sản phẩm</h2>
+                    <button onclick="closeDetailModal()" class="p-2 hover:bg-white/20 rounded-lg transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="detailContent" class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]"></div>
+            </div>
+        </div>
+
+        <script>
+            const API_BASE = window.API_BASE || '/api';
+            let allProducts = [];
+            let allSystems = [];
+            let currentType = '';
+            let typeCounts = {};
+
+            const typeLabels = { door: '🚪 Cửa đi', window: '🪟 Cửa sổ', railing: '🏗️ Lan can', glass_wall: '🧱 Vách kính', roof: '🏠 Mái kính', stair: '🪜 Cầu thang', other: '📦 Khác' };
+            const typeColors = { door: 'bg-blue-100 text-blue-700 border-blue-200', window: 'bg-cyan-100 text-cyan-700 border-cyan-200', railing: 'bg-purple-100 text-purple-700 border-purple-200', glass_wall: 'bg-amber-100 text-amber-700 border-amber-200', roof: 'bg-emerald-100 text-emerald-700 border-emerald-200', stair: 'bg-pink-100 text-pink-700 border-pink-200', other: 'bg-slate-100 text-slate-700 border-slate-200' };
+            const categoryOptions = {
+                door: [
+                    { value: 'door_swing', label: 'Cửa đi mở quay' },
+                    { value: 'door_slide', label: 'Cửa đi lùa' },
+                    { value: 'door_fold', label: 'Cửa xếp trượt' },
+                    { value: 'door_special', label: 'Cửa đặc biệt' }
+                ],
+                window: [
+                    { value: 'window_tilt', label: 'Cửa sổ mở hất' },
+                    { value: 'window_swing', label: 'Cửa sổ mở quay' },
+                    { value: 'window_slide', label: 'Cửa sổ lùa' },
+                    { value: 'window_special', label: 'Cửa sổ đặc biệt' }
+                ],
+                railing: [{ value: 'railing', label: 'Lan can' }],
+                glass_wall: [{ value: 'glass_wall', label: 'Vách kính' }],
+                roof: [{ value: 'roof', label: 'Mái kính' }],
+                stair: [{ value: 'stair', label: 'Cầu thang' }],
+                other: [{ value: 'other', label: 'Khác' }]
+            };
+
+            document.addEventListener('DOMContentLoaded', () => { loadProducts(); loadSystems(); });
+
+            async function loadProducts() {
+                try {
+                    let url = `${API_BASE}/product-templates`;
+                    if (currentType) url += `?product_type=${currentType}`;
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    if (result.success) {
+                        allProducts = result.data;
+                        calculateTypeCounts();
+                        filterProducts();
+                        updateCategoryFilter();
+                    } else { await loadFromDoorTemplates(); }
+                } catch (error) { await loadFromDoorTemplates(); }
+            }
+
+            async function loadFromDoorTemplates() {
+                try {
+                    const response = await fetch(`${API_BASE}/door-templates`);
+                    const result = await response.json();
+                    if (result.success) {
+                        allProducts = result.data.map(d => ({ ...d, product_type: d.family?.includes('win') ? 'window' : 'door' }));
+                        calculateTypeCounts();
+                        filterProducts();
+                    }
+                } catch (e) { console.error('Fallback failed:', e); }
+            }
+
+            function calculateTypeCounts() {
+                typeCounts = { all: allProducts.length, door: 0, window: 0, railing: 0, glass_wall: 0, roof: 0, stair: 0 };
+                allProducts.forEach(p => { if (typeCounts[p.product_type] !== undefined) typeCounts[p.product_type]++; });
+                document.getElementById('countAll').textContent = typeCounts.all;
+                document.getElementById('countDoor').textContent = typeCounts.door;
+                document.getElementById('countWindow').textContent = typeCounts.window;
+                document.getElementById('countRailing').textContent = typeCounts.railing;
+                document.getElementById('countGlassWall').textContent = typeCounts.glass_wall;
+                document.getElementById('countRoof').textContent = typeCounts.roof;
+                document.getElementById('countStair').textContent = typeCounts.stair;
+                document.getElementById('totalProductCount').textContent = typeCounts.all;
+            }
+
+            async function loadSystems() {
+                try {
+                    const response = await fetch(`${API_BASE}/product-templates/systems`);
+                    const result = await response.json();
+                    if (result.success) { allSystems = result.data; populateSystemSelect(); }
+                } catch (error) {
+                    try { const response = await fetch(`${API_BASE}/door-templates/systems`); const result = await response.json(); if (result.success) { allSystems = result.data; populateSystemSelect(); } } catch (e) { }
+                }
+            }
+
+            function populateSystemSelect() {
+                const opts = allSystems.map(s => `<option value="${s.aluminum_system || s.code}">${s.aluminum_system || s.code}</option>`).join('');
+                document.getElementById('systemFilter').innerHTML = '<option value=\"\">Tất cả hệ nhôm</option>' + opts;
+                document.getElementById('productAluminumSystem').innerHTML = '<option value=\"\">-- Chọn hệ --</option>' + opts;
+            }
+
+            // Category labels tiếng Việt
+            const categoryLabels = {
+                'door_swing': 'Cửa đi mở quay',
+                'door_slide': 'Cửa đi lùa',
+                'door_fold': 'Cửa xếp trượt',
+                'door_special': 'Cửa đặc biệt',
+                'window_tilt': 'Cửa sổ mở hất',
+                'window_swing': 'Cửa sổ mở quay',
+                'window_slide': 'Cửa sổ lùa',
+                'window_special': 'Cửa sổ đặc biệt',
+                'glass_wall': 'Vách kính',
+                'railing': 'Lan can',
+                'roof': 'Mái kính',
+                'stair': 'Cầu thang'
+            };
+
+            function updateCategoryFilter() {
+                const categories = [...new Set(allProducts.map(p => p.category))].filter(Boolean);
+                document.getElementById('categoryFilter').innerHTML = '<option value=\"\">Tất cả category</option>' + categories.map(c => `<option value=\"${c}\">${categoryLabels[c] || c}</option>`).join('');
+            }
+
+            function selectType(type) {
+                currentType = type;
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-type="${type}"]`).classList.add('active');
+                loadProducts();
+            }
+
+            function filterProducts() {
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const category = document.getElementById('categoryFilter').value;
+                const system = document.getElementById('systemFilter').value;
+                let filtered = allProducts.filter(p => {
+                    const matchSearch = !search || (p.name?.toLowerCase().includes(search)) || (p.code?.toLowerCase().includes(search));
+                    const matchCategory = !category || p.category === category;
+                    const matchSystem = !system || p.aluminum_system === system;
+                    return matchSearch && matchCategory && matchSystem;
+                });
+                renderProducts(filtered);
+                document.getElementById('visibleCount').textContent = filtered.length;
+            }
+
+            function renderProducts(products) {
+                const grid = document.getElementById('productGrid');
+                const empty = document.getElementById('emptyState');
+                if (products.length === 0) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+                empty.classList.add('hidden');
+                grid.innerHTML = products.map((p, i) => createProductCard(p, i)).join('');
+            }
+
+            function createProductCard(p, index) {
+                const pType = p.product_type || 'other';
+                const icon = typeLabels[pType]?.split(' ')[0] || '📦';
+                return `
+                <div class="product-card animate-fade-in" style="animation-delay: ${index * 30}ms" onclick="viewProductDetail(${p.id})">
+                    <div class="image-container">
+                        ${p.preview_image
+                        ? `<img src="${API_BASE.replace('/api', '')}${p.preview_image}" class="w-full h-full object-contain p-3" alt="${p.name}">`
+                        : `<span class="placeholder-icon">${icon}</span>`}
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <span class="type-badge ${typeColors[pType]} border">${typeLabels[pType]?.replace(icon, '').trim() || 'Khác'}</span>
+                            <span class="text-xs text-slate-400 font-mono">${p.code || ''}</span>
+                        </div>
+                        <h3 class="font-semibold text-slate-800 text-sm leading-tight mb-2 line-clamp-2">${p.name || 'Chưa đặt tên'}</h3>
+                        <p class="text-xs text-slate-500 mb-3">${p.default_width_mm || 1200} × ${p.default_height_mm || 2200} mm</p>
+                        <div class="flex gap-2">
+                            <button onclick="event.stopPropagation(); editProduct(${p.id})" class="action-btn flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700">Sửa</button>
+                            <button onclick="event.stopPropagation(); deleteProduct(${p.id})" class="action-btn bg-red-100 hover:bg-red-200 text-red-600 px-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }
+
+            function updateCategoryOptions() {
+                const type = document.getElementById('productType').value;
+                const opts = categoryOptions[type] || categoryOptions.other;
+                document.getElementById('productCategory').innerHTML = '<option value="">-- Chọn category --</option>' + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            }
+
+            function openAddModal() {
+                document.getElementById('modalTitle').textContent = 'Thêm sản phẩm mới';
+                document.getElementById('productForm').reset();
+                document.getElementById('productId').value = '';
+                document.getElementById('productModal').classList.remove('hidden');
+                document.getElementById('productModal').classList.add('flex');
+            }
+
+            async function editProduct(id) {
+                try {
+                    const response = await fetch(`${API_BASE}/product-templates/${id}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        const p = result.data;
+                        document.getElementById('modalTitle').textContent = 'Sửa sản phẩm';
+                        document.getElementById('productId').value = p.id;
+                        document.getElementById('productCode').value = p.code || '';
+                        document.getElementById('productName').value = p.name || '';
+                        document.getElementById('productType').value = p.product_type || '';
+                        updateCategoryOptions();
+                        document.getElementById('productCategory').value = p.category || '';
+                        document.getElementById('productAluminumSystem').value = p.aluminum_system || '';
+                        document.getElementById('productGlassType').value = p.glass_type || '';
+                        document.getElementById('productWidth').value = p.default_width_mm || 1200;
+                        document.getElementById('productHeight').value = p.default_height_mm || 2200;
+                        document.getElementById('productDescription').value = p.description || '';
+                        document.getElementById('productModal').classList.remove('hidden');
+                        document.getElementById('productModal').classList.add('flex');
+                    }
+                } catch (error) { alert('Lỗi khi tải sản phẩm'); }
+            }
+
+            function closeModal() { document.getElementById('productModal').classList.add('hidden'); document.getElementById('productModal').classList.remove('flex'); }
+
+            document.getElementById('productForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('productId').value;
+                const isEdit = !!id;
+                const data = {
+                    code: document.getElementById('productCode').value,
+                    name: document.getElementById('productName').value,
+                    product_type: document.getElementById('productType').value,
+                    category: document.getElementById('productCategory').value,
+                    aluminum_system: document.getElementById('productAluminumSystem').value,
+                    glass_type: document.getElementById('productGlassType').value,
+                    default_width_mm: parseInt(document.getElementById('productWidth').value) || 1200,
+                    default_height_mm: parseInt(document.getElementById('productHeight').value) || 2200,
+                    description: document.getElementById('productDescription').value
+                };
+                try {
+                    const url = isEdit ? `${API_BASE}/product-templates/${id}` : `${API_BASE}/product-templates`;
+                    const response = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                    const result = await response.json();
+                    if (result.success) { closeModal(); loadProducts(); showSuccessNotification(isEdit ? 'Cập nhật thành công!' : 'Thêm thành công!'); }
+                    else { alert('Lỗi: ' + result.message); }
+                } catch (error) { alert('Lỗi khi lưu'); }
+            });
+
+            async function deleteProduct(id) {
+                if (!confirm('Xóa sản phẩm này?')) return;
+                try {
+                    const response = await fetch(`${API_BASE}/product-templates/${id}`, { method: 'DELETE' });
+                    const result = await response.json();
+                    if (result.success) { loadProducts(); } else { alert('Lỗi: ' + result.message); }
+                } catch (error) { alert('Lỗi khi xóa'); }
+            }
+
+            async function viewProductDetail(id) { await previewBom(id); }
+
+            async function previewBom(id) {
+                try {
+                    const response = await fetch(`${API_BASE}/product-templates/${id}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        const p = result.data;
+                        document.getElementById('detailTitle').textContent = p.name;
+                        let bomData = null;
+                        try { const bomResponse = await fetch(`${API_BASE}/product-templates/${id}/bom-preview`); const bomResult = await bomResponse.json(); bomData = bomResult.data; } catch (e) { }
+                        document.getElementById('detailContent').innerHTML = renderDetailContent(p, bomData);
+                        document.getElementById('detailModal').classList.remove('hidden');
+                        document.getElementById('detailModal').classList.add('flex');
+                    }
+                } catch (error) { console.error('Error:', error); }
+            }
+
+            function renderDetailContent(p, bomData) {
+                const pType = p.product_type || 'other';
+                const icon = typeLabels[pType]?.split(' ')[0] || '📦';
+                // Không hiển thị BOM theo yêu cầu
+                return `
+                <div class="flex gap-6">
+                    <div class="w-40 h-40 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        ${p.preview_image ? `<img src="${API_BASE.replace('/api', '')}${p.preview_image}" class="w-full h-full object-contain rounded-2xl" alt="${p.name}">` : `<span class="text-5xl">${icon}</span>`}
+                    </div>
+                    <div class="flex-1">
+                        <div class="inline-block mb-3"><span class="type-badge ${typeColors[pType]} border text-sm">${typeLabels[pType]}</span></div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div><span class="text-slate-500">Mã:</span> <span class="font-semibold text-slate-800">${p.code}</span></div>
+                            <div><span class="text-slate-500">Phân loại:</span> <span class="font-medium text-slate-700">${categoryLabels[p.category] || p.category || '-'}</span></div>
+                            <div><span class="text-slate-500">Kích thước:</span> <span class="font-medium text-slate-700">${p.default_width_mm} × ${p.default_height_mm} mm</span></div>
+                            <div><span class="text-slate-500">Hệ nhôm:</span> <span class="font-medium text-slate-700">${p.aluminum_system || '-'}</span></div>
+                            <div><span class="text-slate-500">Loại kính:</span> <span class="font-medium text-slate-700">${p.glass_type || '-'}</span></div>
+                        </div>
+                        ${p.description ? `<p class="mt-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">${p.description}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            }
+
+            function closeDetailModal() { document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
+
+            // Sidebar menu helper functions
+            function toggleSidebarUserMenu() {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                dropdown.classList.toggle('hidden');
+            }
+
+            function handleLogout() {
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (event) {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                const avatar = document.getElementById('sidebarUserAvatar');
+                if (dropdown && !dropdown.contains(event.target) && !avatar?.parentElement?.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Setup submenu toggle
+            document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
+                item.addEventListener('click', function () {
+                    this.classList.toggle('expanded');
+                    const submenu = this.nextElementSibling;
+                    if (submenu && submenu.classList.contains('submenu')) {
+                        submenu.classList.toggle('expanded');
+                    }
+                });
+            });
+
+            // Load company settings (logo, name)
+            async function loadCompanySettings() {
+                try {
+                    const response = await fetch(`${API_BASE}/company-settings`);
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const settings = result.data;
+                        // Update company name
+                        if (settings.company_name) {
+                            const companyNameEl = document.getElementById('companyName');
+                            if (companyNameEl) companyNameEl.textContent = settings.company_name;
+                        }
+                        // Update company logo
+                        if (settings.logo_path) {
+                            const logoEl = document.getElementById('companyLogo');
+                            const logoIcon = document.getElementById('companyLogoIcon');
+                            if (logoEl && logoIcon) {
+                                logoEl.src = settings.logo_path;
+                                logoEl.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not load company settings');
+                }
+            }
+
+            // Load user info
+            async function loadUserInfo() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) return;
+
+                    const response = await fetch(`${API_BASE}/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const user = result.data;
+                        const userNameEl = document.getElementById('sidebarUserName');
+                        if (userNameEl) {
+                            userNameEl.textContent = user.full_name || 'User';
+                        }
+
+                        const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                        const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                        if (avatarInitial && avatarImage) {
+                            if (user.avatar_url) {
+                                avatarImage.src = user.avatar_url;
+                                avatarImage.classList.remove('hidden');
+                                avatarInitial.classList.add('hidden');
+                            } else {
+                                const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                                avatarInitial.textContent = initial;
+                                avatarInitial.classList.remove('hidden');
+                                avatarImage.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading sidebar user info:', error);
+                }
+            }
+
+            // Load company and user info on page load
+            loadCompanySettings();
+            loadUserInfo();
+        </script>
+    </div><!-- End main-content -->
+</body>
+
+</html>

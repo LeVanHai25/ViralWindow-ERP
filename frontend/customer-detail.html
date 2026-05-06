@@ -1,0 +1,673 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Khách hàng - ViralWindow</title>
+    <script>
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <style>
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        .info-card {
+            transition: all 0.2s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 40px;
+            bottom: -16px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #3b82f6;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <div class="bg-white shadow-sm border-b sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="javascript:void(0)" onclick="history.back()" title="Quay lại"
+                    class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Chi tiết Khách hàng</h1>
+                    <p class="text-sm text-gray-500" id="customerCodeBreadcrumb">Đang tải...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="editCustomer()"
+                    class="px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Sửa
+                </button>
+                <button onclick="deleteCustomerAction()"
+                    class="px-4 py-2 border border-red-500 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <!-- Loading state -->
+        <div id="loadingState" class="flex items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-500">Đang tải thông tin...</span>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="hidden text-center py-20">
+            <svg class="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="text-red-500 text-lg font-medium" id="errorMessage">Không tìm thấy khách hàng</p>
+            <button onclick="history.back()" class="mt-4 px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Quay
+                lại</button>
+        </div>
+
+        <!-- Customer Content -->
+        <div id="customerContent" class="hidden">
+            <!-- Customer Header Card -->
+            <div class="bg-white rounded-2xl shadow-sm border mb-6 overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+                    <div class="flex items-center gap-5">
+                        <div id="customerAvatar"
+                            class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center text-3xl font-bold text-white">
+                            K
+                        </div>
+                        <div class="flex-1">
+                            <h2 id="customerName" class="text-2xl font-bold text-white">Khách hàng</h2>
+                            <div class="flex items-center gap-3 mt-2">
+                                <span id="customerCode"
+                                    class="bg-white/20 text-white text-sm px-3 py-1 rounded-full"></span>
+                                <span id="customerStatus" class="status-badge bg-green-100 text-green-700">Hoạt
+                                    động</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="info-card bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-blue-500">📞</span>
+                            <span class="text-xs text-gray-400 uppercase font-medium">Điện thoại</span>
+                        </div>
+                        <p id="customerPhone" class="text-gray-800 font-medium ml-7">--</p>
+                    </div>
+                    <div class="info-card bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-green-500">📧</span>
+                            <span class="text-xs text-gray-400 uppercase font-medium">Email</span>
+                        </div>
+                        <p id="customerEmail" class="text-gray-800 font-medium ml-7 break-all">--</p>
+                    </div>
+                    <div class="info-card bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-orange-500">📍</span>
+                            <span class="text-xs text-gray-400 uppercase font-medium">Địa chỉ</span>
+                        </div>
+                        <p id="customerAddress" class="text-gray-800 font-medium ml-7">--</p>
+                    </div>
+                    <div class="info-card bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-purple-500">🏢</span>
+                            <span class="text-xs text-gray-400 uppercase font-medium">Chi nhánh</span>
+                        </div>
+                        <p id="customerAgency" class="text-gray-800 font-medium ml-7">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-xl shadow-sm border p-5 text-center">
+                    <p class="text-3xl font-bold text-blue-600" id="totalProjects">0</p>
+                    <p class="text-sm text-gray-500 mt-1">Tổng dự án</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border p-5 text-center">
+                    <p class="text-3xl font-bold text-orange-500" id="inProgressProjects">0</p>
+                    <p class="text-sm text-gray-500 mt-1">Đang thực hiện</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border p-5 text-center">
+                    <p class="text-3xl font-bold text-green-500" id="completedProjects">0</p>
+                    <p class="text-sm text-gray-500 mt-1">Hoàn thành</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border p-5 text-center">
+                    <p class="text-3xl font-bold text-purple-600" id="totalRevenue">0đ</p>
+                    <p class="text-sm text-gray-500 mt-1">Tổng giá trị</p>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                <div class="flex border-b">
+                    <button class="tab-btn active px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
+                        onclick="switchTab('projects')">
+                        📋 Dự án
+                    </button>
+                    <button class="tab-btn px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
+                        onclick="switchTab('quotations')">
+                        📑 Báo giá
+                    </button>
+                    <button class="tab-btn px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
+                        onclick="switchTab('crm')">
+                        💬 Lịch sử CRM
+                    </button>
+                    <button class="tab-btn px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
+                        onclick="switchTab('notes', event)">
+                        📝 Ghi chú
+                    </button>
+                    <button class="tab-btn px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
+                        onclick="switchTab('history', event)">
+                        🕒 Lịch sử thay đổi
+                    </button>
+                </div>
+
+                <!-- Tab: Projects -->
+                <div id="tab-projects" class="tab-content p-6">
+                    <div id="projectsList" class="space-y-3">
+                        <p class="text-gray-400 text-center py-8">Đang tải dự án...</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Quotations -->
+                <div id="tab-quotations" class="tab-content hidden p-6">
+                    <div id="quotationsList" class="space-y-3">
+                        <p class="text-gray-400 text-center py-8">Đang tải báo giá...</p>
+                    </div>
+                </div>
+
+                <!-- Tab: CRM -->
+                <div id="tab-crm" class="tab-content hidden p-6">
+                    <div id="crmTimeline" class="space-y-4">
+                        <p class="text-gray-400 text-center py-8">Đang tải lịch sử...</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Notes -->
+                <div id="tab-notes" class="tab-content hidden p-6">
+                    <div id="noteContent" class="min-h-[100px]">
+                        <p id="customerNotes" class="text-gray-600 whitespace-pre-wrap">Chưa có ghi chú</p>
+                    </div>
+                </div>
+
+                <!-- Tab: History -->
+                <div id="tab-history" class="tab-content hidden p-6">
+                    <div id="historyList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <p class="text-gray-400 text-center py-8">Đang tải lịch sử...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let customerData = null;
+        let customerId = null;
+
+        // Get customer ID from URL
+        function getCustomerId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        function getAuthToken() {
+            if (typeof AuthHelper !== 'undefined' && AuthHelper.getToken) {
+                return AuthHelper.getToken();
+            }
+            return sessionStorage.getItem('token') || localStorage.getItem('token');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '--';
+            return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return '0đ';
+            return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+        }
+
+        const STATUS_LABELS = {
+            'new': 'Mới', 'designing': 'Đang thiết kế', 'design': 'Thiết kế',
+            'bom': 'Bóc tách', 'estimation': 'Dự toán',
+            'quotation_pending': 'Chờ báo giá', 'quotation_approved': 'Đã duyệt',
+            'in_production': 'Đang SX', 'in_progress': 'Đang thực hiện',
+            'installation': 'Lắp đặt', 'handover': 'Bàn giao',
+            'completed': 'Hoàn thành', 'cancelled': 'Hủy', 'paused': 'Tạm dừng'
+        };
+
+        const STATUS_COLORS = {
+            'new': 'bg-gray-100 text-gray-700',
+            'designing': 'bg-blue-100 text-blue-700', 'design': 'bg-blue-100 text-blue-700',
+            'bom': 'bg-indigo-100 text-indigo-700', 'estimation': 'bg-indigo-100 text-indigo-700',
+            'quotation_pending': 'bg-yellow-100 text-yellow-700',
+            'quotation_approved': 'bg-emerald-100 text-emerald-700',
+            'in_production': 'bg-orange-100 text-orange-700', 'in_progress': 'bg-orange-100 text-orange-700',
+            'installation': 'bg-teal-100 text-teal-700', 'handover': 'bg-cyan-100 text-cyan-700',
+            'completed': 'bg-green-100 text-green-700',
+            'cancelled': 'bg-red-100 text-red-700', 'paused': 'bg-gray-100 text-gray-600'
+        };
+
+        // ============================================
+        // LOAD DATA
+        // ============================================
+        async function loadCustomerDetail() {
+            customerId = getCustomerId();
+            if (!customerId) {
+                showError('Không tìm thấy ID khách hàng trong URL');
+                return;
+            }
+
+            try {
+                const token = getAuthToken();
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+                const response = await fetch(`${API_BASE}/customers/${customerId}`, { headers });
+                const result = await response.json();
+
+                if (!result.success) {
+                    showError(result.message || 'Không tìm thấy khách hàng');
+                    return;
+                }
+
+                customerData = result.data;
+                renderCustomerInfo(customerData);
+
+                // Load additional data
+                loadProjects();
+                loadQuotations();
+                loadCRM();
+
+            } catch (error) {
+                console.error('Error loading customer:', error);
+                showError('Lỗi kết nối server. Vui lòng thử lại sau.');
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = msg;
+        }
+
+        function renderCustomerInfo(c) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('customerContent').classList.remove('hidden');
+
+            document.title = `${c.name || 'Khách hàng'} - ViralWindow`;
+            document.getElementById('customerCodeBreadcrumb').textContent = c.customer_code || `KH #${c.id}`;
+            document.getElementById('customerName').textContent = c.name || 'Khách hàng';
+            document.getElementById('customerCode').textContent = c.customer_code || `#${c.id}`;
+            document.getElementById('customerAvatar').textContent = (c.name || 'K').charAt(0).toUpperCase();
+            document.getElementById('customerPhone').textContent = c.phone || 'Chưa cập nhật';
+            document.getElementById('customerEmail').textContent = c.email || 'Chưa cập nhật';
+            document.getElementById('customerAddress').textContent = c.address || 'Chưa cập nhật';
+            document.getElementById('customerAgency').textContent = c.agency_name || 'Chưa phân chi nhánh';
+            document.getElementById('customerNotes').textContent = c.notes || 'Chưa có ghi chú';
+
+            // Status badge
+            const statusEl = document.getElementById('customerStatus');
+            if (c.status === 'potential') {
+                statusEl.className = 'status-badge bg-yellow-100 text-yellow-700';
+                statusEl.textContent = 'Tiềm năng';
+            } else if (c.status === 'active' || !c.status) {
+                statusEl.className = 'status-badge bg-green-100 text-green-700';
+                statusEl.textContent = 'Đang hoạt động';
+            } else if (c.status === 'inactive') {
+                statusEl.className = 'status-badge bg-gray-100 text-gray-600';
+                statusEl.textContent = 'Ngừng hoạt động';
+            } else {
+                statusEl.textContent = c.status;
+            }
+        }
+
+        // ============================================
+        // PROJECTS TAB
+        // ============================================
+        async function loadProjects() {
+            try {
+                const token = getAuthToken();
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch(`${API_BASE}/projects?customer_id=${customerId}`, { headers });
+                const result = await response.json();
+
+                const projects = result.success ? (result.data || []) : [];
+                const container = document.getElementById('projectsList');
+
+                // Stats
+                const inProgress = projects.filter(p => !['completed', 'cancelled', 'handover'].includes(p.status)).length;
+                const completed = projects.filter(p => ['completed', 'handover'].includes(p.status)).length;
+                const totalValue = projects.reduce((sum, p) => sum + (parseFloat(p.total_amount) || 0), 0);
+
+                document.getElementById('totalProjects').textContent = projects.length;
+                document.getElementById('inProgressProjects').textContent = inProgress;
+                document.getElementById('completedProjects').textContent = completed;
+                document.getElementById('totalRevenue').textContent = formatCurrency(totalValue);
+
+                if (projects.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có dự án nào</p>';
+                    return;
+                }
+
+                container.innerHTML = projects.map(p => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+                         onclick="window.open('projects.html?id=${p.id}', '_blank')">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">${escapeHtml(p.project_code || '')} - ${escapeHtml(p.project_name || '')}</p>
+                                <p class="text-sm text-gray-500">${formatDate(p.created_at)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-gray-700">${formatCurrency(p.total_amount)}</span>
+                            <span class="status-badge ${STATUS_COLORS[p.status] || 'bg-gray-100 text-gray-600'}">${STATUS_LABELS[p.status] || p.status || '--'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectsList').innerHTML = '<p class="text-red-400 text-center py-4">Lỗi tải dữ liệu dự án</p>';
+            }
+        }
+
+        // ============================================
+        // QUOTATIONS TAB
+        // ============================================
+        async function loadQuotations() {
+            try {
+                const token = getAuthToken();
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch(`${API_BASE}/quotations?customer_id=${customerId}`, { headers });
+                const result = await response.json();
+
+                const quotations = result.success ? (result.data || []) : [];
+                const container = document.getElementById('quotationsList');
+
+                if (quotations.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có báo giá nào</p>';
+                    return;
+                }
+
+                container.innerHTML = quotations.map(q => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">${escapeHtml(q.quotation_code || q.code || '')}</p>
+                                <p class="text-sm text-gray-500">${formatDate(q.created_at)}</p>
+                            </div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">${formatCurrency(q.total_amount || q.grand_total)}</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading quotations:', error);
+                document.getElementById('quotationsList').innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có báo giá nào</p>';
+            }
+        }
+
+        // ============================================
+        // CRM TAB
+        // ============================================
+        async function loadCRM() {
+            try {
+                const token = getAuthToken();
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch(`${API_BASE}/customers/${customerId}/crm`, { headers });
+                const result = await response.json();
+
+                const container = document.getElementById('crmTimeline');
+                if (!result.success) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Không có dữ liệu CRM</p>';
+                    return;
+                }
+
+                const crm = result.data;
+                const interactions = crm.interactions || [];
+                const appointments = crm.appointments || [];
+
+                // Merge and sort by date
+                const timeline = [
+                    ...interactions.map(i => ({ ...i, _type: 'interaction', _date: i.interaction_date || i.created_at })),
+                    ...appointments.map(a => ({ ...a, _type: 'appointment', _date: a.appointment_date || a.created_at }))
+                ].sort((a, b) => new Date(b._date) - new Date(a._date));
+
+                if (timeline.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có lịch sử tương tác</p>';
+                    return;
+                }
+
+                container.innerHTML = timeline.map(item => {
+                    const isInteraction = item._type === 'interaction';
+                    const icon = isInteraction ? '💬' : '📅';
+                    const bgColor = isInteraction ? 'bg-blue-100' : 'bg-green-100';
+                    const typeLabel = isInteraction
+                        ? (item.type === 'call' ? 'Gọi điện' : item.type === 'email' ? 'Email' : item.type === 'visit' ? 'Gặp mặt' : item.type || 'Tương tác')
+                        : 'Cuộc hẹn';
+
+                    return `
+                        <div class="timeline-item relative flex gap-4 pb-4">
+                            <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0 text-lg z-10">${icon}</div>
+                            <div class="flex-1 bg-gray-50 rounded-xl p-4">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-medium text-gray-800">${escapeHtml(typeLabel)}</span>
+                                    <span class="text-xs text-gray-400">${formatDate(item._date)}</span>
+                                </div>
+                                <p class="text-sm text-gray-600">${escapeHtml(item.content || item.notes || item.description || 'Không có nội dung')}</p>
+                                ${item.result ? `<p class="text-xs text-gray-500 mt-1">Kết quả: ${escapeHtml(item.result)}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading CRM:', error);
+                document.getElementById('crmTimeline').innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có dữ liệu CRM</p>';
+            }
+        }
+
+        // ============================================
+        // TABS
+        // ============================================
+        function switchTab(tabName, event) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+            if (event) {
+                event.target.classList.add('active');
+            } else {
+                // Fallback for initial load
+                const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.textContent.includes(tabName === 'projects' ? 'Dự án' : ''));
+                if (btn) btn.classList.add('active');
+            }
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'history') {
+                loadAuditLog();
+            }
+        }
+
+        async function loadAuditLog() {
+            const container = document.getElementById('historyList');
+            if (!customerId || !container) return;
+
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_BASE}/notifications/audit-logs?entity_type=customer&entity_id=${customerId}&limit=50`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    renderAuditLog(result.data);
+                } else {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có lịch sử thay đổi</p>';
+                }
+            } catch (error) {
+                console.error('Error loading audit log:', error);
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Lỗi khi tải lịch sử</p>';
+            }
+        }
+
+        function renderAuditLog(logs) {
+            const container = document.getElementById('historyList');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có lịch sử thay đổi</p>';
+                return;
+            }
+
+            container.innerHTML = logs.map(log => {
+                const date = new Date(log.created_at);
+                const timeStr = date.toLocaleString('vi-VN');
+                const actorName = log.actor_user_name || log.actor_name || 'Hệ thống';
+
+                let icon = '📝';
+                let colorClass = 'bg-blue-100 text-blue-600';
+
+                if (log.event_code.includes('created')) { icon = '✨'; colorClass = 'bg-green-100 text-green-600'; }
+                if (log.event_code.includes('updated')) { icon = '✏️'; colorClass = 'bg-blue-100 text-blue-600'; }
+                if (log.event_code.includes('deleted')) { icon = '🗑️'; colorClass = 'bg-red-100 text-red-600'; }
+
+                let reasonHtml = log.reason ? `<p class="text-xs text-gray-500 mt-1 italic">Lý do: ${escapeHtml(log.reason)}</p>` : '';
+
+                return `
+                    <div class="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                        <div class="w-10 h-10 ${colorClass} rounded-full flex items-center justify-center shrink-0 text-lg">${icon}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-gray-800">${escapeHtml(log.event_code)}</span>
+                                <span class="text-[11px] text-gray-400">${timeStr}</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Thực hiện bởi <span class="font-semibold">${escapeHtml(actorName)}</span></p>
+                            ${reasonHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // ACTIONS
+        // ============================================
+        function editCustomer() {
+            window.location.href = `sales.html?edit=${customerId}`;
+        }
+
+        async function deleteCustomerAction() {
+            const confirmed = await VWModal.confirm(`Bạn có chắc muốn xóa khách hàng "${customerData?.name}"?`, { type: 'danger', title: 'Xóa khách hàng' });
+            if (!confirmed) return;
+
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    await VWModal.alert('Xóa khách hàng thành công!', { type: 'success' });
+                    window.close();
+                    // If window.close didn't work (not opened by script), go back
+                    setTimeout(() => { window.location.href = 'sales.html'; }, 200);
+                } else {
+                    alert(result.message || 'Không thể xóa khách hàng');
+                }
+            } catch (error) {
+                console.error('Error deleting customer:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', loadCustomerDetail);
+    </script>
+</body>
+
+</html>

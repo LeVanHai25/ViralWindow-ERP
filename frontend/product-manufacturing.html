@@ -1,0 +1,2827 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản Xuất Sản Phẩm - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            padding: 24px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .detail-section h3 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #D1D5DB;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload-area:hover {
+            border-color: #3B82F6;
+            background: #EFF6FF;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .image-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .image-item .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #EF4444;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .material-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .material-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            color: white;
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+        }
+
+        /* Status BADGE system - enterprise style (badge only, not full card color) */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.not_assigned {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .status-badge.missing_materials {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .status-badge.ready {
+            background: #DBEAFE;
+            color: #1D4ED8;
+        }
+
+        .status-badge.manufacturing {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-badge.completed {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        /* Product card - ENTERPRISE STYLE (white background, border, NO gradient) */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #3B82F6;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .product-code {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .product-name {
+            font-size: 14px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+
+        .product-info {
+            margin: 12px 0;
+            font-size: 13px;
+            color: #6B7280;
+            line-height: 1.8;
+        }
+
+        .product-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #1F2937;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+        }
+
+        .project-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .project-header {
+            border-bottom: 3px solid #F3F4F6;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        .project-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1F2937;
+            margin-bottom: 8px;
+        }
+
+        .project-meta {
+            font-size: 15px;
+            color: #6B7280;
+            margin-top: 12px;
+            line-height: 1.8;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+
+        .timestamp {
+            font-size: 13px;
+            opacity: 0.95;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .material-warning {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 4px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.05), transparent);
+            border-radius: 50%;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-value {
+            font-size: 40px;
+            font-weight: 900;
+            margin-top: 12px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6B7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #E5E7EB;
+            background: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #3B82F6;
+            color: white;
+            border-color: #3B82F6;
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: #3B82F6;
+            color: #3B82F6;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .search-box {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #E5E7EB;
+            font-size: 15px;
+            width: 300px;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- Header Notification (Top Right) -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header">
+                <h3>Thông báo</h3>
+            </div>
+            <div id="headerNotificationsList" class="header-notifications-list">
+                <!-- Notifications will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200" style="font-weight: normal;">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế &amp; Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO &amp; VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG &amp; NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Tổng quan</span>
+                </a>
+                <a href="finance-receipts.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Phiếu thu</span>
+                </a>
+                <a href="finance-payments.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                    <span>Phiếu chi</span>
+                </a>
+                <a href="finance-debt.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Công nợ</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Top Header Bar -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-800">Sản xuất sản phẩm</h1>
+                <p class="text-sm text-gray-500">Theo dõi tiến độ sản xuất theo từng dự án</p>
+            </div>
+            <button onclick="loadProjects()"
+                class="bg-orange-600 text-white px-4 py-2 rounded-xl font-semibold flex items-center gap-2 hover:bg-orange-700 transition text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Làm mới
+            </button>
+        </div>
+
+        <!-- STATISTICS (Compact) -->
+        <div class="px-6 py-3">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="statistics">
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Tổng dự án</div>
+                        <div class="text-xl font-bold text-gray-800" id="stat-total">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2" />
+                        </svg></div>
+                    <div>
+                        <div class="text-xs text-gray-500">Chuẩn bị SX</div>
+                        <div class="text-xl font-bold text-gray-400" id="stat-preparing">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center text-yellow-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Đang sản xuất</div>
+                        <div class="text-xl font-bold text-yellow-600" id="stat-manufacturing">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Hoàn thành</div>
+                        <div class="text-xl font-bold text-emerald-600" id="stat-completed">0</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-3 shadow-sm border flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600"><svg
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg></div>
+                    <div>
+                        <div class="text-xs text-gray-500">Tiến độ TB</div>
+                        <div class="text-xl font-bold text-orange-600" id="stat-avg">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="px-6 pb-3">
+            <div class="bg-white rounded-2xl shadow-sm border p-4 flex flex-col md:flex-row md:items-center gap-3">
+                <!-- Search -->
+                <div class="flex-1 relative">
+                    <input id="searchInput" type="text" onkeyup="filterProjects()"
+                        class="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        placeholder="Tìm theo tên dự án / mã / khách hàng...">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
+                    </svg>
+                </div>
+                <!-- Filter Status -->
+                <select id="filterStatus" onchange="filterProjects()"
+                    class="py-2 px-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 text-sm">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="preparing">Chuẩn bị sản xuất</option>
+                    <option value="manufacturing">Đang sản xuất</option>
+                    <option value="completed">Hoàn thành</option>
+                </select>
+                <!-- Sort -->
+                <select id="sortBy" onchange="filterProjects()"
+                    class="py-2 px-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 text-sm">
+                    <option value="progress_asc">Tiến độ thấp</option>
+                    <option value="progress_desc">Tiến độ cao</option>
+                    <option value="name_asc">Tên A-Z</option>
+                    <option value="deadline_asc">Gần deadline</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PROJECTS LIST -->
+        <div class="px-6 pb-6">
+            <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                <!-- List Header -->
+                <div
+                    class="px-6 py-3 bg-gray-50 border-b text-xs text-gray-500 font-medium hidden md:grid md:grid-cols-12 gap-2">
+                    <div class="md:col-span-4">Dự án</div>
+                    <div class="md:col-span-1 text-center">Sản phẩm</div>
+                    <div class="md:col-span-2">Ngày sản xuất</div>
+                    <div class="md:col-span-2">Tiến độ</div>
+                    <div class="md:col-span-1">Ghi chú</div>
+                    <div class="md:col-span-2 text-right">Thao tác</div>
+                </div>
+                <!-- List Items -->
+                <div id="projectsList" class="divide-y">
+                    <div class="text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600">
+                        </div>
+                        <p class="mt-3 text-gray-500 text-sm">Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCTION DETAIL MODAL -->
+    <div id="productionModal"
+        class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity [&.active]:opacity-100 [&.active]:pointer-events-auto">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden transform scale-95 transition-transform [.active_&]:scale-100">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Chi tiết sản xuất</h2>
+                    <p class="text-orange-100 text-sm" id="modal-project-name">Tên dự án</p>
+                </div>
+                <button onclick="closeProductionModal()"
+                    class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-xl transition">×</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
+                <!-- Project Info Summary -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
+                    <div>
+                        <div class="text-xs text-gray-500">Mã dự án</div>
+                        <div class="font-semibold text-gray-800" id="modal-project-code">VR001</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Khách hàng</div>
+                        <div class="font-semibold text-gray-800" id="modal-customer-name">Nguyễn Văn A</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Số sản phẩm</div>
+                        <div class="font-semibold text-gray-800" id="modal-total-products">0</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Deadline</div>
+                        <div class="font-semibold text-gray-800" id="modal-deadline">DD/MM/YYYY</div>
+                    </div>
+                </div>
+
+                <!-- Form Fields -->
+                <div class="space-y-5">
+                    <!-- Ngày sản xuất & Trạng thái -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu sản xuất</label>
+                            <input type="date" id="input-production-date"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái sản xuất</label>
+                            <select id="select-production-step"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                                <option value="preparing">○ Chuẩn bị sản xuất</option>
+                                <option value="manufacturing">◐ Đang sản xuất</option>
+                                <option value="completed">● Hoàn thành sản xuất</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tiến độ -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tiến độ sản xuất: <span
+                                id="progress-display" class="font-bold text-orange-600">0%</span></label>
+                        <input type="range" id="input-production-progress" min="0" max="100" value="0"
+                            oninput="updateProgressDisplay()"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span>0%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+
+                    <!-- Ghi chú -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú sản xuất</label>
+                        <textarea id="input-production-notes" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
+                            placeholder="Nhập ghi chú về quá trình sản xuất..."></textarea>
+                    </div>
+
+                    <!-- Hình ảnh -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh sản xuất</label>
+                        <div id="production-photos-container" class="flex flex-wrap gap-2 mb-3">
+                            <p class="text-gray-400 text-sm">Chưa có hình ảnh</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="photo-upload-input" accept="image/*" class="hidden"
+                                onchange="uploadProductionPhoto()">
+                            <button type="button" onclick="document.getElementById('photo-upload-input').click()"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Thêm ảnh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+                <button onclick="closeProductionModal()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition">Hủy</button>
+                <button onclick="saveProductionInfo()"
+                    class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Lưu thông tin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="modal-overlay" id="productDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalProductTitle">Chi tiết sản phẩm</h2>
+                <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Product Info -->
+                <div class="detail-section">
+                    <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5 inline mr-1">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg> Thông tin sản phẩm</h3>
+                    <div id="modalProductInfo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <!-- Product info will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Images Section -->
+                <div class="detail-section">
+                    <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5 inline mr-1">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <circle cx="12" cy="13" r="3" stroke-width="2" />
+                        </svg> Hình ảnh sản phẩm</h3>
+                    <div class="image-upload-area" onclick="document.getElementById('imageUpload').click()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            style="width: 48px; height: 48px; margin: 0 auto 12px; color: #9CA3AF;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p style="color: #6B7280; margin: 0;">Nhấp để tải lên hình ảnh hoặc kéo thả vào đây</p>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;"
+                        onchange="handleImageUpload(event)">
+                    <div class="images-grid" id="imagesGrid">
+                        <!-- Uploaded images will appear here -->
+                    </div>
+                </div>
+
+                <!-- Materials Section - BOM Based with Tabs -->
+                <div class="detail-section">
+                    <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5 inline mr-1">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg> Vật tư sản phẩm (từ BOM)</h3>
+
+                    <!-- Material Tabs -->
+                    <div class="flex gap-2 mb-4 border-b">
+                        <button
+                            class="material-tab active px-4 py-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600"
+                            onclick="switchMaterialTab('aluminum')">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-4 h-4 inline mr-1">
+                                <rect x="4" y="4" width="6" height="16" rx="1" stroke-width="2" />
+                                <rect x="14" y="4" width="6" height="16" rx="1" stroke-width="2" />
+                            </svg> Nhôm
+                        </button>
+                        <button class="material-tab px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+                            onclick="switchMaterialTab('glass')">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-4 h-4 inline mr-1">
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" />
+                                <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                                <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                            </svg> Kính
+                        </button>
+                        <button class="material-tab px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+                            onclick="switchMaterialTab('accessories')">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-4 h-4 inline mr-1">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <circle cx="12" cy="12" r="3" stroke-width="2" />
+                            </svg> Vật tư phụ
+                        </button>
+                    </div>
+
+                    <!-- Material Lists by Category -->
+                    <div class="material-tab-content" id="tabAluminum">
+                        <div class="material-list" id="aluminumList">
+                            <p class="text-center text-gray-400 py-4">Đang tải danh sách nhôm...</p>
+                        </div>
+                    </div>
+                    <div class="material-tab-content hidden" id="tabGlass">
+                        <div class="material-list" id="glassList">
+                            <p class="text-center text-gray-400 py-4">Đang tải danh sách kính...</p>
+                        </div>
+                    </div>
+                    <div class="material-tab-content hidden" id="tabAccessories">
+                        <div class="material-list" id="accessoriesList">
+                            <p class="text-center text-gray-400 py-4">Đang tải danh sách vật tư phụ...</p>
+                        </div>
+                    </div>
+
+                    <!-- Selected Materials Summary -->
+                    <div class="mt-4 p-3 bg-blue-50 rounded-lg" id="selectedMaterialsSummary">
+                        <p class="text-sm text-blue-600 font-medium">Đã chọn: <span id="selectedCount">0</span> vật tư
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn bg-blue-600 text-white hover:bg-blue-700" onclick="saveProductChanges()">
+                        💾 Lưu thay đổi
+                    </button>
+                    <button class="btn btn-success" id="modalCompleteBtn" onclick="modalQuickComplete()">
+                        ✓ Hoàn thành sản phẩm
+                    </button>
+                    <button class="btn bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeProductModal()">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar-enterprise.js"></script>
+    <script src="js/notification-header.js"></script>
+    <script>
+        const API_BASE = (window.API_BASE || '/api') + '/manufacturing';
+        let allProjects = [];
+        let currentFilter = 'all';
+
+        // Load user info from API (same as index.html)
+        async function loadUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) {
+                    return;
+                }
+
+                const response = await fetch((window.API_BASE || '/api') + '/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) {
+                        userNameEl.textContent = user.full_name || 'User';
+                    }
+
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                    if (avatarInitial && avatarImage) {
+                        if (user.avatar_url) {
+                            avatarImage.src = user.avatar_url;
+                            avatarImage.classList.remove('hidden');
+                            avatarInitial.classList.add('hidden');
+                        } else {
+                            const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                            avatarInitial.textContent = initial;
+                            avatarInitial.classList.remove('hidden');
+                            avatarImage.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load sidebar user info:', error);
+            }
+        }
+
+        // Load company info (using correct API endpoint)
+        async function loadCompanyInfo() {
+            try {
+                const response = await fetch((window.API_BASE || '/api') + '/company-settings');
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.success && data.data) {
+                    const company = data.data;
+
+                    // Update company name
+                    if (company.company_name) {
+                        document.getElementById('companyName').textContent = company.company_name;
+                    }
+
+                    // Update logo - handle both base64 and file path
+                    if (company.logo_path) {
+                        let logoSrc = company.logo_path;
+
+                        // Check if it's base64 (starts with data:) or a file path
+                        if (!logoSrc.startsWith('data:') && !logoSrc.startsWith('http')) {
+                            logoSrc = `${window.SERVER_BASE || ''}${logoSrc}`;
+                        }
+
+                        document.getElementById('companyLogo').src = logoSrc;
+                        document.getElementById('companyLogo').classList.remove('hidden');
+                        document.getElementById('companyLogoIcon').classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.log('Company info not available');
+            }
+        }
+
+        // Update stats for project-level view
+        function updateStats(projects) {
+            let preparing = 0, manufacturing = 0, completed = 0;
+            let totalProgress = 0;
+
+            projects.forEach(p => {
+                const step = p.production_step || 'preparing';
+                if (step === 'preparing') preparing++;
+                else if (step === 'manufacturing') manufacturing++;
+                else if (step === 'completed') completed++;
+                totalProgress += p.production_progress || 0;
+            });
+
+            const avgProgress = projects.length > 0 ? Math.round(totalProgress / projects.length) : 0;
+
+            document.getElementById('stat-total').textContent = projects.length;
+            document.getElementById('stat-preparing').textContent = preparing;
+            document.getElementById('stat-manufacturing').textContent = manufacturing;
+            document.getElementById('stat-completed').textContent = completed;
+            document.getElementById('stat-avg').textContent = avgProgress + '%';
+        }
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allProjects = data.data;
+                    updateStats(allProjects);
+                    filterProjects();
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectsList').innerHTML = `<div class="text-center py-12"><p class="text-red-600 text-sm">Lỗi kết nối: ${error.message}</p></div>`;
+            }
+        }
+
+        // Filter, search, sort projects
+        function filterProjects() {
+            const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const status = document.getElementById('filterStatus')?.value || '';
+            const sortBy = document.getElementById('sortBy')?.value || 'progress_asc';
+
+            let filtered = allProjects.filter(p => {
+                const text = `${p.project_name} ${p.project_code} ${p.customer_name}`.toLowerCase();
+                if (search && !text.includes(search)) return false;
+                if (status && (p.production_step || 'preparing') !== status) return false;
+                return true;
+            });
+
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'progress_asc': return (a.production_progress || 0) - (b.production_progress || 0);
+                    case 'progress_desc': return (b.production_progress || 0) - (a.production_progress || 0);
+                    case 'name_asc': return (a.project_name || '').localeCompare(b.project_name || '');
+                    case 'deadline_asc': return new Date(a.deadline || '9999') - new Date(b.deadline || '9999');
+                    default: return 0;
+                }
+            });
+
+            displayProjects(filtered);
+        }
+
+        // Display projects as list view
+        function displayProjects(projects) {
+            const container = document.getElementById('projectsList');
+            if (!projects || projects.length === 0) {
+                container.innerHTML = `<div class="text-center py-12"><svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><p class="mt-3 text-gray-500 text-sm">Không có dự án nào</p></div>`;
+                return;
+            }
+            container.innerHTML = projects.map(p => createProjectRow(p)).join('');
+        }
+
+        // Create project row for list view
+        function createProjectRow(project) {
+            const step = project.production_step || 'preparing';
+            const progress = project.production_progress || 0;
+            const initial = (project.project_name || 'P').substring(0, 2).toUpperCase();
+            const totalProducts = project.total_products || 0;
+
+            // Badge
+            const badges = {
+                'preparing': '<span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Chuẩn bị SX</span>',
+                'manufacturing': '<span class="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">Đang SX</span>',
+                'completed': '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Hoàn thành</span>'
+            };
+            const badge = badges[step] || badges['preparing'];
+
+            // Progress bar color
+            const progressColor = step === 'completed' ? 'bg-emerald-500' : step === 'manufacturing' ? 'bg-yellow-500' : 'bg-gray-300';
+
+            return `
+            <details class="group">
+                <summary class="list-none cursor-pointer">
+                    <div class="px-6 py-3 hover:bg-gray-50 transition grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+                        <!-- Col 1: Dự án (4 cols) -->
+                        <div class="md:col-span-4 flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold shrink-0 text-xs">${initial}</div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-semibold text-gray-900 text-sm truncate">${escapeHtml(project.project_name || 'N/A')}</div>
+                                <div class="text-xs text-gray-500">${escapeHtml(project.project_code || '')} • ${escapeHtml(project.customer_name || 'N/A')}</div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Sản phẩm (1 col) -->
+                        <div class="md:col-span-1 text-center">
+                            <span class="text-sm font-bold text-gray-800">${totalProducts}</span>
+                        </div>
+
+                        <!-- Col 3: Ngày sản xuất (2 cols) -->
+                        <div class="md:col-span-2 text-sm">
+                            ${project.production_started_at ? `<span class="font-medium text-gray-700">${formatDate(project.production_started_at)}</span>` : '<span class="text-gray-400">Chưa bắt đầu</span>'}
+                        </div>
+
+                        <!-- Col 4: Tiến độ (2 cols) -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold ${step === 'completed' ? 'text-emerald-600' : 'text-orange-600'}">${progress}%</span>
+                                ${badge}
+                            </div>
+                            <div class="h-1 bg-gray-100 rounded-full overflow-hidden mt-1 max-w-[100px]">
+                                <div class="h-1 ${progressColor} transition-all" style="width:${progress}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Col 5: Ghi chú (1 col) -->
+                        <div class="md:col-span-1 text-sm">
+                            ${project.production_notes ? `<span class="text-gray-600 truncate block" title="${escapeHtml(project.production_notes)}">${escapeHtml(project.production_notes.substring(0, 15))}${project.production_notes.length > 15 ? '...' : ''}</span>` : '<span class="text-gray-400">—</span>'}
+                        </div>
+
+                        <!-- Col 6: Thao tác (2 cols) -->
+                        <div class="md:col-span-2 flex md:justify-end items-center gap-2">
+                            <button onclick="event.stopPropagation(); openProductionModal(${project.id})" class="px-2 py-1 rounded-lg bg-orange-600 text-white text-xs hover:bg-orange-700 font-medium whitespace-nowrap">Chi tiết</button>
+                            ${getNextStepButtonSmall(project)}
+                            <svg class="w-4 h-4 text-gray-400 transition group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+                </summary>
+
+                <!-- Expanded Details -->
+                <div class="px-6 pb-3 pt-2 bg-gray-50 text-sm border-t">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div><span class="text-gray-400">Địa chỉ:</span> ${escapeHtml(getProjectAddress(project))}</div>
+                        <div><span class="text-gray-400">SĐT:</span> ${escapeHtml(project.customer_phone || 'N/A')}</div>
+                        <div><span class="text-gray-400">Deadline:</span> ${project.deadline ? formatDate(project.deadline) : 'N/A'}</div>
+                        <div><span class="text-gray-400">Ghi chú:</span> ${escapeHtml(project.production_notes || '—')}</div>
+                    </div>
+                </div>
+            </details>`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ✅ Lấy địa chỉ dự án: Ưu tiên địa chỉ công trình > địa chỉ khách hàng
+        function getProjectAddress(project) {
+            if (!project) return 'N/A';
+
+            // Xây dựng địa chỉ công trình từ các trường
+            let constructionAddress = '';
+            const parts = [];
+            if (project.construction_address) parts.push(project.construction_address);
+            if (project.construction_district) parts.push(project.construction_district);
+            if (project.construction_province) parts.push(project.construction_province);
+
+            if (parts.length > 0) {
+                constructionAddress = parts.join(', ');
+            }
+
+            // Ưu tiên địa chỉ công trình, sau đó đến địa chỉ khách hàng
+            return constructionAddress || project.customer_address || 'N/A';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Get next step button for production (compact for table)
+        function getNextStepButtonSmall(project) {
+            const step = project.production_step || 'preparing';
+            if (step === 'preparing') return `<button onclick="event.stopPropagation(); updateProductionStep(${project.id}, 'manufacturing')" class="px-2 py-1 rounded border border-gray-200 text-gray-600 text-xs hover:bg-gray-50">Bắt đầu SX</button>`;
+            if (step === 'manufacturing') return `<button onclick="event.stopPropagation(); updateProductionStep(${project.id}, 'completed')" class="px-2 py-1 rounded bg-emerald-600 text-white text-xs hover:bg-emerald-700">Hoàn thành</button>`;
+            if (step === 'completed' && project.status !== 'installation') return `<button onclick="event.stopPropagation(); moveToInstallation(${project.id})" class="px-2 py-1 rounded border border-purple-200 text-purple-600 text-xs hover:bg-purple-50">→ Lắp đặt</button>`;
+            return '';
+        }
+
+        // Get next step button for production (legacy/full size)
+        function getNextStepButton(project) {
+            const step = project.production_step || 'preparing';
+            if (step === 'preparing') return `<button onclick="event.stopPropagation(); updateProductionStep(${project.id}, 'manufacturing')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs hover:bg-gray-50 font-medium">Bắt đầu SX</button>`;
+            if (step === 'manufacturing') return `<button onclick="event.stopPropagation(); updateProductionStep(${project.id}, 'completed')" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs hover:bg-emerald-700 font-medium">Hoàn thành</button>`;
+            if (step === 'completed' && project.status !== 'installation') return `<button onclick="event.stopPropagation(); moveToInstallation(${project.id})" class="px-3 py-1.5 rounded-lg border border-purple-200 text-purple-600 text-xs hover:bg-purple-50 font-medium">→ Lắp đặt</button>`;
+            return '';
+        }
+
+        // Update production step
+        async function updateProductionStep(projectId, newStep) {
+            const stepLabels = { manufacturing: 'Đang sản xuất', completed: 'Sản xuất hoàn thành' };
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise bởi modal-system.js
+            const confirmed = await confirm(`Xác nhận chuyển sang: ${stepLabels[newStep]}?`);
+            if (!confirmed) return;
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/production-step`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ step: newStep })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await loadProjects();
+                    VWModal.success(`Đã chuyển sang trạng thái: ${stepLabels[newStep]}`);
+                } else {
+                    VWModal.error('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                VWModal.error('Lỗi kết nối: ' + error.message);
+            }
+        }
+
+        // Current project for modal
+        let currentModalProject = null;
+
+        // Open production detail modal
+        function openProductionModal(projectId) {
+            const project = allProjects.find(p => p.id === projectId);
+            if (!project) return;
+
+            // Parse production_photos nếu là JSON string
+            let photos = [];
+            if (project.production_photos) {
+                if (typeof project.production_photos === 'string') {
+                    try {
+                        photos = JSON.parse(project.production_photos);
+                    } catch (e) {
+                        console.error('Error parsing production_photos:', e);
+                        photos = [];
+                    }
+                } else if (Array.isArray(project.production_photos)) {
+                    photos = project.production_photos;
+                }
+            }
+            project.production_photos = photos;
+
+            currentModalProject = project;
+
+            document.getElementById('modal-project-name').textContent = project.project_name || 'N/A';
+            document.getElementById('modal-project-code').textContent = project.project_code || 'N/A';
+            document.getElementById('modal-customer-name').textContent = project.customer_name || 'N/A';
+            document.getElementById('modal-total-products').textContent = project.total_products || 0;
+            document.getElementById('modal-deadline').textContent = project.deadline ? formatDate(project.deadline) : 'N/A';
+
+            // Form fields
+            document.getElementById('input-production-date').value = project.production_started_at ? project.production_started_at.split('T')[0] : '';
+            document.getElementById('input-production-notes').value = project.production_notes || '';
+            document.getElementById('input-production-progress').value = project.production_progress || 0;
+            document.getElementById('progress-display').textContent = (project.production_progress || 0) + '%';
+
+            // Status select
+            document.getElementById('select-production-step').value = project.production_step || 'preparing';
+
+            // Photos
+            renderProductionPhotos(photos);
+
+            document.getElementById('productionModal').classList.add('active');
+        }
+
+        function closeProductionModal() {
+            document.getElementById('productionModal').classList.remove('active');
+            currentModalProject = null;
+        }
+
+        function renderProductionPhotos(photos) {
+            const container = document.getElementById('production-photos-container');
+            if (!photos || photos.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm">Chưa có hình ảnh</p>';
+                return;
+            }
+
+            // Thêm base URL nếu URL là relative
+            const getFullUrl = (url) => {
+                if (!url) return '';
+                if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                return (window.SERVER_BASE || '') + url;
+            };
+
+            container.innerHTML = photos.map((url, idx) => {
+                const fullUrl = getFullUrl(url);
+                return `
+                    <div class="relative group">
+                        <img src="${fullUrl}" class="w-20 h-20 object-cover rounded-lg border cursor-pointer" 
+                             onclick="window.open('${fullUrl}')" 
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23ddd%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>Lỗi</text></svg>'">
+                        <button onclick="removeProductionPhoto(${idx})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function removeProductionPhoto(index) {
+            if (!currentModalProject || !currentModalProject.production_photos) return;
+            currentModalProject.production_photos.splice(index, 1);
+            renderProductionPhotos(currentModalProject.production_photos);
+
+            // ✅ TỰ ĐỘNG LƯU VÀO DATABASE SAU KHI XÓA ẢNH
+            try {
+                const saveResponse = await fetch(`${API_BASE}/projects/${currentModalProject.id}/production-info`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        production_photos: currentModalProject.production_photos
+                    })
+                });
+
+                if (saveResponse.ok) {
+                    const saveResult = await saveResponse.json();
+                    if (saveResult.success) {
+                        VWModal.success('Đã xóa ảnh thành công!');
+                    }
+                }
+            } catch (saveError) {
+                console.error('Auto-save error after delete:', saveError);
+            }
+        }
+
+        async function uploadProductionPhoto() {
+            const input = document.getElementById('photo-upload-input');
+            if (!input.files.length || !currentModalProject) {
+                VWModal.warning('Vui lòng chọn file ảnh');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            formData.append('project_id', currentModalProject.id);
+            formData.append('type', 'production');
+
+            try {
+                // Hiển thị loading
+                const uploadBtn = document.querySelector('button[onclick*="photo-upload-input"]');
+                if (uploadBtn) {
+                    uploadBtn.disabled = true;
+                    uploadBtn.innerHTML = '<span class="animate-spin">⏳</span> Đang tải...';
+                }
+
+                const response = await fetch((window.API_BASE || '/api') + '/upload/project-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (!currentModalProject.production_photos) currentModalProject.production_photos = [];
+                    currentModalProject.production_photos.push(result.url);
+                    renderProductionPhotos(currentModalProject.production_photos);
+                    input.value = '';
+
+                    // ✅ TỰ ĐỘNG LƯU VÀO DATABASE NGAY SAU KHI UPLOAD THÀNH CÔNG
+                    try {
+                        const saveResponse = await fetch(`${API_BASE}/projects/${currentModalProject.id}/production-info`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                production_photos: currentModalProject.production_photos
+                            })
+                        });
+
+                        if (saveResponse.ok) {
+                            const saveResult = await saveResponse.json();
+                            if (saveResult.success) {
+                                VWModal.success('Upload và lưu ảnh thành công!');
+                            } else {
+                                VWModal.warning('Upload thành công nhưng chưa lưu được vào database');
+                            }
+                        } else {
+                            VWModal.warning('Upload thành công nhưng chưa lưu được vào database');
+                        }
+                    } catch (saveError) {
+                        console.error('Auto-save error:', saveError);
+                        VWModal.warning('Upload thành công! Nhấn "Lưu thông tin" để lưu vào database.');
+                    }
+                } else {
+                    VWModal.error('Lỗi upload: ' + (result.message || 'Không xác định'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                VWModal.error('Lỗi upload: ' + error.message);
+            } finally {
+                // Reset button
+                const uploadBtn = document.querySelector('button[onclick*="photo-upload-input"]');
+                if (uploadBtn) {
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg> Thêm ảnh`;
+                }
+            }
+        }
+
+        async function saveProductionInfo() {
+            if (!currentModalProject) return;
+
+            const data = {
+                production_started_at: document.getElementById('input-production-date').value || null,
+                production_notes: document.getElementById('input-production-notes').value || null,
+                production_progress: parseInt(document.getElementById('input-production-progress').value) || 0,
+                production_step: document.getElementById('select-production-step').value,
+                production_photos: currentModalProject.production_photos || []
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${currentModalProject.id}/production-info`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    VWModal.success('Lưu thông tin sản xuất thành công!');
+                    closeProductionModal();
+                    await loadProjects();
+                } else {
+                    VWModal.error('Lỗi: ' + (result.message || 'Không xác định'));
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                VWModal.error('Lỗi: ' + error.message);
+            }
+        }
+
+        function updateProgressDisplay() {
+            const val = document.getElementById('input-production-progress').value;
+            document.getElementById('progress-display').textContent = val + '%';
+        }
+
+        // Render product card - ENTERPRISE STYLE (white background, badge status only)
+        function renderProductCard(product, projectId) {
+            const statusText = getStatusText(product.status);
+            const statusBadge = getStatusBadge(product.status);
+            const actionButton = getActionButton(product, projectId);
+
+            // Calculate progress bar color (use overall_progress now)
+            const overallProgress = product.overall_progress || 0;
+            const progressColor = overallProgress >= 100 ? 'bg-green-500' :
+                overallProgress >= 70 ? 'bg-blue-500' :
+                    overallProgress >= 40 ? 'bg-yellow-500' : 'bg-gray-400';
+
+            return `
+                <div class="product-card cursor-pointer" onclick="openProductDetail('${product.id}', ${projectId})">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <h4 class="text-base font-bold text-gray-900">${product.design_code}</h4>
+                            <p class="text-sm text-gray-500" title="${product.name}">${product.name}</p>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    
+                    <!-- Overall Progress Bar (3 stages: 40% VT + 30% Gia công + 30% Hoàn thành) -->
+                    <div class="mb-3">
+                        <div class="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>Tiến độ sản xuất</span>
+                            <span class="font-semibold">${overallProgress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="${progressColor} h-2 rounded-full transition-all" style="width: ${overallProgress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Info -->
+                    <div class="text-xs text-gray-500 space-y-1 mb-3">
+                        <p>Kích thước: ${product.width || 'N/A'} x ${product.height || 'N/A'} mm</p>
+                        <p>Vật tư: ${product.materials_exported}/${product.materials_required} loại ${product.materials_percent === 100 ? '✓' : ''}</p>
+                        ${product.status === 'manufacturing' && product.started_at ?
+                    `<p>Gia công từ: ${formatDateTime(product.started_at)}</p>` : ''}
+                        ${product.status === 'completed' && product.completed_at ?
+                    `<p class="text-green-600 font-medium">Hoàn thành: ${formatDateTime(product.completed_at)}</p>` : ''}
+                    </div>
+                    
+                    <!-- Action Buttons - enterprise style (small, no emoji) -->
+                    <div class="flex gap-2 pt-2 border-t" onclick="event.stopPropagation()">
+                        <button class="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                            onclick="openProductDetail('${product.id}', ${projectId})">
+                            Xem chi tiết
+                        </button>
+                        ${actionButton}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get status badge (enterprise style - small badge, not full color)
+        function getStatusBadge(status) {
+            const badges = {
+                'not_assigned': '<span class="status-badge not_assigned">Chưa gán VT</span>',
+                'missing_materials': '<span class="status-badge missing_materials">Thiếu VT</span>',
+                'ready': '<span class="status-badge ready">Sẵn sàng</span>',
+                'manufacturing': '<span class="status-badge manufacturing">Đang gia công</span>',
+                'completed': '<span class="status-badge completed">Hoàn thành</span>'
+            };
+            return badges[status] || '<span class="status-badge">N/A</span>';
+        }
+
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'not_assigned': 'Chưa gán vật tư',
+                'missing_materials': 'Thiếu vật tư',
+                'ready': 'Sẵn sàng gia công',
+                'manufacturing': 'Đang gia công',
+                'completed': 'Hoàn thành'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Get manufacturing info (legacy - now using inline display)
+        function getManufacturingInfo(product) {
+            if (product.status === 'completed') {
+                return 'Hoàn thành';
+            } else if (product.status === 'manufacturing') {
+                return 'Đang làm...';
+            } else if (product.status === 'ready') {
+                return 'Chưa bắt đầu';
+            }
+            return 'Chưa đủ điều kiện';
+        }
+
+        // Get timestamp
+        function getTimestamp(product) {
+            if (product.completed_at) {
+                return `Hoàn thành: ${formatDateTime(product.completed_at)}`;
+            } else if (product.started_at) {
+                return `Gia công từ: ${formatDateTime(product.started_at)}`;
+            }
+            return '';
+        }
+
+        // Format date time
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Get action button - ENTERPRISE STYLE (small, no emoji)
+        function getActionButton(product, projectId) {
+            if (product.status === 'not_assigned') {
+                return `
+                    <button class="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                        onclick="markMaterialsReady('${product.id}', ${projectId})">
+                        Đánh dấu đủ VT
+                    </button>`;
+            }
+
+            if (product.status === 'missing_materials') {
+                return `
+                    <button class="flex-1 px-3 py-2 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-medium"
+                        onclick="markMaterialsReady('${product.id}', ${projectId})">
+                        Đánh dấu đủ VT
+                    </button>`;
+            }
+
+            if (product.status === 'ready') {
+                return `
+                    <button class="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                        onclick="startManufacturing('${product.id}', ${projectId})">
+                        Bắt đầu
+                    </button>`;
+            }
+
+            if (product.status === 'manufacturing') {
+                return `
+                    <button class="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                        onclick="completeManufacturing('${product.id}', ${projectId})">
+                        Hoàn thành
+                    </button>`;
+            }
+
+            if (product.status === 'completed') {
+                return `<span class="text-xs text-green-600 font-medium">Đã hoàn thành</span>`;
+            }
+
+            return '';
+        }
+
+        // Mark materials as ready (100%)
+        async function markMaterialsReady(productId, projectId) {
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise
+            const confirmed = await confirm('✅ Đánh dấu sản phẩm này đã đủ vật tư?\n\nSản phẩm sẽ chuyển sang trạng thái "Sẵn sàng gia công".');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/products/${productId}/mark-materials-ready`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    VWModal.success(data.message);
+                    loadProjects();
+                } else {
+                    VWModal.error(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi đánh dấu vật tư. Vui lòng thử lại.');
+            }
+        }
+
+        // Quick complete (skip manufacturing stage)
+        async function quickComplete(productId, projectId) {
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise
+            const confirmed = await confirm('🚀 Hoàn thành nhanh sản phẩm?\n\nSản phẩm sẽ được đánh dấu hoàn thành ngay lập tức, bỏ qua bước gia công.');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/products/${productId}/quick-complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    VWModal.success(data.message);
+                    loadProjects();
+                } else {
+                    VWModal.error(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi hoàn thành nhanh. Vui lòng thử lại.');
+            }
+        }
+
+        // Start manufacturing
+        async function startManufacturing(productId, projectId) {
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise
+            const confirmed = await confirm('✅ Xác nhận bắt đầu gia công sản phẩm này?\n\nLưu ý: Sau khi bắt đầu không thể chỉnh sửa vật tư.');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/products/${productId}/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    VWModal.success(data.message);
+                    loadProjects();
+                } else {
+                    VWModal.error(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi bắt đầu gia công. Vui lòng thử lại.');
+            }
+        }
+
+        // Complete manufacturing
+        async function completeManufacturing(productId, projectId) {
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise
+            const confirmed = await confirm('🎉 Xác nhận sản phẩm đã gia công xong?\n\nSản phẩm sẽ được chuyển sang trạng thái Hoàn thành.');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/products/${productId}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    VWModal.success(data.message);
+                    loadProjects();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Lỗi khi hoàn thành. Vui lòng thử lại.');
+            }
+        }
+
+        // Toggle sidebar menu
+        function toggleSidebarUserMenu() {
+            const dropdown = document.getElementById('sidebarUserMenuDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Logout
+        async function handleLogout() {
+            const confirmed = await VWModal.confirm('ÄÄƒng xuáº¥t', 'Bạn có chắc muốn đăng xuất?');
+            if (confirmed) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Move project to Installation stage
+        async function moveToInstallation(projectId) {
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise
+            const confirmed = await confirm('Chuyển dự án này sang giai đoạn Lắp đặt?');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${window.API_BASE || '/api'}/projects/${projectId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'installation' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    VWModal.success('Đã chuyển dự án sang giai đoạn Lắp đặt!');
+                    loadProjects();
+                } else {
+                    VWModal.error('Lỗi: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chuyển giai đoạn. Vui lòng thử lại.');
+            }
+        }
+
+        // Current modal product data
+        let currentModalProduct = null;
+        let currentModalProjectId = null;
+        let uploadedImages = [];
+
+        // Open product detail modal
+        function openProductDetail(productId, projectId) {
+            currentModalProjectId = projectId;
+
+            // Find product in allProjects
+            for (const project of allProjects) {
+                const product = project.products.find(p => p.id === productId);
+                if (product) {
+                    currentModalProduct = product;
+                    break;
+                }
+            }
+
+            if (!currentModalProduct) {
+                alert('Không tìm thấy sản phẩm');
+                return;
+            }
+
+            // Update modal title
+            document.getElementById('modalProductTitle').textContent =
+                `${currentModalProduct.design_code} - ${currentModalProduct.name}`;
+
+            // Update product info (removed "Loại: material", added more useful info)
+            document.getElementById('modalProductInfo').innerHTML = `
+                <div><strong>Mã sản phẩm:</strong> ${currentModalProduct.design_code}</div>
+                <div><strong>Tên sản phẩm:</strong> ${currentModalProduct.name}</div>
+                <div><strong>Kích thước:</strong> ${currentModalProduct.width || '-'} x ${currentModalProduct.height || '-'} mm</div>
+                <div><strong>Trạng thái:</strong> ${getStatusText(currentModalProduct.status)}</div>
+                <div><strong>Vật tư:</strong> ${currentModalProduct.materials_exported}/${currentModalProduct.materials_required} (${currentModalProduct.materials_percent}%)</div>
+                <div><strong>Tiến độ:</strong> ${currentModalProduct.status === 'completed' ? '✅ Hoàn thành' : currentModalProduct.status === 'manufacturing' ? '🔄 Đang gia công' : '⏳ Chờ xử lý'}</div>
+            `;
+
+            // Update complete button visibility (remove install button from modal - moved to project level)
+            const completeBtn = document.getElementById('modalCompleteBtn');
+            if (currentModalProduct.status === 'completed') {
+                completeBtn.style.display = 'none';
+            } else {
+                completeBtn.style.display = 'inline-flex';
+            }
+
+            // Load materials from localStorage (manual entry mode)
+            loadMaterialDataFromStorage();
+            renderAluminumTab();
+            renderGlassTab();
+            renderAccessoriesTab();
+            updateMaterialSummary();
+
+            // Load saved images from localStorage
+            uploadedImages = [];
+            loadImagesFromStorage();
+
+            // Show modal
+            document.getElementById('productDetailModal').classList.add('active');
+        }
+
+        // Close product modal
+        function closeProductModal() {
+            document.getElementById('productDetailModal').classList.remove('active');
+            currentModalProduct = null;
+            currentModalProjectId = null;
+        }
+
+        // Handle image upload
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            const grid = document.getElementById('imagesGrid');
+
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imageUrl = e.target.result;
+                    uploadedImages.push(imageUrl);
+                    renderImageGrid();
+
+                    // Auto-save to localStorage for persistence
+                    saveImagesToStorage();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Render all images in grid
+        function renderImageGrid() {
+            const grid = document.getElementById('imagesGrid');
+            grid.innerHTML = '';
+
+            uploadedImages.forEach((imageUrl, index) => {
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'image-item relative';
+                imgDiv.style.cssText = 'position:relative; display:inline-block; margin:4px;';
+                imgDiv.innerHTML = `
+                    <img src="${imageUrl}" alt="Image ${index + 1}" 
+                         style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
+                    <button onclick="deleteImage(${index})" 
+                            style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; 
+                                   border-radius:50%; border:none; background:#EF4444; color:white; 
+                                   cursor:pointer; font-size:12px; line-height:1;">×</button>
+                `;
+                grid.appendChild(imgDiv);
+            });
+
+            // Show count
+            if (uploadedImages.length > 0) {
+                const countDiv = document.createElement('div');
+                countDiv.style.cssText = 'width:100%; text-align:center; margin-top:8px; color:#6B7280; font-size:12px;';
+                countDiv.textContent = `${uploadedImages.length} hình ảnh`;
+                grid.appendChild(countDiv);
+            }
+        }
+
+        // Delete image by index
+        function deleteImage(index) {
+            uploadedImages.splice(index, 1);
+            renderImageGrid();
+            saveImagesToStorage();
+        }
+
+        function saveImagesToStorage() {
+            if (currentModalProduct) {
+                const key = `product_images_${currentModalProduct.design_code || currentModalProduct.id}`;
+                localStorage.setItem(key, JSON.stringify(uploadedImages));
+                console.log('Saved images to key:', key, 'count:', uploadedImages.length);
+            }
+        }
+
+        // Load images from localStorage
+        function loadImagesFromStorage() {
+            if (currentModalProduct) {
+                const key = `product_images_${currentModalProduct.design_code || currentModalProduct.id}`;
+                const saved = localStorage.getItem(key);
+                console.log('Loading images from key:', key, 'found:', saved ? 'yes' : 'no');
+                if (saved) {
+                    try {
+                        uploadedImages = JSON.parse(saved);
+                        renderImageGrid();
+                    } catch (e) {
+                        console.error('Error parsing saved images:', e);
+                        uploadedImages = [];
+                    }
+                } else {
+                    renderImageGrid(); // Render empty grid
+                }
+            }
+        }
+
+        // Load selected materials from localStorage
+        function loadMaterialsFromStorage() {
+            if (currentModalProduct) {
+                const key = `product_materials_${currentModalProduct.id}`;
+                const saved = localStorage.getItem(key);
+                if (saved) {
+                    const savedMaterials = JSON.parse(saved);
+                    savedMaterials.forEach((m, idx) => {
+                        const key = `${m.type}_${idx}`;
+                        selectedMaterials[key] = m;
+                    });
+                }
+            }
+        }
+
+        // Load product materials from BOM into tabs
+        let bomData = { aluminum: [], glass: [], accessories: [] };
+        let selectedMaterials = {};
+
+        async function loadProductMaterials(productId, projectId) {
+            // Reset data
+            bomData = { aluminum: [], glass: [], accessories: [] };
+            selectedMaterials = {};
+
+            // Load previously saved materials
+            loadMaterialsFromStorage();
+
+            try {
+                // Fetch all 3 BOM summaries in parallel from project-summaries API
+                const [aluminumRes, glassRes, accessoriesRes] = await Promise.all([
+                    fetch(`${window.API_BASE || '/api'}/project-summaries/${projectId}/aluminum`),
+                    fetch(`${window.API_BASE || '/api'}/project-summaries/${projectId}/glass`),
+                    fetch(`${window.API_BASE || '/api'}/project-summaries/${projectId}/accessories`)
+                ]);
+
+                // Parse responses
+                const [aluminumData, glassData, accessoriesData] = await Promise.all([
+                    aluminumRes.json(),
+                    glassRes.json(),
+                    accessoriesRes.json()
+                ]);
+
+                // Process Aluminum data
+                if (aluminumData.success && aluminumData.data) {
+                    const items = aluminumData.data.items || [];
+                    items.forEach(item => {
+                        bomData.aluminum.push({
+                            material_code: item.aluminum_code || item.symbol || 'N/A',
+                            material_name: item.aluminum_name || 'Thanh nhôm',
+                            quantity: item.quantity || item.length_m || 0,
+                            unit: item.length_m ? 'm' : 'cây',
+                            length_mm: item.length_mm || 0,
+                            weight_kg: item.weight_kg || 0
+                        });
+                    });
+                }
+
+                // Process Glass data
+                if (glassData.success && glassData.data) {
+                    const items = glassData.data.items || [];
+                    items.forEach(item => {
+                        bomData.glass.push({
+                            material_code: item.glass_type || 'Kính',
+                            material_name: `Kính ${item.glass_type || '12'} - ${item.width_mm}x${item.height_mm}`,
+                            quantity: item.quantity || 1,
+                            unit: 'm²',
+                            area_m2: item.area_m2 || 0,
+                            width_mm: item.width_mm,
+                            height_mm: item.height_mm
+                        });
+                    });
+                }
+
+                // Process Accessories data
+                if (accessoriesData.success && accessoriesData.data) {
+                    const data = accessoriesData.data;
+                    // Combine all accessory types
+                    const allItems = [
+                        ...(data.accessories || []),
+                        ...(data.gaskets || []),
+                        ...(data.glue || [])
+                    ];
+                    allItems.forEach(item => {
+                        bomData.accessories.push({
+                            material_code: item.code || 'N/A',
+                            material_name: item.name || 'Phụ kiện',
+                            quantity: item.quantity || 1,
+                            unit: item.unit || 'cái',
+                            unit_price: item.unit_price || 0
+                        });
+                    });
+                }
+
+                // Render each tab
+                renderAluminumTab();
+                renderGlassTab();
+                renderAccessoriesTab();
+                updateSelectedCount();
+
+            } catch (error) {
+                console.log('Error loading BOM data:', error);
+                showEmptyBOM();
+            }
+        }
+
+        // Render Aluminum tab
+        function renderAluminumTab() {
+            const list = document.getElementById('aluminumList');
+            list.innerHTML = renderAluminumTable();
+        }
+
+        // Render Glass tab
+        function renderGlassTab() {
+            const list = document.getElementById('glassList');
+            list.innerHTML = renderGlassTable();
+        }
+
+        // Render Accessories tab
+        function renderAccessoriesTab() {
+            const list = document.getElementById('accessoriesList');
+            list.innerHTML = renderAccessoriesTable();
+        }
+
+        // Render Aluminum table (EDITABLE: Tên VT, Mã VT, SL + Add/Delete)
+        function renderAluminumTable() {
+            let html = `
+                <div style="margin-bottom:10px;">
+                    <button onclick="addMaterialRow('aluminum')" style="background:#3B82F6; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+                        ➕ Thêm dòng
+                    </button>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#EFF6FF; color:#1E40AF;">
+                            <th style="padding:8px 6px; text-align:left; border-bottom:2px solid #3B82F6;">Tên vật tư</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #3B82F6; width:120px;">Mã VT</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #3B82F6; width:70px;">SL</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #3B82F6; width:50px;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            if (materialData.aluminum.length === 0) {
+                html += `<tr><td colspan="4" style="text-align:center; padding:20px; color:#9CA3AF;">Chưa có dữ liệu. Nhấn "Thêm dòng" để bắt đầu.</td></tr>`;
+            } else {
+                materialData.aluminum.forEach((m, idx) => {
+                    html += `<tr style="border-bottom:1px solid #E5E7EB;">
+                        <td style="padding:6px;"><input type="text" value="${m.name || ''}" onchange="updateMaterialField('aluminum', ${idx}, 'name', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px;"></td>
+                        <td style="padding:6px;"><input type="text" value="${m.code || ''}" onchange="updateMaterialField('aluminum', ${idx}, 'code', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px; text-align:center;"></td>
+                        <td style="padding:6px;"><input type="number" value="${m.qty || 1}" min="0" onchange="updateMaterialField('aluminum', ${idx}, 'qty', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px; text-align:center;"></td>
+                        <td style="padding:6px; text-align:center;"><button onclick="deleteMaterialRow('aluminum', ${idx})" style="background:#EF4444; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">🗑</button></td>
+                    </tr>`;
+                });
+            }
+
+            const totalQty = materialData.aluminum.reduce((sum, m) => sum + (parseFloat(m.qty) || 0), 0);
+            html += `</tbody>
+                <tfoot>
+                    <tr style="background:#DBEAFE; font-weight:600;">
+                        <td colspan="2" style="padding:8px 6px; text-align:right;">TỔNG CỘNG:</td>
+                        <td style="padding:8px 6px; text-align:center; color:#1E40AF;">${totalQty}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>`;
+            return html;
+        }
+
+        // Render Glass table (EDITABLE: Mã kính, Loại kính, SL + Add/Delete)
+        function renderGlassTable() {
+            let html = `
+                <div style="margin-bottom:10px;">
+                    <button onclick="addMaterialRow('glass')" style="background:#10B981; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+                        ➕ Thêm dòng
+                    </button>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#ECFDF5; color:#047857;">
+                            <th style="padding:8px 6px; text-align:left; border-bottom:2px solid #10B981; width:120px;">Mã kính</th>
+                            <th style="padding:8px 6px; text-align:left; border-bottom:2px solid #10B981;">Loại kính</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #10B981; width:70px;">SL</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #10B981; width:50px;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            if (materialData.glass.length === 0) {
+                html += `<tr><td colspan="4" style="text-align:center; padding:20px; color:#9CA3AF;">Chưa có dữ liệu. Nhấn "Thêm dòng" để bắt đầu.</td></tr>`;
+            } else {
+                materialData.glass.forEach((m, idx) => {
+                    html += `<tr style="border-bottom:1px solid #E5E7EB;">
+                        <td style="padding:6px;"><input type="text" value="${m.code || ''}" onchange="updateMaterialField('glass', ${idx}, 'code', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px;"></td>
+                        <td style="padding:6px;"><input type="text" value="${m.name || ''}" onchange="updateMaterialField('glass', ${idx}, 'name', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px;"></td>
+                        <td style="padding:6px;"><input type="number" value="${m.qty || 1}" min="0" onchange="updateMaterialField('glass', ${idx}, 'qty', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px; text-align:center;"></td>
+                        <td style="padding:6px; text-align:center;"><button onclick="deleteMaterialRow('glass', ${idx})" style="background:#EF4444; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">🗑</button></td>
+                    </tr>`;
+                });
+            }
+
+            const totalQty = materialData.glass.reduce((sum, m) => sum + (parseFloat(m.qty) || 0), 0);
+            html += `</tbody>
+                <tfoot>
+                    <tr style="background:#D1FAE5; font-weight:600;">
+                        <td colspan="2" style="padding:8px 6px; text-align:right;">TỔNG:</td>
+                        <td style="padding:8px 6px; text-align:center; color:#047857;">${totalQty}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>`;
+            return html;
+        }
+
+        // Render Accessories table (EDITABLE: Tên phụ kiện, Mã VT, SL + Add/Delete)
+        function renderAccessoriesTable() {
+            let html = `
+                <div style="margin-bottom:10px;">
+                    <button onclick="addMaterialRow('accessories')" style="background:#F97316; color:white; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+                        ➕ Thêm dòng
+                    </button>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#FFF7ED; color:#C2410C;">
+                            <th style="padding:8px 6px; text-align:left; border-bottom:2px solid #F97316;">Tên phụ kiện</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #F97316; width:120px;">Mã VT</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #F97316; width:70px;">SL</th>
+                            <th style="padding:8px 6px; text-align:center; border-bottom:2px solid #F97316; width:50px;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            if (materialData.accessories.length === 0) {
+                html += `<tr><td colspan="4" style="text-align:center; padding:20px; color:#9CA3AF;">Chưa có dữ liệu. Nhấn "Thêm dòng" để bắt đầu.</td></tr>`;
+            } else {
+                materialData.accessories.forEach((m, idx) => {
+                    html += `<tr style="border-bottom:1px solid #E5E7EB;">
+                        <td style="padding:6px;"><input type="text" value="${m.name || ''}" onchange="updateMaterialField('accessories', ${idx}, 'name', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px;"></td>
+                        <td style="padding:6px;"><input type="text" value="${m.code || ''}" onchange="updateMaterialField('accessories', ${idx}, 'code', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px; text-align:center;"></td>
+                        <td style="padding:6px;"><input type="number" value="${m.qty || 1}" min="0" onchange="updateMaterialField('accessories', ${idx}, 'qty', this.value)" style="width:100%; padding:4px; border:1px solid #D1D5DB; border-radius:4px; text-align:center;"></td>
+                        <td style="padding:6px; text-align:center;"><button onclick="deleteMaterialRow('accessories', ${idx})" style="background:#EF4444; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">🗑</button></td>
+                    </tr>`;
+                });
+            }
+
+            const totalQty = materialData.accessories.reduce((sum, m) => sum + (parseFloat(m.qty) || 0), 0);
+            html += `</tbody>
+                <tfoot>
+                    <tr style="background:#FFEDD5; font-weight:600;">
+                        <td colspan="2" style="padding:8px 6px; text-align:right;">TỔNG CỘNG:</td>
+                        <td style="padding:8px 6px; text-align:center; color:#C2410C;">${totalQty}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>`;
+            return html;
+        }
+
+        // ========== MATERIAL DATA & CRUD FUNCTIONS ==========
+        let materialData = { aluminum: [], glass: [], accessories: [] };
+
+        // Add new row
+        function addMaterialRow(type) {
+            materialData[type].push({ name: '', code: '', qty: 1 });
+            refreshMaterialTable(type);
+            saveMaterialDataToStorage();
+        }
+
+        // Delete row
+        function deleteMaterialRow(type, idx) {
+            VWModal.confirm('Xóa dòng', 'Xóa dòng này?').then(confirmed => {
+                if (confirmed) {
+                    materialData[type].splice(idx, 1);
+                    refreshMaterialTable(type);
+                    saveMaterialDataToStorage();
+                }
+            });
+        }
+
+        // Update field value
+        function updateMaterialField(type, idx, field, value) {
+            if (materialData[type][idx]) {
+                materialData[type][idx][field] = field === 'qty' ? parseFloat(value) || 0 : value;
+                saveMaterialDataToStorage();
+                // Update total in footer
+                const totalQty = materialData[type].reduce((sum, m) => sum + (parseFloat(m.qty) || 0), 0);
+                const footerId = type === 'aluminum' ? 'aluminumList' : type === 'glass' ? 'glassList' : 'accessoriesList';
+                const footer = document.querySelector(`#${footerId} tfoot td:nth-child(2)`);
+                if (footer) footer.textContent = totalQty;
+            }
+        }
+
+        // Refresh specific table
+        function refreshMaterialTable(type) {
+            if (type === 'aluminum') {
+                document.getElementById('aluminumList').innerHTML = renderAluminumTable();
+            } else if (type === 'glass') {
+                document.getElementById('glassList').innerHTML = renderGlassTable();
+            } else if (type === 'accessories') {
+                document.getElementById('accessoriesList').innerHTML = renderAccessoriesTable();
+            }
+            updateMaterialSummary();
+        }
+
+        // Update summary
+        function updateMaterialSummary() {
+            const total = materialData.aluminum.length + materialData.glass.length + materialData.accessories.length;
+            const summary = document.getElementById('selectedMaterialsSummary');
+            if (summary) {
+                summary.innerHTML = `<span style="color:#1E40AF; font-weight:600;">📊 Tổng: ${total} vật tư</span>`;
+            }
+        }
+
+        // Save to localStorage
+        function saveMaterialDataToStorage() {
+            if (currentModalProduct) {
+                const key = `product_materials_${currentModalProduct.design_code || currentModalProduct.id}`;
+                localStorage.setItem(key, JSON.stringify(materialData));
+                console.log('Saved materials to:', key);
+            }
+        }
+
+        // Load from localStorage
+        function loadMaterialDataFromStorage() {
+            if (currentModalProduct) {
+                const key = `product_materials_${currentModalProduct.design_code || currentModalProduct.id}`;
+                const saved = localStorage.getItem(key);
+                console.log('Loading materials from:', key, 'found:', !!saved);
+                if (saved) {
+                    try {
+                        materialData = JSON.parse(saved);
+                    } catch (e) {
+                        materialData = { aluminum: [], glass: [], accessories: [] };
+                    }
+                } else {
+                    materialData = { aluminum: [], glass: [], accessories: [] };
+                }
+            }
+        }
+
+        // Toggle material selection
+        function toggleMaterial(key, type, idx) {
+            const checkbox = document.getElementById(`mat_${key}`);
+            const qtyInput = document.getElementById(`qty_${key}`);
+
+            if (checkbox.checked) {
+                const material = bomData[type][idx];
+                selectedMaterials[key] = {
+                    ...material,
+                    type: type,
+                    qty: parseFloat(qtyInput.value) || 1
+                };
+            } else {
+                delete selectedMaterials[key];
+            }
+            updateSelectedCount();
+        }
+
+        // Update quantity
+        function updateQuantity(key, value) {
+            if (selectedMaterials[key]) {
+                selectedMaterials[key].qty = parseFloat(value) || 0;
+            }
+        }
+
+        // Update selected count display
+        function updateSelectedCount() {
+            const count = Object.keys(selectedMaterials).length;
+            document.getElementById('selectedCount').textContent = count;
+        }
+
+        // Switch material tab
+        function switchMaterialTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.material-tab').forEach(btn => {
+                btn.classList.remove('active', 'border-b-2', 'border-blue-600', 'text-blue-600');
+                btn.classList.add('text-gray-500');
+            });
+            event.target.classList.add('active', 'border-b-2', 'border-blue-600', 'text-blue-600');
+            event.target.classList.remove('text-gray-500');
+
+            // Show/hide content
+            document.getElementById('tabAluminum').classList.add('hidden');
+            document.getElementById('tabGlass').classList.add('hidden');
+            document.getElementById('tabAccessories').classList.add('hidden');
+
+            if (tabName === 'aluminum') {
+                document.getElementById('tabAluminum').classList.remove('hidden');
+            } else if (tabName === 'glass') {
+                document.getElementById('tabGlass').classList.remove('hidden');
+            } else {
+                document.getElementById('tabAccessories').classList.remove('hidden');
+            }
+        }
+
+        // Show empty BOM state
+        function showEmptyBOM() {
+            const content = `<p class="text-center text-gray-400 py-4">Chưa có dữ liệu BOM. Vui lòng bóc tách từ module Thiết kế.</p>`;
+            document.getElementById('aluminumList').innerHTML = content;
+            document.getElementById('glassList').innerHTML = content;
+            document.getElementById('accessoriesList').innerHTML = content;
+        }
+
+        // Save product changes (images + materials)
+        async function saveProductChanges() {
+            if (!currentModalProduct || !currentModalProjectId) {
+                alert('Không có sản phẩm để lưu');
+                return;
+            }
+
+            try {
+                // Save images to localStorage
+                saveImagesToStorage();
+
+                // Save selected materials to localStorage
+                if (Object.keys(selectedMaterials).length > 0) {
+                    const materialsKey = `product_materials_${currentModalProduct.id}`;
+                    localStorage.setItem(materialsKey, JSON.stringify(Object.values(selectedMaterials)));
+                }
+
+                const saveData = {
+                    product_id: currentModalProduct.id,
+                    project_id: currentModalProjectId,
+                    images: uploadedImages,
+                    selected_materials: Object.values(selectedMaterials)
+                };
+
+                console.log('Saving product changes:', saveData);
+
+                // Show success message with details
+                const imageCount = uploadedImages.length;
+                const materialCount = Object.keys(selectedMaterials).length;
+
+                alert(`✅ Đã lưu thành công!\n\n` +
+                    `📷 Hình ảnh: ${imageCount} ảnh\n` +
+                    `📦 Vật tư đã chọn: ${materialCount}\n\n` +
+                    `Dữ liệu được lưu cục bộ. Khi mở lại sản phẩm này, hình ảnh và vật tư đã chọn sẽ được hiển thị.`);
+
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('❌ Lỗi khi lưu thay đổi: ' + error.message);
+            }
+        }
+
+        // Show fallback when BOM API is not available
+        function showMaterialsFallback() {
+            const materialList = document.getElementById('materialList');
+            materialList.innerHTML = `
+                <div style="text-align: center; padding: 30px; background: #F9FAFB; border-radius: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 48px; height: 48px; margin: 0 auto 12px; color: #9CA3AF;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <p style="color: #6B7280; margin: 0 0 16px;">Vật tư được quản lý tại bước <strong>Thiết kế & Bóc tách</strong></p>
+                    <a href="design-new.html" class="btn btn-blue" style="text-decoration: none; display: inline-block;">
+                        📐 Đi đến Thiết kế & Bóc tách
+                    </a>
+                </div>
+            `;
+        }
+
+        // Get type color for badge
+        function getTypeColor(type) {
+            const colors = {
+                'aluminum': '#3B82F6',
+                'glass': '#10B981',
+                'accessory': '#F59E0B',
+                'other': '#6B7280'
+            };
+            return colors[type] || colors['other'];
+        }
+
+        // Get type name in Vietnamese
+        function getTypeName(type) {
+            const names = {
+                'aluminum': 'Nhôm',
+                'glass': 'Kính',
+                'accessory': 'Phụ kiện',
+                'other': 'Khác'
+            };
+            return names[type] || 'Khác';
+        }
+
+        // Edit material
+        function editMaterial(materialId) {
+            alert('Chức năng sửa vật tư ID: ' + materialId + '\n\nVui lòng vào Thiết kế & Bóc tách để chỉnh sửa chi tiết.');
+        }
+
+        // Delete material
+        function deleteMaterial(materialId) {
+            VWModal.confirm('Xóa vật tư', 'Xóa vật tư này khỏi sản phẩm?').then(confirmed => {
+                if (confirmed) {
+                    VWModal.success('Đã xóa vật tư ID: ' + materialId);
+                    // Reload materials
+                    if (currentModalProduct && currentModalProjectId) {
+                        loadProductMaterials(currentModalProduct.id, currentModalProjectId);
+                    }
+                }
+            });
+        }
+
+        // Add material to product
+        function addMaterialToProduct() {
+            alert('Thêm vật tư mới\n\nVui lòng vào module Thiết kế & Bóc tách để thêm vật tư chi tiết cho sản phẩm này.');
+        }
+
+        // Quick complete from modal
+        async function modalQuickComplete() {
+            if (!currentModalProduct || !currentModalProjectId) return;
+
+            await quickComplete(currentModalProduct.id, currentModalProjectId);
+            closeProductModal();
+        }
+
+        // Move to installation (project level - accepts projectId as parameter)
+        async function moveProjectToInstallation(projectId) {
+            if (!projectId) return;
+
+            // ✅ Sử dụng await vì confirm() đã được override thành Promise
+            const confirmed = await confirm('🔧 Chuyển toàn bộ dự án sang giai đoạn Lắp đặt?\n\nTất cả sản phẩm trong dự án sẽ được chuyển sang trang Lắp đặt.');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${window.API_BASE || '/api'}/projects/${projectId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'installation' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    VWModal.success('Đã chuyển dự án sang giai đoạn Lắp đặt!');
+                    closeProductModal();
+                    loadProjects();
+                } else {
+                    VWModal.error(data.message || 'Không thể chuyển giai đoạn');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chuyển giai đoạn. Vui lòng thử lại.');
+            }
+        }
+
+        // Auto refresh every 30 seconds
+        setInterval(loadProjects, 30000);
+
+        // Initial load
+        loadUserInfo();
+        loadCompanyInfo();
+        loadProjects();
+    </script>
+</body>
+
+</html>

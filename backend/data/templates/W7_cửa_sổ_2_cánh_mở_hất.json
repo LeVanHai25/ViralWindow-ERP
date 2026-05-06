@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "template_code": "W7",
+    "template_name": "Cửa sổ 2 cánh mở hất",
+    "category": "window",
+    "sub_type": "tilt",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 1500,
+    "height_mm": 900,
+    "khoang_ho_mm": 5,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/W7.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "horizontal",
+    "children": [
+      {
+        "id": "left",
+        "type": "panel",
+        "panelType": "tilt",
+        "widthRatio": 1,
+        "openDirection": "top",
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "right",
+        "type": "panel",
+        "panelType": "tilt",
+        "widthRatio": 1,
+        "openDirection": "top",
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

@@ -1,0 +1,705 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách cửa - Door Catalog | ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .door-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .door-card {
+            transition: all 0.3s ease;
+        }
+
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+        }
+
+        .category-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+        }
+
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- HEADER -->
+    <div class="bg-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
+                    class="p-2 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg text-white hover:from-blue-700 hover:to-blue-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Danh sách cửa</h1>
+                    <p class="text-gray-500 text-sm">Quản lý tất cả mẫu cửa - Door Catalog</p>
+                </div>
+            </div>
+            <button onclick="openAddModal()"
+                class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 flex items-center gap-2 font-medium shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Thêm cửa mới
+            </button>
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex gap-4 items-center flex-wrap">
+                <div class="flex-1 min-w-[200px]">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm cửa..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        oninput="filterDoors()">
+                </div>
+                <select id="categoryFilter"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    onchange="filterDoors()">
+                    <option value="">Tất cả loại cửa</option>
+                    <option value="door_out">Cửa đi mở quay ngoài</option>
+                    <option value="door_in">Cửa đi mở quay trong</option>
+                    <option value="door_sliding">Cửa đi lùa</option>
+                    <option value="window_swing">Cửa sổ mở quay</option>
+                    <option value="window_sliding">Cửa sổ lùa</option>
+                    <option value="fixed">Vách kính cố định</option>
+                </select>
+                <select id="systemFilter"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    onchange="filterDoors()">
+                    <option value="">Tất cả hệ nhôm</option>
+                </select>
+                <div class="text-sm text-gray-500">
+                    <span id="doorCount">0</span> mẫu cửa
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT - DOOR GRID -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div id="doorGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Door cards will be loaded here -->
+        </div>
+        <div id="emptyState" class="hidden text-center py-16">
+            <svg class="w-24 h-24 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-4 text-xl font-medium text-gray-500">Chưa có mẫu cửa nào</h3>
+            <p class="text-gray-400 mt-2">Nhấn "Thêm cửa mới" để bắt đầu</p>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT DOOR MODAL -->
+    <div id="doorModal" class="fixed inset-0 bg-black/50 modal-backdrop z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div
+                class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-xl font-bold">Thêm cửa mới</h2>
+                <button onclick="closeModal()" class="p-1 hover:bg-white/20 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="doorForm" class="p-6 overflow-y-auto max-h-[70vh]">
+                <input type="hidden" id="doorId">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Mã cửa -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã cửa <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="doorCode" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="VD: D1_SLIDE_2C">
+                    </div>
+                    <!-- Tên cửa -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên cửa <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="doorName" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="VD: Cửa lùa 2 cánh">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <!-- Loại cửa -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại cửa <span
+                                class="text-red-500">*</span></label>
+                        <select id="doorFamily" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Chọn loại --</option>
+                            <option value="door_out">Cửa đi mở quay ngoài</option>
+                            <option value="door_in">Cửa đi mở quay trong</option>
+                            <option value="door_sliding">Cửa đi lùa</option>
+                            <option value="window_swing">Cửa sổ mở quay</option>
+                            <option value="window_sliding">Cửa sổ lùa</option>
+                            <option value="window_tilt">Cửa sổ mở hất</option>
+                            <option value="fixed">Vách kính cố định</option>
+                            <option value="wall_window">Vách ngăn kính</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                    <!-- Hệ nhôm mặc định -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hệ nhôm mặc định</label>
+                        <select id="doorAluminumSystem"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Chọn hệ nhôm --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                    <!-- Chiều rộng mặc định -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Rộng mặc định (mm)</label>
+                        <input type="number" id="doorWidth"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="1200" value="1200">
+                    </div>
+                    <!-- Chiều cao mặc định -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cao mặc định (mm)</label>
+                        <input type="number" id="doorHeight"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="2200" value="2200">
+                    </div>
+                    <!-- Loại kính -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Loại kính</label>
+                        <input type="text" id="doorGlassType"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="Kính 8mm">
+                    </div>
+                </div>
+
+                <!-- Ảnh preview -->
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ảnh preview</label>
+                    <div class="flex gap-4 items-start">
+                        <div id="imagePreview"
+                            class="w-32 h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                            <span class="text-gray-400 text-sm text-center px-2">Chưa có ảnh</span>
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" id="doorImage" accept="image/*" class="hidden"
+                                onchange="previewImage(event)">
+                            <button type="button" onclick="document.getElementById('doorImage').click()"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm">
+                                Chọn ảnh
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2">Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mô tả -->
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                    <textarea id="doorDescription" rows="2"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Mô tả chi tiết về mẫu cửa..."></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                    <button type="button" onclick="closeModal()"
+                        class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">
+                        Hủy
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium">
+                        Lưu cửa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div id="detailModal" class="fixed inset-0 bg-black/50 modal-backdrop z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+            <div
+                class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-4 flex justify-between items-center">
+                <h2 id="detailTitle" class="text-xl font-bold">Chi tiết cửa</h2>
+                <button onclick="closeDetailModal()" class="p-1 hover:bg-white/20 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="detailContent" class="p-6 overflow-y-auto max-h-[70vh]">
+                <!-- Detail content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let allDoors = [];
+        let allSystems = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDoors();
+            loadSystems();
+        });
+
+        // Load doors from API
+        async function loadDoors() {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates`);
+                const result = await response.json();
+
+                if (result.success) {
+                    allDoors = result.data;
+                    renderDoors(allDoors);
+                } else {
+                    console.error('Failed to load doors:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading doors:', error);
+            }
+        }
+
+        // Load aluminum systems
+        async function loadSystems() {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates/systems`);
+                const result = await response.json();
+
+                if (result.success) {
+                    allSystems = result.data;
+                    populateSystemSelect();
+                }
+            } catch (error) {
+                console.error('Error loading systems:', error);
+            }
+        }
+
+        // Populate system select
+        function populateSystemSelect() {
+            const filterSelect = document.getElementById('systemFilter');
+            const formSelect = document.getElementById('doorAluminumSystem');
+
+            const options = allSystems.map(s =>
+                `<option value="${s.code}">${s.name || s.code} ${s.brand ? '(' + s.brand + ')' : ''}</option>`
+            ).join('');
+
+            filterSelect.innerHTML = '<option value="">Tất cả hệ nhôm</option>' + options;
+            formSelect.innerHTML = '<option value="">-- Chọn hệ nhôm --</option>' + options;
+        }
+
+        // Render doors grid
+        function renderDoors(doors) {
+            const grid = document.getElementById('doorGrid');
+            const empty = document.getElementById('emptyState');
+            const count = document.getElementById('doorCount');
+
+            count.textContent = doors.length;
+
+            if (doors.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.innerHTML = doors.map(door => createDoorCard(door)).join('');
+        }
+
+        // Create door card HTML
+        function createDoorCard(door) {
+            const familyLabels = {
+                'door_out': 'Cửa đi ngoài',
+                'door_in': 'Cửa đi trong',
+                'door_sliding': 'Cửa lùa',
+                'window_swing': 'Cửa sổ quay',
+                'window_sliding': 'Cửa sổ lùa',
+                'window_tilt': 'Cửa sổ hất',
+                'fixed': 'Vách cố định',
+                'wall_window': 'Vách ngăn',
+                'other': 'Khác'
+            };
+
+            const familyColors = {
+                'door_out': 'bg-blue-100 text-blue-700',
+                'door_in': 'bg-cyan-100 text-cyan-700',
+                'door_sliding': 'bg-purple-100 text-purple-700',
+                'window_swing': 'bg-green-100 text-green-700',
+                'window_sliding': 'bg-teal-100 text-teal-700',
+                'window_tilt': 'bg-lime-100 text-lime-700',
+                'fixed': 'bg-gray-100 text-gray-700',
+                'wall_window': 'bg-orange-100 text-orange-700',
+                'other': 'bg-slate-100 text-slate-700'
+            };
+
+            const paramSchema = typeof door.param_schema === 'string'
+                ? JSON.parse(door.param_schema || '{}')
+                : door.param_schema || {};
+            const width = door.default_width_mm || paramSchema.defaultWidth || 1200;
+            const height = door.default_height_mm || paramSchema.defaultHeight || 2200;
+
+            return `
+                <div class="door-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="viewDoorDetail(${door.id})">
+                    <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+                        ${door.preview_image
+                    ? `<img src="${API_BASE.replace('/api', '')}${door.preview_image}" class="w-full h-full object-contain" alt="${door.name}">`
+                    : `<svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                               </svg>`
+                }
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="category-badge ${familyColors[door.family] || familyColors.other} rounded-full font-medium">
+                                ${familyLabels[door.family] || 'Khác'}
+                            </span>
+                            <span class="text-xs text-gray-400 font-mono">${door.code || 'N/A'}</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 line-clamp-2">${door.name}</h3>
+                        <div class="mt-2 text-sm text-gray-500">
+                            <span>${width} × ${height} mm</span>
+                        </div>
+                        <div class="mt-3 flex gap-2">
+                            <button onclick="event.stopPropagation(); editDoor(${door.id})" 
+                                    class="flex-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100">
+                                Sửa
+                            </button>
+                            <button onclick="event.stopPropagation(); previewBom(${door.id})"
+                                    class="flex-1 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-sm hover:bg-green-100">
+                                Xem BOM
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteDoor(${door.id})"
+                                    class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Filter doors
+        function filterDoors() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const system = document.getElementById('systemFilter').value;
+
+            let filtered = allDoors.filter(door => {
+                const matchSearch = !search ||
+                    (door.name && door.name.toLowerCase().includes(search)) ||
+                    (door.code && door.code.toLowerCase().includes(search));
+                const matchCategory = !category || door.family === category;
+                const matchSystem = !system || door.aluminum_system === system || door.aluminum_system_code === system;
+
+                return matchSearch && matchCategory && matchSystem;
+            });
+
+            renderDoors(filtered);
+        }
+
+        // Open add modal
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm cửa mới';
+            document.getElementById('doorForm').reset();
+            document.getElementById('doorId').value = '';
+            document.getElementById('imagePreview').innerHTML = '<span class="text-gray-400 text-sm text-center px-2">Chưa có ảnh</span>';
+            document.getElementById('doorModal').classList.remove('hidden');
+            document.getElementById('doorModal').classList.add('flex');
+        }
+
+        // Edit door
+        async function editDoor(id) {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates/${id}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const door = result.data;
+                    const paramSchema = door.param_schema || {};
+
+                    document.getElementById('modalTitle').textContent = 'Sửa cửa';
+                    document.getElementById('doorId').value = door.id;
+                    document.getElementById('doorCode').value = door.code || '';
+                    document.getElementById('doorName').value = door.name || '';
+                    document.getElementById('doorFamily').value = door.family || '';
+                    document.getElementById('doorAluminumSystem').value = door.aluminum_system_code || '';
+                    document.getElementById('doorWidth').value = door.default_width_mm || paramSchema.defaultWidth || 1200;
+                    document.getElementById('doorHeight').value = door.default_height_mm || paramSchema.defaultHeight || 2200;
+                    document.getElementById('doorGlassType').value = door.glass_type || '';
+                    document.getElementById('doorDescription').value = door.description || '';
+
+                    // Preview image
+                    if (door.preview_image) {
+                        document.getElementById('imagePreview').innerHTML =
+                            `<img src="${API_BASE.replace('/api', '')}${door.preview_image}" class="w-full h-full object-contain">`;
+                    }
+
+                    document.getElementById('doorModal').classList.remove('hidden');
+                    document.getElementById('doorModal').classList.add('flex');
+                }
+            } catch (error) {
+                console.error('Error loading door:', error);
+                alert('Lỗi khi tải thông tin cửa');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('doorModal').classList.add('hidden');
+            document.getElementById('doorModal').classList.remove('flex');
+        }
+
+        // Preview image
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imagePreview').innerHTML =
+                        `<img src="${e.target.result}" class="w-full h-full object-contain">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Form submit
+        document.getElementById('doorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('doorId').value;
+            const isEdit = !!id;
+
+            const data = {
+                code: document.getElementById('doorCode').value,
+                name: document.getElementById('doorName').value,
+                family: document.getElementById('doorFamily').value,
+                aluminum_system_id: null, // TODO: Map code to ID
+                default_width: parseInt(document.getElementById('doorWidth').value),
+                default_height: parseInt(document.getElementById('doorHeight').value),
+                glass_type: document.getElementById('doorGlassType').value,
+                description: document.getElementById('doorDescription').value
+            };
+
+            try {
+                const url = isEdit ? `${API_BASE}/door-templates/${id}` : `${API_BASE}/door-templates`;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Upload image if selected
+                    const imageFile = document.getElementById('doorImage').files[0];
+                    const doorId = isEdit ? id : result.data.id;
+
+                    if (imageFile) {
+                        const formData = new FormData();
+                        formData.append('image', imageFile);
+
+                        await fetch(`${API_BASE}/door-templates/${doorId}/image`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    }
+
+                    closeModal();
+                    loadDoors();
+                    alert(isEdit ? 'Cập nhật thành công!' : 'Thêm cửa thành công!');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving door:', error);
+                alert('Lỗi khi lưu cửa');
+            }
+        });
+
+        // Delete door
+        async function deleteDoor(id) {
+            if (!confirm('Bạn có chắc muốn xóa mẫu cửa này?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/door-templates/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    loadDoors();
+                    alert('Đã xóa cửa!');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting door:', error);
+                alert('Lỗi khi xóa cửa');
+            }
+        }
+
+        // View door detail
+        async function viewDoorDetail(id) {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates/${id}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const door = result.data;
+                    document.getElementById('detailTitle').textContent = door.name;
+
+                    // Load BOM preview
+                    const bomResponse = await fetch(`${API_BASE}/door-templates/${id}/bom-preview`);
+                    const bomResult = await bomResponse.json();
+
+                    document.getElementById('detailContent').innerHTML = renderDetailContent(door, bomResult.data);
+                    document.getElementById('detailModal').classList.remove('hidden');
+                    document.getElementById('detailModal').classList.add('flex');
+                }
+            } catch (error) {
+                console.error('Error loading detail:', error);
+            }
+        }
+
+        // Render detail content
+        function renderDetailContent(door, bomData) {
+            const paramSchema = door.param_schema || {};
+            const width = door.default_width_mm || paramSchema.defaultWidth || 1200;
+            const height = door.default_height_mm || paramSchema.defaultHeight || 2200;
+
+            const bom = (bomData && bomData.bom) ? bomData.bom : bomData;
+
+            let bomHtml = '';
+            if (bom && bom.profiles && bom.glass && bom.accessories) {
+                bomHtml = `
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">BOM dự kiến (${width}×${height}mm)</h4>
+                        
+                        
+                        <div class="bg-blue-50 rounded-lg p-4 mb-3">
+                            <h5 class="font-medium text-blue-800 mb-2">Thanh nhôm</h5>
+                            <table class="w-full text-sm">
+                                <thead class="text-blue-600">
+                                    <tr><th class="text-left py-1">Mã</th><th class="text-left">Tên</th><th class="text-right">SL</th><th class="text-right">Dài (mm)</th></tr>
+                                </thead>
+                                <tbody class="text-blue-900">
+                                    ${bom.profiles.map(p => `
+                                        <tr><td class="py-1">${p.code}</td><td>${p.name}</td><td class="text-right">${p.qty}</td><td class="text-right">${p.length_mm}</td></tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        
+                        <div class="bg-green-50 rounded-lg p-4 mb-3">
+                            <h5 class="font-medium text-green-800 mb-2">Kính</h5>
+                            <table class="w-full text-sm">
+                                <thead class="text-green-600">
+                                    <tr><th class="text-left py-1">Loại</th><th class="text-right">Kích thước</th><th class="text-right">Diện tích</th></tr>
+                                </thead>
+                                <tbody class="text-green-900">
+                                    ${bom.glass.map(g => `
+                                        <tr><td class="py-1">${g.name}</td><td class="text-right">${g.width_mm} × ${g.height_mm}</td><td class="text-right">${g.area_m2} m²</td></tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        
+                        <div class="bg-orange-50 rounded-lg p-4">
+                            <h5 class="font-medium text-orange-800 mb-2">Phụ kiện</h5>
+                            <table class="w-full text-sm">
+                                <thead class="text-orange-600">
+                                    <tr><th class="text-left py-1">Tên</th><th class="text-right">Số lượng</th></tr>
+                                </thead>
+                                <tbody class="text-orange-900">
+                                    ${bom.accessories.map(a => `
+                                        <tr><td class="py-1">${a.name}</td><td class="text-right">${a.qty} ${a.unit || 'bộ'}</td></tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="flex gap-6">
+                    <div class="w-48 h-48 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                        ${door.preview_image
+                    ? `<img src="${API_BASE.replace('/api', '')}${door.preview_image}" class="w-full h-full object-contain" alt="${door.name}">`
+                    : `<div class="w-full h-full flex items-center justify-center text-gray-400">No image</div>`
+                }
+                    </div>
+                    <div class="flex-1">
+                        <table class="w-full text-sm">
+                            <tr><td class="py-1.5 text-gray-500 w-32">Mã cửa:</td><td class="font-medium">${door.code}</td></tr>
+                            <tr><td class="py-1.5 text-gray-500">Loại:</td><td>${door.family}</td></tr>
+                            <tr><td class="py-1.5 text-gray-500">Kích thước:</td><td>${width} × ${height} mm</td></tr>
+                            <tr><td class="py-1.5 text-gray-500">Hệ nhôm:</td><td>${door.aluminum_system_name || door.aluminum_system || 'Chưa chọn'}</td></tr>
+                            <tr><td class="py-1.5 text-gray-500">Loại kính:</td><td>${door.glass_type || 'Chưa chọn'}</td></tr>
+                            ${door.description ? `<tr><td class="py-1.5 text-gray-500 align-top">Mô tả:</td><td>${door.description}</td></tr>` : ''}
+                        </table>
+                    </div>
+                </div>
+                ${bomHtml}
+            `;
+        }
+
+        // Preview BOM
+        async function previewBom(id) {
+            await viewDoorDetail(id);
+        }
+
+        // Close detail modal
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
+        }
+    </script>
+</body>
+
+</html>

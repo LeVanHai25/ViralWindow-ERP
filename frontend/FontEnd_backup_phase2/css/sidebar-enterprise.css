@@ -1,0 +1,310 @@
+/* Sidebar Enterprise CSS - Shared styles for all pages */
+
+/* Sidebar Layout */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    height: 100vh;
+    /* ✅ luôn bằng chiều cao màn hình */
+    overflow: hidden;
+    /* ✅ ẩn scroll của sidebar, scroll sẽ nằm ở nav */
+    z-index: 40;
+    /* ✅ Giảm z-index để modal (z-50) hiển thị phía trên */
+    display: flex;
+    /* ✅ chia layout theo cột */
+    flex-direction: column;
+}
+
+
+/* Main Content Layout */
+.main-content {
+    margin-left: 260px;
+    background: #f3f4f6;
+    min-height: 100vh;
+}
+
+/* Sidebar Logo */
+.sidebar-logo {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+    transition: background-color 0.2s ease;
+}
+
+.sidebar-logo:hover {
+    background-color: rgba(37, 99, 235, 0.5);
+}
+
+/* Navigation Menu */
+.sidebar-nav {
+    padding: 0.5rem 0;
+
+    flex: 1;
+    /* ✅ chiếm phần còn lại */
+    overflow-y: auto;
+    /* ✅ kéo trượt ở menu */
+    overscroll-behavior: contain;
+}
+
+/* đẹp hơn: thanh cuộn mảnh */
+.sidebar-nav::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.nav-item.active {
+    background: rgba(59, 130, 246, 0.3);
+    border-left: 3px solid #60a5fa;
+    color: white;
+}
+
+.nav-item.has-submenu {
+    cursor: pointer;
+}
+
+.nav-item.has-submenu.expanded {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.nav-item.has-submenu.expanded .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* Submenu */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.15s ease-out, padding 0.15s ease-out;
+    background: transparent;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.submenu.expanded {
+    max-height: 1200px;
+    transition: max-height 0.2s ease-in, padding 0.15s ease-in;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.submenu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1.5rem 0.625rem 3rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.submenu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.submenu-item.active {
+    background: rgba(59, 130, 246, 0.4);
+    border-left: 3px solid #60a5fa;
+    color: white;
+    font-weight: 500;
+}
+
+/* Ripple Effect */
+.nav-item,
+.submenu-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::after,
+.submenu-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.nav-item:active::after,
+.submenu-item:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Prefetch Indicator */
+.nav-item.prefetching::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: #60a5fa;
+    animation: prefetch 1s ease-out;
+}
+
+@keyframes prefetch {
+    to {
+        width: 100%;
+    }
+}
+
+/* ============================================ */
+/* MOBILE RESPONSIVE                            */
+/* ============================================ */
+
+/* Hamburger Menu Button */
+.mobile-hamburger {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 51;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: white;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(30, 58, 138, 0.4);
+    transition: all 0.3s ease;
+}
+
+.mobile-hamburger:active {
+    transform: scale(0.92);
+}
+
+.mobile-hamburger svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Sidebar Overlay (dark backdrop) */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 39;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .mobile-hamburger {
+        display: flex;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        pointer-events: none;
+    }
+
+    .sidebar-overlay.show {
+        pointer-events: auto;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 50;
+        box-shadow: none;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding-top: 60px;
+    }
+
+    /* Adjust page headers to account for hamburger button */
+    .main-content>div:first-child,
+    .main-content>.p-6:first-child,
+    .main-content>.p-4:first-child {
+        padding-top: 8px;
+    }
+}
+
+.ripple {
+    position: absolute;
+    /* ✅ quan trọng */
+    border-radius: 9999px;
+    pointer-events: none;
+    transform: scale(0);
+    opacity: .25;
+    background: rgba(255, 255, 255, .9);
+    animation: ripple 600ms ease-out;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công nợ - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="finance-date-range-picker.js"></script>
+    <style>
+        /* Modern gradient background - đồng bộ với phần mềm */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Modern header with gradient */
+        .header-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        /* KPI cards modern */
+        .kpi-card-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            padding: 1.5rem;
+        }
+
+        .kpi-card-modern:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Filter bar modern */
+        .filter-bar-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        /* Table modern */
+        .table-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-modern thead {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Tab buttons */
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Button modern */
+        .btn-modern {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Modal modern */
+        .modal-modern {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/finance-sidebar.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR (loaded from finance-sidebar.js) -->
+    <div id="sidebarContainer"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <div class="bg-white shadow p-5 flex justify-between items-center header-gradient backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Công nợ</h1>
+                    <p class="text-blue-100 text-sm">Quản lý công nợ khách hàng và nhà cung cấp</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="switchDebtType('receivable')"
+                    class="px-6 py-2.5 bg-white bg-opacity-20 text-white rounded-lg font-medium hover:bg-opacity-30 transition-all tab-btn active"
+                    id="btnReceivable">
+                    Phải thu
+                </button>
+                <button onclick="switchDebtType('payable')"
+                    class="px-6 py-2.5 bg-white bg-opacity-20 text-white rounded-lg font-medium hover:bg-opacity-30 transition-all tab-btn"
+                    id="btnPayable">
+                    Phải trả
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- STATISTICS -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6" id="debtStats">
+                <!-- Stats will be loaded here -->
+            </div>
+
+            <!-- FILTERS — Modern 2-Tier Layout -->
+            <div class="filter-bar-modern mb-6 fade-in" style="background:white; border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); border:1px solid #f1f5f9; overflow:visible;">
+                <!-- Tier 1: Search + Tìm kiếm -->
+                <div style="padding:20px 24px 16px 24px; display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+                    <div style="flex:2; min-width:260px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                            Tìm kiếm
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" id="searchInput" placeholder="Mã BG, dự án, KH/NCC..." oninput="handleSearch()"
+                                style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:13px; color:#1e293b; background:#f8fafc; outline:none; transition:all 0.2s ease; box-sizing:border-box;"
+                                onfocus="this.style.background='#fff';this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'"
+                                onblur="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                            <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#94a3b8" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Toggle Chỉ quá hạn in Tier 1 -->
+                    <div style="flex-shrink:0; padding-bottom:2px;">
+                        <label style="display:block;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">&nbsp;</label>
+                        <label style="display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;background:#f8fafc;transition:all 0.2s;"
+                            onmouseover="this.style.borderColor='#fca5a5';this.style.background='#fff1f2'"
+                            onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
+                            <input type="checkbox" id="filterOverdue" onchange="loadDebts()" style="width:14px;height:14px;accent-color:#f43f5e;cursor:pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f43f5e" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                            <span style="font-size:13px;font-weight:600;color:#e11d48;white-space:nowrap;">Chỉ quá hạn</span>
+                        </label>
+                    </div>
+                    <!-- Export button -->
+                    <div style="flex-shrink:0; padding-bottom:2px;">
+                        <label style="display:block;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">&nbsp;</label>
+                        <button onclick="exportDebtExcel()"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px rgba(16,185,129,0.3);"
+                            onmouseover="this.style.boxShadow='0 4px 16px rgba(16,185,129,0.4)';this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.boxShadow='0 2px 8px rgba(16,185,129,0.3)';this.style.transform='translateY(0)'">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            Xuất Excel
+                        </button>
+                    </div>
+                </div>
+                <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0 20%,#e2e8f0 80%,transparent);margin:0 24px;"></div>
+                <!-- Tier 2: Advanced Filters -->
+                <div style="padding:16px 24px 20px 24px; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+                    <!-- Khách hàng/NCC -->
+                    <div style="flex:1.5; min-width:200px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#3b82f6" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                            Khách hàng / NCC
+                        </label>
+                        <select id="filterCustomer" onchange="loadDebts()"
+                            style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all 0.2s ease;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                            <option value="">-- Chọn khách hàng --</option>
+                        </select>
+                    </div>
+                    <!-- Dự án -->
+                    <div style="flex:1.5; min-width:200px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
+                            Dự án
+                        </label>
+                        <select id="filterProject" onchange="loadDebts()"
+                            style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all 0.2s ease;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                            <option value="">-- Chọn dự án --</option>
+                        </select>
+                    </div>
+                    <!-- Trạng thái -->
+                    <div style="flex:1; min-width:160px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#10b981" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>
+                            Trạng thái
+                        </label>
+                        <select id="filterStatus" onchange="loadDebts()"
+                            style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all 0.2s ease;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                            <option value="">Tất cả</option>
+                            <option value="pending">Chờ thanh toán</option>
+                            <option value="partial">Thanh toán một phần</option>
+                            <option value="paid">Đã thanh toán</option>
+                            <option value="overdue">Quá hạn</option>
+                        </select>
+                    </div>
+                    <div style="flex-grow:1;"></div>
+                    <!-- Xóa bộ lọc -->
+                    <div style="flex-shrink:0;">
+                        <label style="display:block;font-size:11px;margin-bottom:6px;color:transparent;user-select:none;">&nbsp;</label>
+                        <button onclick="resetFilters()"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;color:#94a3b8;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;white-space:nowrap;"
+                            onmouseover="this.style.borderColor='#fca5a5';this.style.color='#ef4444';this.style.background='#fef2f2'"
+                            onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#94a3b8';this.style.background='#fff'">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-modern fade-in" style="animation-delay: 0.1s;">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr id="debtTableHeader">
+                                <!-- Header will be set based on debt type -->
+                            </tr>
+                        </thead>
+                        <tbody id="debtsTable" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <p>Đang tải dữ liệu...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINATION UI -->
+                <div id="paginationContainer"
+                    class="hidden px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-600">
+                        Hiển thị <span id="paginationFromTo">0-0</span> / <span id="paginationTotal">0</span> bản ghi
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="goToPage(1)" id="paginationFirst"
+                            class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            &#171;
+                        </button>
+                        <button onclick="goToPage(currentPage - 1)" id="paginationPrev"
+                            class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            &#8249; Trước
+                        </button>
+                        <span class="px-3 py-1.5 text-sm text-gray-700">
+                            Trang <span id="paginationCurrent">1</span> / <span id="paginationPages">1</span>
+                        </span>
+                        <button onclick="goToPage(currentPage + 1)" id="paginationNext"
+                            class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            Sau &#8250;
+                        </button>
+                        <button onclick="goToPage(totalPages)" id="paginationLast"
+                            class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            &#187;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Debt Detail -->
+        <div id="debtDetailModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden"
+            style="z-index: 9999;">
+            <div class="modal-modern w-full max-w-3xl max-h-[90vh] overflow-y-auto" style="z-index: 10000;">
+                <div
+                    class="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <h2 class="text-xl font-bold text-white" id="debtDetailTitle">Chi tiết công nợ</h2>
+                    <button onclick="closeDebtDetailModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="debtDetailContent">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Record Payment -->
+        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden"
+            style="z-index: 9999;">
+            <div class="modal-modern w-full max-w-md" style="z-index: 10000;">
+                <div
+                    class="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <h2 class="text-xl font-bold text-white">Ghi nhận thanh toán</h2>
+                    <button onclick="closePaymentModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="paymentForm" onsubmit="recordPayment(event)">
+                    <div class="p-6">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Số tiền thanh toán <span
+                                    class="text-red-500">*</span></label>
+                            <input type="number" id="paymentAmount"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                step="1000" min="0" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày thanh toán <span
+                                    class="text-red-500">*</span></label>
+                            <input type="date" id="paymentDate"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phương thức thanh toán</label>
+                            <select id="paymentMethod"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="cash">Tiền mặt</option>
+                                <option value="bank_transfer">Chuyển khoản</option>
+                                <option value="check">Séc</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú</label>
+                            <textarea id="paymentNotes"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                        <button type="button" onclick="closePaymentModal()"
+                            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all btn-modern">
+                            Hủy
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition-all btn-modern shadow-md">
+                            Ghi nhận
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="finance-common.js"></script>
+        <script>
+            let currentDebtType = 'receivable';
+            let currentDebtId = null;
+            let maxPayableAmount = 0; // Lưu số tiền tối đa có thể thanh toán (validation)
+
+            // Pagination state
+            let currentPage = 1;
+            let totalPages = 1;
+            let pageLimit = 20; // Số bản ghi mỗi trang
+
+            // =============================================
+            // HELPER FUNCTIONS (Refactored Components)
+            // =============================================
+
+            // Create debt row component (Mục 5 - Refactoring)
+            function createDebtRow(debt, type) {
+                const isOverdue = debt.due_date && new Date(debt.due_date) < new Date() && debt.status !== 'paid';
+                const status = isOverdue ? 'overdue' : (debt.status || 'pending');
+                const remaining = Math.round(parseFloat(debt.remaining_amount) || 0);
+
+                return `
+                    <tr class="hover:bg-gray-50 ${isOverdue ? 'bg-red-50' : ''}" onclick="viewDebtDetail(${debt.id})" style="cursor: pointer;">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${escapeHtml(type === 'receivable' ? (debt.customer_name || 'N/A') : (debt.supplier || 'N/A'))}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${escapeHtml(debt.project_name || 'N/A')}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">${formatCurrency(debt.total_amount)}</td>
+                        <td class="px-6 py-4 text-sm text-green-600">${formatCurrency(debt.paid_amount || 0)}</td>
+                        <td class="px-6 py-4 text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-orange-600'}">${formatCurrency(remaining)}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${debt.due_date ? formatDate(debt.due_date) : 'N/A'}</td>
+                        <td class="px-6 py-4">${getStatusBadge(status)}</td>
+                        <td class="px-6 py-4" onclick="event.stopPropagation()">
+                            <div class="flex items-center gap-2">
+                                <button onclick="viewDebtDetail(${debt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#6366f1;background:#eff0fe;border:1px solid #c7d2fe;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eff0fe'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Xem
+                                </button>
+                                <button onclick="exportSingleDebtExcel(${debt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#059669;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;cursor:pointer;transition:all 0.2s;" title="Xuất Excel" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#ecfdf5'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> Excel
+                                </button>
+                                ${status !== 'paid' ? `
+                                    <button onclick="openPaymentModal(${debt.id}, ${remaining})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#fff;background:#10b981;border:1px solid #059669;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Thanh toán
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // Switch debt type
+            function switchDebtType(type) {
+                currentDebtType = type;
+                currentPage = 1; // Reset pagination when switching type
+                const btnReceivable = document.getElementById('btnReceivable');
+                const btnPayable = document.getElementById('btnPayable');
+
+                if (type === 'receivable') {
+                    btnReceivable.classList.add('active');
+                    btnPayable.classList.remove('active');
+                } else {
+                    btnReceivable.classList.remove('active');
+                    btnPayable.classList.add('active');
+                }
+
+                loadDebts();
+                loadDebtStatistics();
+            }
+
+            // Search handle
+            let searchTimeout = null;
+            function handleSearch() {
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Visual feedback
+                const tbody = document.getElementById('debtsTable');
+                if (tbody) tbody.style.opacity = '0.5';
+
+                searchTimeout = setTimeout(() => {
+                    loadDebts();
+                }, 300);
+            }
+
+            // Load debts (cải tiến với loading state, retry và pagination)
+            async function loadDebts() {
+                const tbody = document.getElementById('debtsTable');
+
+                // Loading state (Mục 4)
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg class="animate-spin h-8 w-8 text-blue-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                <p>Đang tải dữ liệu...</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                try {
+                    const params = new URLSearchParams();
+                    params.append('type', currentDebtType);
+                    params.append('page', currentPage);
+                    params.append('limit', pageLimit);
+
+                    const customerId = document.getElementById('filterCustomer').value;
+                    const projectId = document.getElementById('filterProject').value;
+                    const status = document.getElementById('filterStatus').value;
+                    const overdueOnly = document.getElementById('filterOverdue').checked;
+                    const keyword = document.getElementById('searchInput').value;
+
+                    if (customerId) params.append('customerId', customerId);
+                    if (projectId) params.append('projectId', projectId);
+                    if (status) params.append('status', status);
+                    if (overdueOnly) params.append('overdue', 'true');
+                    if (keyword) params.append('keyword', keyword);
+
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/debts?${params}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    tbody.style.opacity = '1';
+
+                    // Update table header
+                    const header = document.getElementById('debtTableHeader');
+                    if (currentDebtType === 'receivable') {
+                        header.innerHTML = `
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Khách hàng</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Dự án</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Giá trị HĐ</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Đã thu</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Còn phải thu</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hạn thanh toán</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Thao tác</th>
+                    `;
+                    } else {
+                        header.innerHTML = `
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nhà cung cấp</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Dự án</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tổng mua</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Đã trả</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Còn nợ</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hạn thanh toán</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Thao tác</th>
+                    `;
+                    }
+
+                    if (!data.success || !data.data || data.data.length === 0) {
+                        tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p class="text-lg font-medium">Chưa có công nợ nào</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                        updatePaginationUI(null);
+                        return;
+                    }
+
+                    // Use refactored createDebtRow function (Mục 5)
+                    tbody.innerHTML = data.data.map(debt => createDebtRow(debt, currentDebtType)).join('');
+
+                    // Update pagination UI
+                    updatePaginationUI(data.pagination);
+
+                } catch (error) {
+                    console.error('Error loading debts:', error);
+                    // Error state with retry button (Mục 4)
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p class="text-lg font-medium text-red-600 mb-3">Lỗi khi tải dữ liệu</p>
+                                    <button onclick="loadDebts()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        Thử lại
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    updatePaginationUI(null);
+                }
+            }
+
+            // Update pagination UI
+            function updatePaginationUI(pagination) {
+                const container = document.getElementById('paginationContainer');
+
+                if (!pagination || pagination.totalCount === 0) {
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+
+                // Update state
+                currentPage = pagination.currentPage;
+                totalPages = pagination.totalPages;
+
+                // Update text
+                const from = (currentPage - 1) * pagination.limit + 1;
+                const to = Math.min(currentPage * pagination.limit, pagination.totalCount);
+                document.getElementById('paginationFromTo').textContent = `${from}-${to}`;
+                document.getElementById('paginationTotal').textContent = pagination.totalCount;
+                document.getElementById('paginationCurrent').textContent = currentPage;
+                document.getElementById('paginationPages').textContent = totalPages;
+
+                // Update buttons
+                document.getElementById('paginationFirst').disabled = !pagination.hasPrevPage;
+                document.getElementById('paginationPrev').disabled = !pagination.hasPrevPage;
+                document.getElementById('paginationNext').disabled = !pagination.hasNextPage;
+                document.getElementById('paginationLast').disabled = !pagination.hasNextPage;
+            }
+
+            // Go to page
+            function goToPage(page) {
+                if (page < 1 || page > totalPages) return;
+                currentPage = page;
+                loadDebts();
+            }
+
+            // Export debt to Excel
+            function exportDebtExcel() {
+                const token = sessionStorage.getItem('token');
+                const params = new URLSearchParams();
+                params.append('type', currentDebtType);
+
+                // Include filters
+                const customerId = document.getElementById('filterCustomer').value;
+                const projectId = document.getElementById('filterProject').value;
+                const status = document.getElementById('filterStatus').value;
+                const overdueOnly = document.getElementById('filterOverdue').checked;
+
+                if (customerId) params.append('customerId', customerId);
+                if (projectId) params.append('projectId', projectId);
+                if (status) params.append('status', status);
+                if (overdueOnly) params.append('overdue', 'true');
+
+                // Open download in new tab
+                const url = `${API_BASE}/financial/debt/export-excel?${params}`;
+                window.open(url, '_blank');
+            }
+
+            // Export single debt voucher to Excel
+            function exportSingleDebtExcel(id) {
+                const url = `${API_BASE}/financial/debt/${id}/export-excel`;
+                window.open(url, '_blank');
+            }
+
+            // Load debt statistics
+            async function loadDebtStatistics() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/debts/statistics`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const stats = data.data;
+                        const statsEl = document.getElementById('debtStats');
+
+                        if (currentDebtType === 'receivable') {
+                            statsEl.innerHTML = `
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #6366f1;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Tổng phải thu</p>
+                                        <p style="font-size:26px;font-weight:900;color:#4f46e5;margin:0;">${formatCurrency(stats.receivable?.total_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#eff0fe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#6366f1" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #10b981;animation-delay:0.1s;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Đã thu</p>
+                                        <p style="font-size:26px;font-weight:900;color:#059669;margin:0;">${formatCurrency(stats.receivable?.paid_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#ecfdf5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#10b981" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #f59e0b;animation-delay:0.2s;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Còn phải thu</p>
+                                        <p style="font-size:26px;font-weight:900;color:#d97706;margin:0;">${formatCurrency(stats.receivable?.remaining_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#fffbeb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#f59e0b" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #f43f5e;animation-delay:0.3s;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Quá hạn</p>
+                                        <p style="font-size:26px;font-weight:900;color:#e11d48;margin:0;">${formatCurrency(stats.overdue?.total_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#fff1f2;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#f43f5e" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        } else {
+                            statsEl.innerHTML = `
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #6366f1;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Tổng phải trả</p>
+                                        <p style="font-size:26px;font-weight:900;color:#4f46e5;margin:0;">${formatCurrency(stats.payable?.total_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#eff0fe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#6366f1" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #10b981;animation-delay:0.1s;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Đã trả</p>
+                                        <p style="font-size:26px;font-weight:900;color:#059669;margin:0;">${formatCurrency(stats.payable?.paid_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#ecfdf5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#10b981" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #f59e0b;animation-delay:0.2s;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Còn phải trả</p>
+                                        <p style="font-size:26px;font-weight:900;color:#d97706;margin:0;">${formatCurrency(stats.payable?.remaining_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#fffbeb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#f59e0b" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card-modern fade-in" style="border-left:4px solid #f43f5e;animation-delay:0.3s;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div>
+                                        <p style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Quá hạn</p>
+                                        <p style="font-size:26px;font-weight:900;color:#e11d48;margin:0;">${formatCurrency(stats.overdue?.total_amount || 0)}</p>
+                                    </div>
+                                    <div style="width:42px;height:42px;background:#fff1f2;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#f43f5e" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading debt statistics:', error);
+                }
+            }
+
+            // View debt detail
+            async function viewDebtDetail(id) {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/debts/${id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const debt = data.data;
+                        const remaining = Math.round(parseFloat(debt.remaining_amount) || 0);
+                        const content = document.getElementById('debtDetailContent');
+
+                        content.innerHTML = `
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">${currentDebtType === 'receivable' ? 'Khách hàng' : 'Nhà cung cấp'}</label>
+                                <p class="text-lg font-semibold text-gray-900">${escapeHtml(currentDebtType === 'receivable' ? (debt.customer_name || 'N/A') : (debt.supplier || 'N/A'))}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Dự án</label>
+                                <p class="text-lg font-semibold text-gray-900">${escapeHtml(debt.project_name || 'N/A')}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Tổng tiền</label>
+                                <p class="text-lg font-semibold text-gray-900">${formatCurrency(debt.total_amount)}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Đã ${currentDebtType === 'receivable' ? 'thu' : 'trả'}</label>
+                                <p class="text-lg font-semibold text-green-600">${formatCurrency(debt.paid_amount || 0)}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Còn ${currentDebtType === 'receivable' ? 'phải thu' : 'nợ'}</label>
+                                <p class="text-lg font-semibold text-orange-600">${formatCurrency(remaining)}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Hạn thanh toán</label>
+                                <p class="text-lg font-semibold text-gray-900">${debt.due_date ? formatDate(debt.due_date) : 'N/A'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Timeline thanh toán</h3>
+                                ${debt.status !== 'paid' ? `
+                                    <button onclick="closeDebtDetailModal(); openPaymentModal(${id}, ${remaining})" 
+                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                        + Ghi nhận thanh toán
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <div id="paymentTimeline" class="space-y-3">
+                                <div class="flex items-center justify-center py-4">
+                                    <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    <span class="ml-2 text-gray-500">Đang tải lịch sử...</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                        document.getElementById('debtDetailModal').classList.remove('hidden');
+
+                        // Load payment timeline (Mục 2 - Timeline API)
+                        await loadPaymentTimeline(id);
+                    }
+                } catch (error) {
+                    console.error('Error loading debt detail:', error);
+                    showAlert('Lỗi khi tải chi tiết công nợ');
+                }
+            }
+
+            // Load payment timeline (Mục 2)
+            async function loadPaymentTimeline(debtId) {
+                const timeline = document.getElementById('paymentTimeline');
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/debts/${debtId}/payments`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.success && data.data && data.data.length > 0) {
+                        timeline.innerHTML = data.data.map((payment, index) => `
+                            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border-l-4 border-green-500">
+                                <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-semibold text-green-600">${formatCurrency(payment.amount)}</span>
+                                        <span class="text-sm text-gray-500">${formatDate(payment.transaction_date)}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mt-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                                            ${payment.payment_method_display || 'N/A'}
+                                        </span>
+                                        ${payment.transaction_code ? `<span class="ml-2 text-gray-400">#${payment.transaction_code}</span>` : ''}
+                                    </div>
+                                    ${payment.description ? `<p class="text-sm text-gray-500 mt-1">${escapeHtml(payment.description)}</p>` : ''}
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        timeline.innerHTML = `
+                            <div class="flex items-center justify-center py-8 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Chưa có lịch sử thanh toán</span>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading payment timeline:', error);
+                    timeline.innerHTML = `
+                        <div class="text-center py-4 text-red-500">
+                            <p>Lỗi khi tải lịch sử thanh toán</p>
+                            <button onclick="loadPaymentTimeline(${debtId})" class="text-blue-600 hover:underline mt-2">Thử lại</button>
+                        </div>
+                    `;
+                }
+            }
+
+            // Close debt detail modal
+            function closeDebtDetailModal() {
+                document.getElementById('debtDetailModal').classList.add('hidden');
+            }
+
+            // Open payment modal (cải tiến với maxPayableAmount - Mục 1)
+            function openPaymentModal(debtId, remainingAmount = 0) {
+                currentDebtId = debtId;
+                maxPayableAmount = Math.round(remainingAmount); // Lưu giới hạn thanh toán
+
+                document.getElementById('paymentModal').classList.remove('hidden');
+                document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('paymentAmount').value = maxPayableAmount; // Điền sẵn số nợ
+                document.getElementById('paymentAmount').max = maxPayableAmount; // Set max attribute
+
+                // Thêm thông báo giới hạn
+                const amountLabel = document.querySelector('label[for="paymentAmount"]') ||
+                    document.querySelector('#paymentAmount').previousElementSibling;
+                if (amountLabel && !document.getElementById('maxAmountHint')) {
+                    const hint = document.createElement('span');
+                    hint.id = 'maxAmountHint';
+                    hint.className = 'text-xs text-gray-500 ml-2';
+                    hint.textContent = `(Tối đa: ${formatCurrency(maxPayableAmount)})`;
+                    amountLabel.appendChild(hint);
+                } else if (document.getElementById('maxAmountHint')) {
+                    document.getElementById('maxAmountHint').textContent = `(Tối đa: ${formatCurrency(maxPayableAmount)})`;
+                }
+            }
+
+            // Close payment modal
+            function closePaymentModal() {
+                document.getElementById('paymentModal').classList.add('hidden');
+                resetForm(document.getElementById('paymentForm'));
+                currentDebtId = null;
+                maxPayableAmount = 0;
+                // Xóa hint
+                const hint = document.getElementById('maxAmountHint');
+                if (hint) hint.remove();
+            }
+
+            // Record payment (với validation - Mục 1)
+            async function recordPayment(event) {
+                event.preventDefault();
+
+                const paymentAmount = Math.round(parseFloat(document.getElementById('paymentAmount').value));
+
+                // =============================================
+                // FRONTEND VALIDATION: Kiểm tra không vượt mức (Mục 1)
+                // =============================================
+                if (paymentAmount <= 0) {
+                    showAlert('Số tiền thanh toán phải lớn hơn 0');
+                    return;
+                }
+
+                if (maxPayableAmount > 0 && paymentAmount > maxPayableAmount) {
+                    showAlert(`Số tiền thanh toán (${formatCurrency(paymentAmount)}) không được vượt quá số còn nợ (${formatCurrency(maxPayableAmount)})`);
+                    document.getElementById('paymentAmount').focus();
+                    return;
+                }
+
+                const data = {
+                    payment_amount: paymentAmount,
+                    payment_date: document.getElementById('paymentDate').value,
+                    payment_method: document.getElementById('paymentMethod').value,
+                    notes: document.getElementById('paymentNotes').value || null
+                };
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/debts/${currentDebtId}/payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await res.json();
+                    if (result.success) {
+                        showAlert('Ghi nhận thanh toán thành công!');
+                        closePaymentModal();
+                        loadDebts();
+                        loadDebtStatistics();
+                    } else {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể ghi nhận thanh toán'));
+                    }
+                } catch (error) {
+                    console.error('Error recording payment:', error);
+                    showAlert('Lỗi kết nối server');
+                }
+            }
+
+            // Reset filters
+            function resetFilters() {
+                document.getElementById('filterCustomer').value = '';
+                document.getElementById('filterProject').value = '';
+                document.getElementById('filterStatus').value = '';
+                document.getElementById('filterOverdue').checked = false;
+                document.getElementById('searchInput').value = '';
+                currentPage = 1; // Reset pagination
+                loadDebts();
+            }
+
+            // Initialize
+            document.addEventListener('DOMContentLoaded', function() {
+            initFinanceSidebar('finance-debt');
+                checkAuth();
+                switchDebtType('receivable');
+                loadCustomers(document.getElementById('filterCustomer'));
+                loadProjects(document.getElementById('filterProject'));
+            });
+        </script>
+
+
+    </div><!-- End p-6 -->
+    </div><!-- End main-content -->
+
+    <!-- Sidebar Enterprise Script -->
+    <script src="js/sidebar-enterprise.js"></script>
+    <script>
+        // Initialize sidebar with user data
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof EnterpriseSidebar !== 'undefined') {
+                const sidebar = new EnterpriseSidebar();
+            }
+        });
+    </script>
+</body>
+
+</html>

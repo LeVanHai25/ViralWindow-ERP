@@ -1,0 +1,471 @@
+[UI_REPLACE] admin-management.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] admin-management.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] agencies.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[LOG_REPLACE] auto_refactor.js | console.log("📊 Stats" -> console.log("[STATS] Stats"
+[JS_STR_REPLACE] auto_refactor.js | Removed 📦 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 📊 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 📈 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 👋 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🔍 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🙂 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed ❌ from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed ✅ from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed ℹ️ from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed ℹ from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 👤 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 👥 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 💬 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 💰 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 💵 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🤝 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🔌 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🔼 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🔴 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🟢 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🟠 from generic string
+[JS_STR_REPLACE] auto_refactor.js | Removed 🔵 from generic string
+[UI_REPLACE] completed-projects.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] customer-detail.html | Replaced 💬 with <i data-lucide="message-circle"></i>
+[UI_REPLACE] dashboard-v2.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] dashboard-v2.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] dashboard-v2.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] dashboard-v2.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] debug-roles.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] debug-roles.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] debug-roles.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] debug-roles.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] debug-roles.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[LOG_REPLACE] design-new-v2.html | console.log('📦 Loading data for project:' -> console.log('[INVENTORY] Loading data for project:'
+[LOG_REPLACE] design-new-v2.html | console.log('🔍 Fetching:' -> console.log('[SEARCH] Fetching:'
+[LOG_REPLACE] design-new-v2.html | console.log('📊 Response status:' -> console.log('[STATS] Response status:'
+[LOG_REPLACE] design-new-v2.html | console.log('📦 Raw data:' -> console.log('[INVENTORY] Raw data:'
+[LOG_REPLACE] design-new-v2.html | console.log('✅ Loaded products:' -> console.log('[SUCCESS] Loaded products:'
+[LOG_REPLACE] design-new-v2.html | console.warn('⚠️ API returned:' -> console.warn('[WARNING] API returned:'
+[LOG_REPLACE] design-new-v2.html | console.error('❌ Load project data error:' -> console.error('[ERROR] Load project data error:'
+[UI_REPLACE] design-new-v2.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] design-new-v2.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] design-new-v2.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] design-new-v2.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] design-new-v2.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] design-new-v2.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[LOG_REPLACE] design-new.html | console.log('✅ Project card updated:' -> console.log('[SUCCESS] Project card updated:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ updateProjectInfo: No project selected' -> console.warn('[WARNING] updateProjectInfo: No project selected'
+[LOG_REPLACE] design-new.html | console.log(`✅ Project info updated for step ${stepNumber}:` -> console.log(`[SUCCESS] Project info updated for step ${stepNumber}:`
+[LOG_REPLACE] design-new.html | console.warn('⚠️ notification-manager.js not found, skipping...' -> console.warn('[WARNING] notification-manager.js not found, skipping...'
+[LOG_REPLACE] design-new.html | console.log('✅ Product data refreshed from server' -> console.log('[SUCCESS] Product data refreshed from server'
+[LOG_REPLACE] design-new.html | console.error('❌ Error refreshing product data:' -> console.error('[ERROR] Error refreshing product data:'
+[LOG_REPLACE] design-new.html | console.log('⚠️ Projects not available yet, will retry...' -> console.log('[WARNING] Projects not available yet, will retry...'
+[LOG_REPLACE] design-new.html | console.log('📦 API Response:' -> console.log('[INVENTORY] API Response:'
+[LOG_REPLACE] design-new.html | console.log(`📊 Total projects received: ${result.data.length}` -> console.log(`[STATS] Total projects received: ${result.data.length}`
+[LOG_REPLACE] design-new.html | console.log(`✅ Filtered projects: ${designProjects.length} projects` -> console.log(`[SUCCESS] Filtered projects: ${designProjects.length} projects`
+[LOG_REPLACE] design-new.html | console.warn('⚠️ API response không có data hoặc result.success = false' -> console.warn('[WARNING] API response không có data hoặc result.success = false'
+[LOG_REPLACE] design-new.html | console.error('❌ Error loading projects:' -> console.error('[ERROR] Error loading projects:'
+[LOG_REPLACE] design-new.html | console.log('📊 Stats calculated:' -> console.log('[STATS] Stats calculated:'
+[LOG_REPLACE] design-new.html | console.error('❌ Error updating project stats:' -> console.error('[ERROR] Error updating project stats:'
+[LOG_REPLACE] design-new.html | console.log(`🔍 After filtering: ${filtered.length} projects` -> console.log(`[SEARCH] After filtering: ${filtered.length} projects`
+[LOG_REPLACE] design-new.html | console.error('❌ Error in renderProjectsList:' -> console.error('[ERROR] Error in renderProjectsList:'
+[LOG_REPLACE] design-new.html | console.error('❌ projectsListView container not found!' -> console.error('[ERROR] projectsListView container not found!'
+[LOG_REPLACE] design-new.html | console.log(`✅ List view rendered with ${projects.length} projects` -> console.log(`[SUCCESS] List view rendered with ${projects.length} projects`
+[LOG_REPLACE] design-new.html | console.error('❌ projectsGridView container not found!' -> console.error('[ERROR] projectsGridView container not found!'
+[LOG_REPLACE] design-new.html | console.log(`✅ Grid view rendered with ${projects.length} projects` -> console.log(`[SUCCESS] Grid view rendered with ${projects.length} projects`
+[LOG_REPLACE] design-new.html | console.log(`✅ Loaded ${result.files.length} files from server` -> console.log(`[SUCCESS] Loaded ${result.files.length} files from server`
+[LOG_REPLACE] design-new.html | console.log('ℹ️ No files found on server' -> console.log('[INFO] No files found on server'
+[LOG_REPLACE] design-new.html | console.warn(`⚠️ ${file.name} response không thành công:` -> console.warn(`[WARNING] ${file.name} response không thành công:`
+[LOG_REPLACE] design-new.html | console.error(`❌ Upload ${file.name} failed với status ${uploadResponse.status}:` -> console.error(`[ERROR] Upload ${file.name} failed với status ${uploadResponse.status}:`
+[LOG_REPLACE] design-new.html | console.error('❌ Upload to server failed:' -> console.error('[ERROR] Upload to server failed:'
+[LOG_REPLACE] design-new.html | console.log(`📊 Upload summary: ${successCount} success, ${errorCount} errors out of ${files.length} files` -> console.log(`[STATS] Upload summary: ${successCount} success, ${errorCount} errors out of ${files.length} files`
+[LOG_REPLACE] design-new.html | console.error('❌ Could not save files to sessionStorage:' -> console.error('[ERROR] Could not save files to sessionStorage:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ loadDesignFilesFromServer: No project selected' -> console.warn('[WARNING] loadDesignFilesFromServer: No project selected'
+[LOG_REPLACE] design-new.html | console.log(`✅ Loaded ${uploadedDesignFiles.length} design files from server` -> console.log(`[SUCCESS] Loaded ${uploadedDesignFiles.length} design files from server`
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Error loading design files from server:' -> console.warn('[WARNING] Error loading design files from server:'
+[LOG_REPLACE] design-new.html | console.log(`✅ Loaded ${uploadedDesignFiles.length} design files from sessionStorage for project ${projectId}` -> console.log(`[SUCCESS] Loaded ${uploadedDesignFiles.length} design files from sessionStorage for project ${projectId}`
+[LOG_REPLACE] design-new.html | console.error('❌ Error parsing saved files:' -> console.error('[ERROR] Error parsing saved files:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ designFilesList container not found' -> console.warn('[WARNING] designFilesList container not found'
+[LOG_REPLACE] design-new.html | console.error('❌ File not found in array:' -> console.error('[ERROR] File not found in array:'
+[LOG_REPLACE] design-new.html | console.log('✅ Deleted file from server:' -> console.log('[SUCCESS] Deleted file from server:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Could not delete file from server:' -> console.warn('[WARNING] Could not delete file from server:'
+[LOG_REPLACE] design-new.html | console.log('✅ Remaining files:' -> console.log('[SUCCESS] Remaining files:'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded' -> console.log('[SUCCESS] Loaded'
+[LOG_REPLACE] design-new.html | console.log(`⚠️ Keeping local data for item ${key} (local updated: ${localItem.updated_at})` -> console.log(`[WARNING] Keeping local data for item ${key} (local updated: ${localItem.updated_at})`
+[LOG_REPLACE] design-new.html | console.log('✅ Có sản phẩm, tự động chuyển sang step 2' -> console.log('[SUCCESS] Có sản phẩm, tự động chuyển sang step 2'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ No data returned from server' -> console.warn('[WARNING] No data returned from server'
+[LOG_REPLACE] design-new.html | console.error('❌ Error loading quotation items:' -> console.error('[ERROR] Error loading quotation items:'
+[LOG_REPLACE] design-new.html | console.log('✅ Created project_item:' -> console.log('[SUCCESS] Created project_item:'
+[LOG_REPLACE] design-new.html | console.log('✅ Using API V2 (ACT Style):' -> console.log('[SUCCESS] Using API V2 (ACT Style):'
+[LOG_REPLACE] design-new.html | console.log('📦 loadAccessories called (placeholder)' -> console.log('[INVENTORY] loadAccessories called (placeholder)'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Step 5 has been removed. Maximum step is 4.' -> console.warn('[WARNING] Step 5 has been removed. Maximum step is 4.'
+[LOG_REPLACE] design-new.html | console.warn(`⚠️ Step indicator step${i} not found` -> console.warn(`[WARNING] Step indicator step${i} not found`
+[LOG_REPLACE] design-new.html | console.log(`✅ Step ${i} set to ACTIVE` -> console.log(`[SUCCESS] Step ${i} set to ACTIVE`
+[LOG_REPLACE] design-new.html | console.log(`✅ Step ${i} set to COMPLETED` -> console.log(`[SUCCESS] Step ${i} set to COMPLETED`
+[LOG_REPLACE] design-new.html | console.log(`✅ Step ${i} set to AVAILABLE` -> console.log(`[SUCCESS] Step ${i} set to AVAILABLE`
+[LOG_REPLACE] design-new.html | console.log(`✅ Step indicators updated. Current step: ${currentStep}` -> console.log(`[SUCCESS] Step indicators updated. Current step: ${currentStep}`
+[LOG_REPLACE] design-new.html | console.log('📦 [goToStep] Force saving BOM data when leaving Step 3' -> console.log('[INVENTORY] [goToStep] Force saving BOM data when leaving Step 3'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Step 5 has been removed. Maximum step is 4.' -> console.warn('[WARNING] Step 5 has been removed. Maximum step is 4.'
+[LOG_REPLACE] design-new.html | console.log(`✅ Step ${stepNumber} content shown` -> console.log(`[SUCCESS] Step ${stepNumber} content shown`
+[LOG_REPLACE] design-new.html | console.error(`❌ Step ${stepNumber} content element not found` -> console.error(`[ERROR] Step ${stepNumber} content element not found`
+[LOG_REPLACE] design-new.html | console.log('✅ Product data loaded successfully' -> console.log('[SUCCESS] Product data loaded successfully'
+[LOG_REPLACE] design-new.html | console.error('❌ Error loading product data:' -> console.error('[ERROR] Error loading product data:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Step 2 entered but currentProject is null' -> console.warn('[WARNING] Step 2 entered but currentProject is null'
+[LOG_REPLACE] design-new.html | console.log('ℹ️ BOM data loaded, checking inventory...' -> console.log('[INFO] BOM data loaded, checking inventory...'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ No BOM data to check inventory' -> console.warn('[WARNING] No BOM data to check inventory'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded inventory data:' -> console.log('[SUCCESS] Loaded inventory data:'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded aluminum data:' -> console.log('[SUCCESS] Loaded aluminum data:'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded glass data from unified inventory:' -> console.log('[SUCCESS] Loaded glass data from unified inventory:'
+[LOG_REPLACE] design-new.html | console.log('📦 inventoryMap keys:' -> console.log('[INVENTORY] inventoryMap keys:'
+[LOG_REPLACE] design-new.html | console.log('✅ Đã lưu dữ liệu Bóc tách:' -> console.log('[SUCCESS] Đã lưu dữ liệu Bóc tách:'
+[LOG_REPLACE] design-new.html | console.error('❌ Lỗi lưu BOM data:' -> console.error('[ERROR] Lỗi lưu BOM data:'
+[LOG_REPLACE] design-new.html | console.error('❌ Lỗi khi lưu dữ liệu BOM:' -> console.error('[ERROR] Lỗi khi lưu dữ liệu BOM:'
+[LOG_REPLACE] design-new.html | console.error('❌ Lỗi lưu BOM data: API endpoint không tồn tại: POST /api/project-materials/' -> console.error('[ERROR] Lỗi lưu BOM data: API endpoint không tồn tại: POST /api/project-materials/'
+[LOG_REPLACE] design-new.html | console.log('ℹ️ Chưa có dữ liệu BOM đã lưu cho project này' -> console.log('[INFO] Chưa có dữ liệu BOM đã lưu cho project này'
+[LOG_REPLACE] design-new.html | console.log(`✅ Loaded ${bocTachData.phukien.length} phụ kiện items` -> console.log(`[SUCCESS] Loaded ${bocTachData.phukien.length} phụ kiện items`
+[LOG_REPLACE] design-new.html | console.log('⚠️ Dữ liệu BOM được tải từ fallback, tự động lưu vào database để đồng bộ...' -> console.log('[WARNING] Dữ liệu BOM được tải từ fallback, tự động lưu vào database để đồng bộ...'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Không thể load BOM data từ server:' -> console.warn('[WARNING] Không thể load BOM data từ server:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ No BOM data to load' -> console.warn('[WARNING] No BOM data to load'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ Could not load default prices from inventory:' -> console.warn('[WARNING] Could not load default prices from inventory:'
+[LOG_REPLACE] design-new.html | console.log('✅ Đã tạo production order:' -> console.log('[SUCCESS] Đã tạo production order:'
+[LOG_REPLACE] design-new.html | console.warn('⚠️ No BOM data to check (nhom, kinh, vattu, phukien are all empty)' -> console.warn('[WARNING] No BOM data to check (nhom, kinh, vattu, phukien are all empty)'
+[LOG_REPLACE] design-new.html | console.log(`📦 Loaded: ${accessoriesData.length} accessories, ${aluminumData.length} aluminum, ${glassData.length} glass, ${vatTuPhuData.length} vật tư phụ, ${inventoryRawData.length} inventory items` -> console.log(`[INVENTORY] Loaded: ${accessoriesData.length} accessories, ${aluminumData.length} aluminum, ${glassData.length} glass, ${vatTuPhuData.length} vật tư phụ, ${inventoryRawData.length} inventory items`
+[LOG_REPLACE] design-new.html | console.log('⚠️ Glass API returned 0 items, trying to load from inventory table...' -> console.log('[WARNING] Glass API returned 0 items, trying to load from inventory table...'
+[LOG_REPLACE] design-new.html | console.log(`✅ Total normalized inventory data: ${inventoryData.length} items` -> console.log(`[SUCCESS] Total normalized inventory data: ${inventoryData.length} items`
+[LOG_REPLACE] design-new.html | console.error('❌ Error loading inventory:' -> console.error('[ERROR] Error loading inventory:'
+[LOG_REPLACE] design-new.html | console.log(`📊 Kính result: required=${requiredPanels} tấm, available=${available} tấm, shortage=${shortage} tấm, status=${status}, found=${found}` -> console.log(`[STATS] Kính result: required=${requiredPanels} tấm, available=${available} tấm, shortage=${shortage} tấm, status=${status}, found=${found}`
+[LOG_REPLACE] design-new.html | console.log(`📊 Result: required=${required}, available=${available}, shortage=${shortage}, status=${status}, found=${found}` -> console.log(`[STATS] Result: required=${required}, available=${available}, shortage=${shortage}, status=${status}, found=${found}`
+[LOG_REPLACE] design-new.html | console.log(`📊 Phụ kiện result: required=${required}, available=${available}, shortage=${shortage}, status=${status}` -> console.log(`[STATS] Phụ kiện result: required=${required}, available=${available}, shortage=${shortage}, status=${status}`
+[LOG_REPLACE] design-new.html | console.warn('⚠️ No inventory data available' -> console.warn('[WARNING] No inventory data available'
+[LOG_REPLACE] design-new.html | console.log(`✅ Found by code: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, item_type: ${item.item_type}` -> console.log(`[SUCCESS] Found by code: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, item_type: ${item.item_type}`
+[LOG_REPLACE] design-new.html | console.log(`✅ Found by exact name match: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, item_type: ${item.item_type}` -> console.log(`[SUCCESS] Found by exact name match: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, item_type: ${item.item_type}`
+[LOG_REPLACE] design-new.html | console.log(`✅ Found vật tư phụ by flexible match: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, category: ${item.category}` -> console.log(`[SUCCESS] Found vật tư phụ by flexible match: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, category: ${item.category}`
+[LOG_REPLACE] design-new.html | console.log(`✅ Found phụ kiện by flexible match: ${item.item_code} (${item.item_name}), stock: ${item.quantity}, category: ${item.category}` -> console.log(`[SUCCESS] Found phụ kiện by flexible match: ${item.item_code} (${item.item_name}), stock: ${item.quantity}, category: ${item.category}`
+[LOG_REPLACE] design-new.html | console.log('📊 inventoryCheckResults:' -> console.log('[STATS] inventoryCheckResults:'
+[LOG_REPLACE] design-new.html | console.log(`✅ Added Nhôm: ${item.name}, shortage=${item.shortage || item.required}, density=${bocTachItem?.density || 0}, weight=${bocTachItem?.weight || 0}` -> console.log(`[SUCCESS] Added Nhôm: ${item.name}, shortage=${item.shortage || item.required}, density=${bocTachItem?.density || 0}, weight=${bocTachItem?.weight || 0}`
+[LOG_REPLACE] design-new.html | console.log(`✅ Added Kính: ${item.name}, shortage=${item.shortage || item.required}, width=${width}, height=${height}, area=${area}, panels=${panels}, bocTachItem:` -> console.log(`[SUCCESS] Added Kính: ${item.name}, shortage=${item.shortage || item.required}, width=${width}, height=${height}, area=${area}, panels=${panels}, bocTachItem:`
+[LOG_REPLACE] design-new.html | console.log(`✅ Added Vật tư phụ: ${item.name}, shortage=${item.shortage || item.required}` -> console.log(`[SUCCESS] Added Vật tư phụ: ${item.name}, shortage=${item.shortage || item.required}`
+[LOG_REPLACE] design-new.html | console.log(`✅ Added Phụ kiện: ${item.name}, shortage=${item.shortage || item.required}` -> console.log(`[SUCCESS] Added Phụ kiện: ${item.name}, shortage=${item.shortage || item.required}`
+[LOG_REPLACE] design-new.html | console.log('📦 Collected items:' -> console.log('[INVENTORY] Collected items:'
+[LOG_REPLACE] design-new.html | console.warn(`⚠️ Invalid category: ${category}` -> console.warn(`[WARNING] Invalid category: ${category}`
+[LOG_REPLACE] design-new.html | console.error(`❌ Table body not found: ${config.tbodyId}` -> console.error(`[ERROR] Table body not found: ${config.tbodyId}`
+[LOG_REPLACE] design-new.html | console.log(`ℹ️ No items to render for ${category}` -> console.log(`[INFO] No items to render for ${category}`
+[LOG_REPLACE] design-new.html | console.log('✅ Saved successfully:' -> console.log('[SUCCESS] Saved successfully:'
+[LOG_REPLACE] design-new.html | console.log('✅ Saved nhom:' -> console.log('[SUCCESS] Saved nhom:'
+[LOG_REPLACE] design-new.html | console.log('✅ Saved kinh:' -> console.log('[SUCCESS] Saved kinh:'
+[LOG_REPLACE] design-new.html | console.log('✅ Saved vattu:' -> console.log('[SUCCESS] Saved vattu:'
+[LOG_REPLACE] design-new.html | console.log('✅ Saved phukien:' -> console.log('[SUCCESS] Saved phukien:'
+[LOG_REPLACE] design-new.html | console.log('📦 All data saved to sessionStorage. Navigating to purchase-request.html...' -> console.log('[INVENTORY] All data saved to sessionStorage. Navigating to purchase-request.html...'
+[LOG_REPLACE] design-new.html | console.log('✅ Added phukien:' -> console.log('[SUCCESS] Added phukien:'
+[LOG_REPLACE] design-new.html | console.log('✅ Added empty phụ kiện row for manual entry' -> console.log('[SUCCESS] Added empty phụ kiện row for manual entry'
+[LOG_REPLACE] design-new.html | console.log('✅ Update successful. Data saved to database. Will refresh on next page load.' -> console.log('[SUCCESS] Update successful. Data saved to database. Will refresh on next page load.'
+[LOG_REPLACE] design-new.html | console.error('❌ Error updating product:' -> console.error('[ERROR] Error updating product:'
+[LOG_REPLACE] design-new.html | console.log('📊 Exporting product list to Excel with logo...' -> console.log('[STATS] Exporting product list to Excel with logo...'
+[LOG_REPLACE] design-new.html | console.error('❌ deleteProductItem: itemId is required' -> console.error('[ERROR] deleteProductItem: itemId is required'
+[LOG_REPLACE] design-new.html | console.log('✅ Removed item from local array. Remaining items:' -> console.log('[SUCCESS] Removed item from local array. Remaining items:'
+[LOG_REPLACE] design-new.html | console.error('❌ Error deleting product:' -> console.error('[ERROR] Error deleting product:'
+[LOG_REPLACE] design-new.html | console.error('❌ Error saving bocTachData:' -> console.error('[ERROR] Error saving bocTachData:'
+[LOG_REPLACE] design-new.html | console.error('❌ Error loading bocTachData:' -> console.error('[ERROR] Error loading bocTachData:'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded' -> console.log('[SUCCESS] Loaded'
+[LOG_REPLACE] design-new.html | console.log('🔍 Glass API response:' -> console.log('[SEARCH] Glass API response:'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded' -> console.log('[SUCCESS] Loaded'
+[LOG_REPLACE] design-new.html | console.log('⚠️ No glass data from unified API, using sample data' -> console.log('[WARNING] No glass data from unified API, using sample data'
+[LOG_REPLACE] design-new.html | console.log(`✅ Loaded ${vatTuPhuData.data.length} supplementary materials from unified API` -> console.log(`[SUCCESS] Loaded ${vatTuPhuData.data.length} supplementary materials from unified API`
+[LOG_REPLACE] design-new.html | console.log('🔍 Fetching ALL accessories for phukien...' -> console.log('[SEARCH] Fetching ALL accessories for phukien...'
+[LOG_REPLACE] design-new.html | console.log('🔍 ALL accessories response:' -> console.log('[SEARCH] ALL accessories response:'
+[LOG_REPLACE] design-new.html | console.log('✅ Loaded' -> console.log('[SUCCESS] Loaded'
+[LOG_REPLACE] design-new.html | console.error('❌ NO ACCESSORIES DATA! API response:' -> console.error('[ERROR] NO ACCESSORIES DATA! API response:'
+[LOG_REPLACE] design-new.html | console.log('✅ Search focus handlers setup complete' -> console.log('[SUCCESS] Search focus handlers setup complete'
+[LOG_REPLACE] design-new.html | console.error('❌ phukienSuggestionsDropdown not found' -> console.error('[ERROR] phukienSuggestionsDropdown not found'
+[LOG_REPLACE] design-new.html | console.log(`✅ Selected ${type}:` -> console.log(`[SUCCESS] Selected ${type}:`
+[LOG_REPLACE] design-new.html | console.log('🔍 Glass item added from cache:' -> console.log('[SEARCH] Glass item added from cache:'
+[LOG_REPLACE] design-new.html | console.error('❌ PremiumIcons library not loaded!' -> console.error('[ERROR] PremiumIcons library not loaded!'
+[LOG_REPLACE] design-new.html | console.log('✅ Premium SVG icons initialized' -> console.log('[SUCCESS] Premium SVG icons initialized'
+[UI_REPLACE] design-new.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] design-new.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] design-new.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] design-new.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] design-new.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] door-editor.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] door-editor.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[LOG_REPLACE] exported-materials.html | console.warn('⚠️ No BOM data found for project' -> console.warn('[WARNING] No BOM data found for project'
+[LOG_REPLACE] exported-materials.html | console.log(`📦 Inventory loaded: ${accessoriesData.length} accessories, ${aluminumData.length} aluminum, ${glassData.length} glass, ${vatTuPhuData.length} vật tư phụ` -> console.log(`[INVENTORY] Inventory loaded: ${accessoriesData.length} accessories, ${aluminumData.length} aluminum, ${glassData.length} glass, ${vatTuPhuData.length} vật tư phụ`
+[LOG_REPLACE] exported-materials.html | console.warn('⚠️ Could not load export history:' -> console.warn('[WARNING] Could not load export history:'
+[LOG_REPLACE] exported-materials.html | console.log(`✅ Total normalized inventory: ${inventoryData.length} items` -> console.log(`[SUCCESS] Total normalized inventory: ${inventoryData.length} items`
+[LOG_REPLACE] exported-materials.html | console.log(`✅ Result: ${exported.length} có thể xuất, ${insufficient.length} thiếu kho` -> console.log(`[SUCCESS] Result: ${exported.length} có thể xuất, ${insufficient.length} thiếu kho`
+[LOG_REPLACE] exported-materials.html | console.log('📊 Material Statistics Updated:' -> console.log('[STATS] Material Statistics Updated:'
+[LOG_REPLACE] exported-materials.html | console.log('📦 Tổng vật tư:' -> console.log('[INVENTORY] Tổng vật tư:'
+[LOG_REPLACE] exported-materials.html | console.log('✅ Có thể xuất:' -> console.log('[SUCCESS] Có thể xuất:'
+[LOG_REPLACE] exported-materials.html | console.log('⚠️ Chưa đủ:' -> console.log('[WARNING] Chưa đủ:'
+[LOG_REPLACE] exported-materials.html | console.log('📦 Đã rời kho:' -> console.log('[INVENTORY] Đã rời kho:'
+[LOG_REPLACE] exported-materials.html | console.log('✅' -> console.log('[SUCCESS]'
+[LOG_REPLACE] exported-materials.html | console.warn('⚠️' -> console.warn('[WARNING]'
+[LOG_REPLACE] exported-materials.html | console.log('ℹ️' -> console.log('[INFO]'
+[UI_REPLACE] exported-materials.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] exported-materials.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] exported-materials.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] exported-materials.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] exported-materials.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] exported-materials.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] exported-materials.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[LOG_REPLACE] finance-dashboard.html | console.log('✅ Sync result:' -> console.log('[SUCCESS] Sync result:'
+[LOG_REPLACE] finance-dashboard.html | console.log('⚠️ Sync skipped:' -> console.log('[WARNING] Sync skipped:'
+[LOG_REPLACE] finance-dashboard.html | console.log('✅ Dashboard loaded!' -> console.log('[SUCCESS] Dashboard loaded!'
+[LOG_REPLACE] finance-dashboard.html | console.log('📊 Loading KPIs...' -> console.log('[STATS] Loading KPIs...'
+[LOG_REPLACE] finance-dashboard.html | console.log('📦 Dashboard data:' -> console.log('[INVENTORY] Dashboard data:'
+[LOG_REPLACE] finance-dashboard.html | console.log('📈 Data received:' -> console.log('[PROGRESS] Data received:'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 cancelPayment called with id:' -> console.log('[ERROR] cancelPayment called with id:'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 prompt result:' -> console.log('[ERROR] prompt result:'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 User cancelled the prompt dialog' -> console.log('[ERROR] User cancelled the prompt dialog'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 User cancelled the confirm dialog' -> console.log('[ERROR] User cancelled the confirm dialog'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 Calling cancel API for id:' -> console.log('[ERROR] Calling cancel API for id:'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 API response status:' -> console.log('[ERROR] API response status:'
+[LOG_REPLACE] finance-payments.html | console.log('🔴 API response body:' -> console.log('[ERROR] API response body:'
+[LOG_REPLACE] finance-payments.html | console.error('🔴 Error cancelling payment:' -> console.error('[ERROR] Error cancelling payment:'
+[UI_REPLACE] finance-payments.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] finance-payments.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] finance-reports.html | Replaced 👤 with <i data-lucide="user"></i>
+[UI_REPLACE] finance-reports.html | Replaced 💵 with <i data-lucide="wallet"></i>
+[UI_REPLACE] handover.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] handover.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] handover.html | Replaced 💵 with <i data-lucide="wallet"></i>
+[UI_REPLACE] index-backup.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] index-backup.html | Replaced 👋 with <i data-lucide="sparkles"></i>
+[UI_REPLACE] index-backup.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] index-backup.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] index-backup.html | Replaced 👥 with <i data-lucide="users"></i>
+[UI_REPLACE] index-backup.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] index.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] index.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] index.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[LOG_REPLACE] inventory.html | console.log('📦 Tổng vật tư:' -> console.log('[INVENTORY] Tổng vật tư:'
+[LOG_REPLACE] inventory.html | console.log('✅ Có thể xuất:' -> console.log('[SUCCESS] Có thể xuất:'
+[LOG_REPLACE] inventory.html | console.log('⚠️ Chưa đủ:' -> console.log('[WARNING] Chưa đủ:'
+[LOG_REPLACE] inventory.html | console.log('📦 Đã rời kho:' -> console.log('[INVENTORY] Đã rời kho:'
+[LOG_REPLACE] inventory.html | console.log('🔍 Filter với:' -> console.log('[SEARCH] Filter với:'
+[LOG_REPLACE] inventory.html | console.log('✅ Sau filter type:' -> console.log('[SUCCESS] Sau filter type:'
+[LOG_REPLACE] inventory.html | console.log('✅ Sau filter search:' -> console.log('[SUCCESS] Sau filter search:'
+[LOG_REPLACE] inventory.html | console.log('✅ Sau filter category:' -> console.log('[SUCCESS] Sau filter category:'
+[LOG_REPLACE] inventory.html | console.log('✅ Sau filter system:' -> console.log('[SUCCESS] Sau filter system:'
+[LOG_REPLACE] inventory.html | console.warn('⚠️ Transaction has project_id but no project data:' -> console.warn('[WARNING] Transaction has project_id but no project data:'
+[LOG_REPLACE] inventory.html | console.log(`📊 Total transactions: ${allTransactions.length}` -> console.log(`[STATS] Total transactions: ${allTransactions.length}`
+[LOG_REPLACE] inventory.html | console.error('❌ Lỗi khi load transactions:' -> console.error('[ERROR] Lỗi khi load transactions:'
+[UI_REPLACE] inventory.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] inventory.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] inventory.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] inventory.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] inventory.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] inventory.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] inventory.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] inventory.html | Replaced 🔴 with <i data-lucide="x-circle"></i>
+[UI_REPLACE] inventory.html | Replaced 🟠 with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] inventory.html | Replaced 🔵 with <i data-lucide="info"></i>
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('📦 Tổng vật tư:' -> console.log('[INVENTORY] Tổng vật tư:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('✅ Có thể xuất:' -> console.log('[SUCCESS] Có thể xuất:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('⚠️ Chưa đủ:' -> console.log('[WARNING] Chưa đủ:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('📦 Đã rời kho:' -> console.log('[INVENTORY] Đã rời kho:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('🔍 Filter với:' -> console.log('[SEARCH] Filter với:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('✅ Sau filter type:' -> console.log('[SUCCESS] Sau filter type:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('✅ Sau filter search:' -> console.log('[SUCCESS] Sau filter search:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('✅ Sau filter category:' -> console.log('[SUCCESS] Sau filter category:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log('✅ Sau filter system:' -> console.log('[SUCCESS] Sau filter system:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.warn('⚠️ Transaction has project_id but no project data:' -> console.warn('[WARNING] Transaction has project_id but no project data:'
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.log(`📊 Total transactions: ${allTransactions.length}` -> console.log(`[STATS] Total transactions: ${allTransactions.length}`
+[LOG_REPLACE] inventory_old_7c7cbc9_utf8.html | console.error('❌ Lỗi khi load transactions:' -> console.error('[ERROR] Lỗi khi load transactions:'
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] inventory_old_7c7cbc9_utf8.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[JS_STR_REPLACE] ai-chatbot-widget.js | Removed 📦 from generic string
+[JS_STR_REPLACE] ai-chatbot-widget.js | Removed 📊 from generic string
+[JS_STR_REPLACE] ai-chatbot-widget.js | Removed 👋 from generic string
+[JS_STR_REPLACE] ai-chatbot-widget.js | Removed 🔍 from generic string
+[JS_STR_REPLACE] ai-chatbot-widget.js | Removed ❌ from generic string
+[JS_STR_REPLACE] ai-chatbot-widget.js | Removed 💰 from generic string
+[JS_STR_REPLACE] ai-search-widget.js | Removed 📦 from generic string
+[JS_STR_REPLACE] ai-search-widget.js | Removed 🔍 from generic string
+[JS_STR_REPLACE] ai-search-widget.js | Removed ❌ from generic string
+[JS_STR_REPLACE] ai-search-widget.js | Removed 👤 from generic string
+[JS_STR_REPLACE] ai-search-widget.js | Removed 💰 from generic string
+[JS_STR_REPLACE] aluminum-export-ui.js | Removed 📊 from generic string
+[JS_STR_REPLACE] aluminum-export-ui.js | Removed ✅ from generic string
+[JS_STR_REPLACE] aluminum-scrap-ui.js | Removed ❌ from generic string
+[JS_STR_REPLACE] aluminum-scrap-ui.js | Removed ✅ from generic string
+[JS_STR_REPLACE] aluminum-scrap-ui.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] chat-client.js | Removed 🔍 from generic string
+[JS_STR_REPLACE] chat-client.js | Removed ✅ from generic string
+[JS_STR_REPLACE] chat-client.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] chat-client.js | Removed 👤 from generic string
+[JS_STR_REPLACE] chat-client.js | Removed 👥 from generic string
+[JS_STR_REPLACE] chat-client.js | Removed 💬 from generic string
+[JS_STR_REPLACE] chat-client.js | Removed 🔴 from generic string
+[JS_STR_REPLACE] chat-client.js | Removed 🟢 from generic string
+[LOG_REPLACE] finance-sync-manager.js | console.warn('⚠️ FinanceSyncManager.trigger failed:' -> console.warn('[WARNING] FinanceSyncManager.trigger failed:'
+[LOG_REPLACE] finance-sync-manager.js | console.warn('⚠️ FinanceSyncManager: Error parsing event:' -> console.warn('[WARNING] FinanceSyncManager: Error parsing event:'
+[JS_STR_REPLACE] icons-library.js | Removed 📦 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 📊 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 📈 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 🔍 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed ❌ from generic string
+[JS_STR_REPLACE] icons-library.js | Removed ✅ from generic string
+[JS_STR_REPLACE] icons-library.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] icons-library.js | Removed ℹ️ from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 👤 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 👥 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 💰 from generic string
+[JS_STR_REPLACE] icons-library.js | Removed 💵 from generic string
+[LOG_REPLACE] inventory-lookup-helper.js | console.warn('⚠️ Cannot build lookup maps: inventoryData is empty' -> console.warn('[WARNING] Cannot build lookup maps: inventoryData is empty'
+[LOG_REPLACE] inventory-lookup-helper.js | console.warn(`⚠️ Duplicate code detected: ${codeKey}` -> console.warn(`[WARNING] Duplicate code detected: ${codeKey}`
+[LOG_REPLACE] inventory-lookup-helper.js | console.log(`📊 Lookup map statistics:` -> console.log(`[STATS] Lookup map statistics:`
+[LOG_REPLACE] inventory-lookup-helper.js | console.error('❌ findInventoryItemFast: type parameter is required' -> console.error('[ERROR] findInventoryItemFast: type parameter is required'
+[LOG_REPLACE] inventory-lookup-helper.js | console.warn('⚠️ Lookup maps not built, using existing findInventoryItem function' -> console.warn('[WARNING] Lookup maps not built, using existing findInventoryItem function'
+[LOG_REPLACE] inventory-lookup-helper.js | console.log(`✅ Found by CODE [${codeKey}]: ${item.item_name}, stock=${item.stock_quantity || item.quantity}` -> console.log(`[SUCCESS] Found by CODE [${codeKey}]: ${item.item_name}, stock=${item.stock_quantity || item.quantity}`
+[LOG_REPLACE] inventory-lookup-helper.js | console.log(`✅ Found by NAME [${nameKey}]: ${item.item_code}, stock=${item.stock_quantity || item.quantity}` -> console.log(`[SUCCESS] Found by NAME [${nameKey}]: ${item.item_code}, stock=${item.stock_quantity || item.quantity}`
+[LOG_REPLACE] inventory-lookup-helper.js | console.warn(`❌ NOT FOUND in inventory:` -> console.warn(`[ERROR] NOT FOUND in inventory:`
+[LOG_REPLACE] inventory-lookup-helper.js | console.log('✅ Inventory Lookup Optimization System loaded' -> console.log('[SUCCESS] Inventory Lookup Optimization System loaded'
+[JS_STR_REPLACE] inventory-lookup-helper.js | Removed ✅ from generic string
+[JS_STR_REPLACE] inventory-lookup-helper.js | Removed ⚠️ from generic string
+[LOG_REPLACE] modal-system.js | console.log('✅ VWModal System loaded with auto-override' -> console.log('[SUCCESS] VWModal System loaded with auto-override'
+[JS_STR_REPLACE] modal-system.js | Removed ❌ from generic string
+[JS_STR_REPLACE] modal-system.js | Removed ✅ from generic string
+[JS_STR_REPLACE] notification-system.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] notification-system.js | Removed ℹ️ from generic string
+[LOG_REPLACE] production-excel-view.js | console.log(`✅ Loaded ${ordersData.length} orders successfully` -> console.log(`[SUCCESS] Loaded ${ordersData.length} orders successfully`
+[JS_STR_REPLACE] production-excel-view.js | Removed 💬 from generic string
+[LOG_REPLACE] realtime-client.js | console.log('🟢 [Realtime] Đã kết nối' -> console.log('[SUCCESS] [Realtime] Đã kết nối'
+[LOG_REPLACE] realtime-client.js | console.log('🟢 [Realtime] Đã kết nối lại' -> console.log('[SUCCESS] [Realtime] Đã kết nối lại'
+[JS_STR_REPLACE] realtime-client.js | Removed ✅ from generic string
+[JS_STR_REPLACE] sidebar-enterprise.js | Removed ✅ from generic string
+[JS_STR_REPLACE] stock-document-modal.js | Removed ❌ from generic string
+[JS_STR_REPLACE] stock-document-modal.js | Removed ✅ from generic string
+[LOG_REPLACE] user-settings.js | console.log('✅ User settings applied:' -> console.log('[SUCCESS] User settings applied:'
+[LOG_REPLACE] vw-modal.js | console.log('[VWModal] Custom modal system loaded ✅' -> console.log('[VWModal] Custom modal system loaded [SUCCESS]'
+[JS_STR_REPLACE] vw-modal.js | Removed ❌ from generic string
+[JS_STR_REPLACE] vw-modal.js | Removed ✅ from generic string
+[JS_STR_REPLACE] vw-modal.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] vw-modal.js | Removed ℹ️ from generic string
+[LOG_REPLACE] material-requests.html | console.warn('⚠️ Error pre-fetching price data:' -> console.warn('[WARNING] Error pre-fetching price data:'
+[LOG_REPLACE] material-requests.html | console.log(`   ✅ Found in aluminum_systems: ${price}` -> console.log(`[SUCCESS] Found in aluminum_systems: ${price}`
+[LOG_REPLACE] material-requests.html | console.log(`   ✅ Found in accessories: ${price} (fields: sale_price=${matchingItem.sale_price}, purchase_price=${matchingItem.purchase_price})` -> console.log(`[SUCCESS] Found in accessories: ${price} (fields: sale_price=${matchingItem.sale_price}, purchase_price=${matchingItem.purchase_price})`
+[LOG_REPLACE] material-requests.html | console.log(`   ✅ Found in accessories (vattu): ${price} (fields: sale_price=${matchingItem.sale_price}, purchase_price=${matchingItem.purchase_price})` -> console.log(`[SUCCESS] Found in accessories (vattu): ${price} (fields: sale_price=${matchingItem.sale_price}, purchase_price=${matchingItem.purchase_price})`
+[LOG_REPLACE] material-requests.html | console.log(`   ✅ Found in inventory (vattu fallback): ${price}` -> console.log(`[SUCCESS] Found in inventory (vattu fallback): ${price}`
+[LOG_REPLACE] material-requests.html | console.log(`   ✅ Found in inventory (kinh): ${price}` -> console.log(`[SUCCESS] Found in inventory (kinh): ${price}`
+[LOG_REPLACE] material-requests.html | console.log(`   ⚠️ Not found in primary source, searching all...` -> console.log(`[WARNING] Not found in primary source, searching all...`
+[LOG_REPLACE] material-requests.html | console.log(`   ✅ Found in fallback: ${price}` -> console.log(`[SUCCESS] Found in fallback: ${price}`
+[LOG_REPLACE] material-requests.html | console.log(`   ❌ NOT FOUND anywhere!` -> console.log(`[ERROR] NOT FOUND anywhere!`
+[LOG_REPLACE] material-requests.html | console.warn(`⚠️ No price found for ${code}` -> console.warn(`[WARNING] No price found for ${code}`
+[UI_REPLACE] material-requests.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] material-requests.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] material-requests.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] material-requests.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] messages.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] messages.html | Replaced 💬 with <i data-lucide="message-circle"></i>
+[LOG_REPLACE] notification-manager.js | console.log('✅ Notification created:' -> console.log('[SUCCESS] Notification created:'
+[JS_STR_REPLACE] notification-manager.js | Removed ✅ from generic string
+[JS_STR_REPLACE] notification-manager.js | Removed ⚠️ from generic string
+[JS_STR_REPLACE] notification-manager.js | Removed 👤 from generic string
+[JS_STR_REPLACE] notification-manager.js | Removed 💰 from generic string
+[JS_STR_REPLACE] notification-manager.js | Removed 💵 from generic string
+[UI_REPLACE] notifications.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] notifications.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] notifications.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] notifications.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] order-tracking.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[LOG_REPLACE] pending-quotations.html | console.log('🔍 Found receipts by description:' -> console.log('[SEARCH] Found receipts by description:'
+[LOG_REPLACE] pending-quotations.html | console.log('🔍 Checking deposit receipt:' -> console.log('[SEARCH] Checking deposit receipt:'
+[LOG_REPLACE] pending-quotations.html | console.log('✅ Deposit receipt found and posted:' -> console.log('[SUCCESS] Deposit receipt found and posted:'
+[UI_REPLACE] pending-quotations.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] pending-quotations.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] product-catalog-v2.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] product-catalog.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] product-manufacturing.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] product-manufacturing.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] product-manufacturing.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] product-manufacturing.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] production-excel-view.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] project-doors.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] project-doors.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] project-doors.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] project-logs.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] project-logs.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] project-logs.html | Replaced 📈 with <i data-lucide="trending-up"></i>
+[UI_REPLACE] project-logs.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] project-logs.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] project-logs.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] project-logs.html | Replaced 💵 with <i data-lucide="wallet"></i>
+[UI_REPLACE] project-logs.html | Replaced 🔼 with <i data-lucide="trending-up"></i>
+[UI_REPLACE] projects-new.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] projects-new.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] projects-new.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] projects-new.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] projects-new.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] projects-new.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] projects-new.html | Replaced 🤝 with <i data-lucide="users"></i>
+[UI_REPLACE] projects.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] projects.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[LOG_REPLACE] purchase-request.html | console.log('✅ Loaded' -> console.log('[SUCCESS] Loaded'
+[LOG_REPLACE] purchase-request.html | console.log('📦 Loading from sessionStorage:' -> console.log('[INVENTORY] Loading from sessionStorage:'
+[LOG_REPLACE] purchase-request.html | console.log('📦 nhomData:' -> console.log('[INVENTORY] nhomData:'
+[LOG_REPLACE] purchase-request.html | console.log('✅ Loading nhom items:' -> console.log('[SUCCESS] Loading nhom items:'
+[LOG_REPLACE] purchase-request.html | console.log('📦 kinhData:' -> console.log('[INVENTORY] kinhData:'
+[LOG_REPLACE] purchase-request.html | console.log('✅ Loading kinh items:' -> console.log('[SUCCESS] Loading kinh items:'
+[LOG_REPLACE] purchase-request.html | console.log('📦 phukienData:' -> console.log('[INVENTORY] phukienData:'
+[LOG_REPLACE] purchase-request.html | console.log('✅ Loading phukien items:' -> console.log('[SUCCESS] Loading phukien items:'
+[LOG_REPLACE] purchase-request.html | console.log('✅ Selected material:' -> console.log('[SUCCESS] Selected material:'
+[LOG_REPLACE] purchase-request.html | console.log('📊 tableData before sync:' -> console.log('[STATS] tableData before sync:'
+[LOG_REPLACE] purchase-request.html | console.log(`🔍 Row ${index} has ${inputs.length} inputs` -> console.log(`[SEARCH] Row ${index} has ${inputs.length} inputs`
+[LOG_REPLACE] purchase-request.html | console.log(`✅ Synced row ${index}:` -> console.log(`[SUCCESS] Synced row ${index}:`
+[LOG_REPLACE] purchase-request.html | console.warn(`⚠️ Row ${index} has no inputs, keeping existing data` -> console.warn(`[WARNING] Row ${index} has no inputs, keeping existing data`
+[UI_REPLACE] purchase-request.html | Replaced 🔍 with <i data-lucide="search"></i>
+[LOG_REPLACE] quotation-new.html | console.log('✅ Project select restored to:' -> console.log('[SUCCESS] Project select restored to:'
+[LOG_REPLACE] quotation-new.html | console.warn('⚠️ Project option not found for ID:' -> console.warn('[WARNING] Project option not found for ID:'
+[LOG_REPLACE] quotation-new.html | console.log(`📊 Diện tích: ${item.areaPerUnit.toFixed(2)}m² → Giá cửa: ${formatCurrency(pricePerM2)}/m² + Kính: ${formatCurrency(item.glassPrice || 0)}/m² = Đơn giá: ${formatCurrency(item.unitPrice)}/m²` -> console.log(`[STATS] Diện tích: ${item.areaPerUnit.toFixed(2)}m² → Giá cửa: ${formatCurrency(pricePerM2)}/m² + Kính: ${formatCurrency(item.glassPrice || 0)}/m² = Đơn giá: ${formatCurrency(item.unitPrice)}/m²`
+[LOG_REPLACE] quotation-new.html | console.log(`📦 Tính tiền vật tư: ${item.design} - Rộng: ${item.width}mm (${widthInMeters.toFixed(3)}m) × SL: ${item.quantity} × Đơn giá: ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.total)}` -> console.log(`[INVENTORY] Tính tiền vật tư: ${item.design} - Rộng: ${item.width}mm (${widthInMeters.toFixed(3)}m) × SL: ${item.quantity} × Đơn giá: ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.total)}`
+[LOG_REPLACE] quotation-new.html | console.log(`💰 Tính tiền: Cửa+Kính=${formatCurrency(materialPrice)} (đơn giá ${formatCurrency(item.unitPrice)} × ${areaPerUnit.toFixed(2)}m²) + PK=${formatCurrency(accessoryPrice)} = ${formatCurrency(pricePerUnit)}/bộ × ${item.quantity} = ${formatCurrency(item.total)}` -> console.log(`[FINANCE] Tính tiền: Cửa+Kính=${formatCurrency(materialPrice)} (đơn giá ${formatCurrency(item.unitPrice)} × ${areaPerUnit.toFixed(2)}m²) + PK=${formatCurrency(accessoryPrice)} = ${formatCurrency(pricePerUnit)}/bộ × ${item.quantity} = ${formatCurrency(item.total)}`
+[LOG_REPLACE] quotation-new.html | console.log('📊 Frontend Final Calculation:' -> console.log('[STATS] Frontend Final Calculation:'
+[LOG_REPLACE] quotation-new.html | console.log(`📦 Loaded ${result.data.length} products from Product Catalog API (V2)` -> console.log(`[INVENTORY] Loaded ${result.data.length} products from Product Catalog API (V2)`
+[LOG_REPLACE] quotation-new.html | console.log(`✅ Loaded ${PRODUCTS_DATA.length} products from static PRODUCTS_DATA` -> console.log(`[SUCCESS] Loaded ${PRODUCTS_DATA.length} products from static PRODUCTS_DATA`
+[LOG_REPLACE] quotation-new.html | console.log(`📦 Loaded ${result.data.length} products from API (templates fallback)` -> console.log(`[INVENTORY] Loaded ${result.data.length} products from API (templates fallback)`
+[LOG_REPLACE] quotation-new.html | console.error('❌ Không có dữ liệu sản phẩm:' -> console.error('[ERROR] Không có dữ liệu sản phẩm:'
+[LOG_REPLACE] quotation-new.html | console.log(`✅ Đã thêm sản phẩm: ${door.code} - Phụ kiện mặc định: ${defaultAcc.name} (${formatCurrency(defaultAcc.price)})` -> console.log(`[SUCCESS] Đã thêm sản phẩm: ${door.code} - Phụ kiện mặc định: ${defaultAcc.name} (${formatCurrency(defaultAcc.price)})`
+[LOG_REPLACE] quotation-new.html | console.log(`✅ Loaded and cached ${glassData.length} glass items from API` -> console.log(`[SUCCESS] Loaded and cached ${glassData.length} glass items from API`
+[LOG_REPLACE] quotation-new.html | console.log('✅ Workflow triggered - Project progress updated to 25%' -> console.log('[SUCCESS] Workflow triggered - Project progress updated to 25%'
+[LOG_REPLACE] quotation-new.html | console.log('💰 Discount Calculation (FE):' -> console.log('[FINANCE] Discount Calculation (FE):'
+[LOG_REPLACE] quotation-new.html | console.log('🔍 Project data for agency:' -> console.log('[SEARCH] Project data for agency:'
+[LOG_REPLACE] quotation-new.html | console.log('🔍 Project.agency_id:' -> console.log('[SEARCH] Project.agency_id:'
+[LOG_REPLACE] quotation-new.html | console.log('🔍 AgencySelect options:' -> console.log('[SEARCH] AgencySelect options:'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Agency select set to:' -> console.log('[SUCCESS] Agency select set to:'
+[LOG_REPLACE] quotation-new.html | console.warn('⚠️ Cannot set agency: agency_id=' -> console.warn('[WARNING] Cannot set agency: agency_id='
+[LOG_REPLACE] quotation-new.html | console.log('🔍 Setting project dropdown for ID:' -> console.log('[SEARCH] Setting project dropdown for ID:'
+[LOG_REPLACE] quotation-new.html | console.log('🔍 Existing option found:' -> console.log('[SEARCH] Existing option found:'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Project dropdown set to:' -> console.log('[SUCCESS] Project dropdown set to:'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Final project value:' -> console.log('[SUCCESS] Final project value:'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Project value already correct:' -> console.log('[SUCCESS] Project value already correct:'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Đã gọi loadProjectInfo để cập nhật header' -> console.log('[SUCCESS] Đã gọi loadProjectInfo để cập nhật header'
+[LOG_REPLACE] quotation-new.html | console.error('❌ itemsTableBody not found!' -> console.error('[ERROR] itemsTableBody not found!'
+[LOG_REPLACE] quotation-new.html | console.log(`✅ Loaded ${items.length} items into table` -> console.log(`[SUCCESS] Loaded ${items.length} items into table`
+[LOG_REPLACE] quotation-new.html | console.log('📊 Updated totals:' -> console.log('[STATS] Updated totals:'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Default view set to: bothSection (Cả hai)' -> console.log('[SUCCESS] Default view set to: bothSection (Cả hai)'
+[LOG_REPLACE] quotation-new.html | console.log('📦 Items count:' -> console.log('[INVENTORY] Items count:'
+[LOG_REPLACE] quotation-new.html | console.log('📦 Loading items into table...' -> console.log('[INVENTORY] Loading items into table...'
+[LOG_REPLACE] quotation-new.html | console.log('✅ Quotation loaded successfully!' -> console.log('[SUCCESS] Quotation loaded successfully!'
+[LOG_REPLACE] quotation-new.html | console.error('❌ Error loading quotation data:' -> console.error('[ERROR] Error loading quotation data:'
+[UI_REPLACE] quotation-new.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] quotation-new.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] quotation-new.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] quotation-new.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] reports-ai.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] reports-ai.html | Replaced 📊 with <i data-lucide="bar-chart-3"></i>
+[UI_REPLACE] reports-ai.html | Replaced 📈 with <i data-lucide="trending-up"></i>
+[UI_REPLACE] reports-ai.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] reports-ai.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] reports-ai.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] reports-ai.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] reports-ai.html | Replaced 👥 with <i data-lucide="users"></i>
+[UI_REPLACE] reports-ai.html | Replaced 💰 with <i data-lucide="wallet"></i>
+[UI_REPLACE] reports-ai.html | Replaced 🔌 with <i data-lucide="info"></i>
+[UI_REPLACE] sales.html | Replaced 📦 with <i data-lucide="package"></i>
+[UI_REPLACE] sales.html | Replaced 🔍 with <i data-lucide="search"></i>
+[UI_REPLACE] sales.html | Replaced ❌ with <i data-lucide="x-circle"></i>
+[UI_REPLACE] sales.html | Replaced ✅ with <i data-lucide="check-circle"></i>
+[UI_REPLACE] sales.html | Replaced ⚠️ with <i data-lucide="alert-triangle"></i>
+[UI_REPLACE] sales.html | Replaced 🤝 with <i data-lucide="users"></i>

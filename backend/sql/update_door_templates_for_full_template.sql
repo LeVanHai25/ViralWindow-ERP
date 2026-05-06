@@ -1,0 +1,87 @@
+-- Cập nhật bảng door_templates để lưu template đầy đủ
+-- Thêm cột template_json để lưu toàn bộ thông tin template
+
+ALTER TABLE `door_templates` 
+ADD COLUMN IF NOT EXISTS `template_json` LONGTEXT NULL COMMENT 'JSON chứa toàn bộ template (meta, panel_tree, bom_profiles, bom_glass, bom_hardware)' AFTER `structure_json`;
+
+-- Cập nhật index nếu cần
+-- ALTER TABLE `door_templates` ADD INDEX `idx_code` (`code`);
+-- ALTER TABLE `door_templates` ADD INDEX `idx_family` (`family`);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

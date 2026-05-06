@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/user-settings.js"></script>
+    <script src="js/icons-library.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật ký hoạt động - ViralWindow</title>
+    <script>
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <style>
+        :root {
+            --steel-blue: #2C3E50;
+            --dark-slate: #1A252F;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-700: #334155;
+        }
+
+        body {
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            height: 100vh;
+            background: var(--steel-blue);
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .log-table-container {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+
+        .method-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .method-POST {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .method-PUT {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .method-DELETE {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .method-GET {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .status-success {
+            color: #166534;
+        }
+
+        .status-error {
+            color: #991b1b;
+        }
+
+        .loading-shimmer {
+            animation: shimmer 1.5s infinite linear;
+            background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-size: 800px 104px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -468px 0;
+            }
+
+            100% {
+                background-position: 468px 0;
+            }
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/sidebar-menu-template.js"></script>
+    <script src="js/notification-header.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar overflow-y-auto">
+        <!-- Will be injected by js -->
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Nhật ký hoạt động</h1>
+                <p class="text-slate-500 mt-1">Giám sát toàn bộ các thay đổi và thao tác trên hệ thống</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="loadLogs()"
+                    class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Làm mới
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters Bar -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Phương thức</label>
+                <select id="filterMethod" onchange="loadLogs()"
+                    class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Tất cả</option>
+                    <option value="POST">POST (Tạo mới)</option>
+                    <option value="PUT">PUT (Cập nhật)</option>
+                    <option value="DELETE">DELETE (Xóa)</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Trạng thái</label>
+                <select id="filterStatus" onchange="loadLogs()"
+                    class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Tất cả</option>
+                    <option value="success">Thành công (2xx)</option>
+                    <option value="error">Lỗi (4xx, 5xx)</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Từ ngày</label>
+                <input type="date" id="filterFrom" onchange="loadLogs()"
+                    class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Giới hạn</label>
+                <select id="filterLimit" onchange="loadLogs()"
+                    class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="50">50 dòng</option>
+                    <option value="100" selected>100 dòng</option>
+                    <option value="250">250 dòng</option>
+                    <option value="500">500 dòng</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="log-table-container">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-48">Thời
+                                gian</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-40">Người
+                                dùng</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-24">Mã</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Thao tác &
+                                Endpoint</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Trạng
+                                thái</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-24">Xử lý
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <!-- Logs will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noData" class="hidden p-12 text-center text-slate-400">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p>Không tìm thấy dữ liệu nhật ký phù hợp</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-6 flex items-center justify-between text-sm text-slate-500">
+            <div id="pageInfo">Đang hiển thị 0 bản ghi</div>
+            <div class="flex gap-2">
+                <button id="prevBtn" onclick="changePage(-1)"
+                    class="px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50">Trước</button>
+                <button id="nextBtn" onclick="changePage(1)"
+                    class="px-3 py-1 bg-white border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50">Sau</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let currentPage = 1;
+        let totalRecords = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inject sidebar
+            if (typeof injectSidebarMenu === 'function') {
+                injectSidebarMenu(null, 'activity-log');
+            }
+
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterFrom').value = today;
+
+            loadLogs();
+        });
+
+        async function loadLogs() {
+            const tableBody = document.getElementById('logTableBody');
+            const noData = document.getElementById('noData');
+            const limit = document.getElementById('filterLimit').value;
+            const method = document.getElementById('filterMethod').value;
+            const status = document.getElementById('filterStatus').value;
+            const fromDate = document.getElementById('filterFrom').value;
+
+            const offset = (currentPage - 1) * limit;
+
+            // Show loading state
+            tableBody.innerHTML = Array(5).fill(0).map(() => `
+                <tr class="border-b border-slate-100">
+                    <td class="px-6 py-4"><div class="h-4 w-32 loading-shimmer rounded"></div></td>
+                    <td class="px-6 py-4"><div class="h-4 w-24 loading-shimmer rounded"></div></td>
+                    <td class="px-6 py-4"><div class="h-4 w-12 loading-shimmer rounded"></div></td>
+                    <td class="px-6 py-4"><div class="h-4 w-64 loading-shimmer rounded"></div></td>
+                    <td class="px-6 py-4"><div class="h-4 w-20 loading-shimmer rounded"></div></td>
+                    <td class="px-6 py-4"><div class="h-4 w-16 loading-shimmer rounded"></div></td>
+                </tr>
+            `).join('');
+
+            try {
+                const token = AuthHelper.getToken();
+                let url = `${API_BASE}/notifications/activity-logs?limit=${limit}&offset=${offset}`;
+                if (method) url += `&method=${method}`;
+                if (fromDate) url += `&from_date=${fromDate}`;
+                if (status) {
+                    // This is a simple logic for success/error
+                    // In real app, we might need a status_code filter on API
+                }
+
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    renderLogs(result.data);
+                    totalRecords = result.total || result.data.length;
+
+                    // Filter by status if selected (since API doesn't handle 'success/error' string yet)
+                    if (status) {
+                        const filtered = result.data.filter(log => {
+                            if (status === 'success') return log.status_code >= 200 && log.status_code < 300;
+                            return log.status_code >= 400;
+                        });
+                        renderLogs(filtered);
+                        totalRecords = filtered.length;
+                    }
+
+                    updatePaginationUI(limit);
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Lỗi khi kết nối đến server</td></tr>';
+            }
+        }
+
+        function renderLogs(logs) {
+            const tableBody = document.getElementById('logTableBody');
+            const noData = document.getElementById('noData');
+
+            if (!logs || logs.length === 0) {
+                tableBody.innerHTML = '';
+                noData.classList.remove('hidden');
+                return;
+            }
+
+            noData.classList.add('hidden');
+            tableBody.innerHTML = logs.map(log => {
+                const date = new Date(log.created_at);
+                const isError = log.status_code >= 400;
+
+                // Ưu tiên dùng action_description từ backend (Tiếng Việt)
+                let description = log.action_description;
+
+                // Fallback nếu null (cho log cũ chưa có description)
+                if (!description) {
+                    description = log.url;
+                    if (log.method === 'POST') description = 'Tạo mới: ' + log.url;
+                    if (log.method === 'PUT' || log.method === 'PATCH') description = 'Cập nhật: ' + log.url;
+                    if (log.method === 'DELETE') description = 'Xóa: ' + log.url;
+                }
+
+                // Cải thiện hiển thị người dùng
+                const displayUserName = log.user_name || 'Hệ thống';
+                const avatarChar = displayUserName.charAt(0).toUpperCase();
+
+                // Phân biệt màu sắc User thật và Hệ thống
+                const avatarBg = log.user_id ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
+                        <td class="px-6 py-4 text-sm text-slate-700 whitespace-nowrap">
+                            <div class="font-bold text-slate-800">${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                            <div class="text-[10px] text-slate-400 font-medium">${date.toLocaleDateString('vi-VN')}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full ${avatarBg} flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
+                                    ${avatarChar}
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-semibold text-slate-700 leading-tight">${displayUserName}</span>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">${log.user_id ? 'Người dùng' : 'SYSTEM'}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="method-badge method-${log.method}">${log.method}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-slate-800">${description}</div>
+                            <div class="text-[10px] font-mono text-slate-400 mt-1 break-all bg-slate-50 px-1 rounded inline-block">${log.url}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-1.5 ${isError ? 'status-error' : 'status-success'}">
+                                <div class="w-2 h-2 rounded-full ${isError ? 'bg-red-500 animate-pulse' : 'bg-green-500'}"></div>
+                                <span class="text-sm font-black">${log.status_code}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-bold text-slate-500 tabular-nums">${log.duration_ms || 0}ms</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updatePaginationUI(limit) {
+            const start = (currentPage - 1) * limit + 1;
+            const end = Math.min(currentPage * limit, totalRecords);
+            document.getElementById('pageInfo').textContent = `Hiển thị ${start}-${end} trên tổng ${totalRecords} bản ghi`;
+
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = end >= totalRecords;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            loadLogs();
+        }
+    </script>
+</body>
+
+</html>

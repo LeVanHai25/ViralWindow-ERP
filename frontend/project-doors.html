@@ -1,0 +1,777 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa trong dự án - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bom-row:hover {
+            background-color: #f0f9ff;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="min-h-screen">
+    <!-- HEADER -->
+    <div class="bg-gradient-to-r from-blue-700 to-purple-700 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-5 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
+                    class="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold" id="pageTitle">Cửa trong dự án</h1>
+                    <p class="text-white/80 text-sm" id="projectInfo">Đang tải...</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="product-catalog-v2.html"
+                    class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 text-sm font-medium transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Xem Sản phẩm
+                </a>
+                <button onclick="openAddDoorModal()"
+                    class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg flex items-center gap-2 text-sm font-medium transition shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Thêm cửa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex gap-1">
+                <button onclick="switchTab('doors')" id="tab-doors"
+                    class="tab-btn px-6 py-3 font-medium text-blue-600 border-b-2 border-blue-600">
+                    Danh sách cửa
+                </button>
+                <button onclick="switchTab('bom')" id="tab-bom"
+                    class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    Bóc tách vật tư (BOM)
+                </button>
+                <button onclick="switchTab('stock')" id="tab-stock"
+                    class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                    Kiểm tra tồn kho
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- TAB: Danh sách cửa -->
+        <div id="content-doors" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">Danh sách cửa trong dự án</h2>
+                    <div class="text-sm text-gray-500" id="doorSummary">0 mẫu cửa | 0 cái tổng</div>
+                </div>
+                <div id="doorsList" class="space-y-4">
+                    <div class="text-center py-8 text-gray-400">Đang tải...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: BOM -->
+        <div id="content-bom" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">Bóc tách vật tư (BOM)</h2>
+                    <div class="flex gap-2">
+                        <button onclick="extractBOM()"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Cập nhật BOM
+                        </button>
+                        <button onclick="exportToWarehouse()" id="btnExport"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                            Xuất kho
+                        </button>
+                    </div>
+                </div>
+                <div id="bomContent">
+                    <div class="text-center py-8 text-gray-400">Nhấn "Cập nhật BOM" để bóc tách vật tư</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Stock Check -->
+        <div id="content-stock" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">Kiểm tra tồn kho</h2>
+                    <button onclick="checkStock()"
+                        class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        Kiểm tra
+                    </button>
+                </div>
+                <div id="stockContent">
+                    <div class="text-center py-8 text-gray-400">Nhấn "Kiểm tra" để check tồn kho</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD DOOR MODAL -->
+    <div id="addDoorModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+            <div
+                class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">Thêm cửa vào dự án</h2>
+                <button onclick="closeAddDoorModal()" class="p-1 hover:bg-white/20 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <!-- Door Catalog Grid -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Chọn cửa từ Catalog</label>
+                    <div id="catalogGrid" class="grid grid-cols-3 gap-3 max-h-60 overflow-y-auto border rounded-lg p-3">
+                        <div class="text-center py-4 text-gray-400">Đang tải...</div>
+                    </div>
+                </div>
+
+                <!-- Selected Door Info -->
+                <div id="selectedDoorInfo" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-medium text-blue-800 mb-2">Cửa đã chọn: <span id="selectedDoorName"></span></h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hệ nhôm <span
+                                    class="text-red-500">*</span></label>
+                            <select id="aluminumSystem" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Chọn hệ nhôm --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                            <input type="number" id="doorQuantity" min="1" value="1"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Chiều rộng (mm)</label>
+                            <input type="number" id="doorWidth" placeholder="Mặc định"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Chiều cao (mm)</label>
+                            <input type="number" id="doorHeight" placeholder="Mặc định"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vị trí lắp đặt</label>
+                        <input type="text" id="doorLocation" placeholder="VD: Phòng khách, Tầng 2..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button onclick="closeAddDoorModal()"
+                        class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">Hủy</button>
+                    <button onclick="addDoorToProject()" id="btnAddDoor" disabled
+                        class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                        Thêm vào dự án
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let projectId = null;
+        let projectData = null;
+        let catalogDoors = [];
+        let allSystems = [];
+        let selectedDoorId = null;
+
+        // Get project ID from URL
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            projectId = urlParams.get('projectId');
+
+            if (!projectId) {
+                alert('Không tìm thấy ID dự án');
+                window.location.href = 'projects.html';
+                return;
+            }
+
+            loadProject();
+            loadProjectDoors();
+            loadCatalog();
+            loadSystems();
+        });
+
+        // Load project info
+        async function loadProject() {
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}`);
+                const result = await response.json();
+                if (result.success) {
+                    projectData = result.data;
+                    document.getElementById('pageTitle').textContent = `Cửa trong dự án: ${projectData.project_name || projectData.project_code}`;
+                    document.getElementById('projectInfo').textContent = `Mã: ${projectData.project_code} | Khách: ${projectData.customer_name || 'N/A'}`;
+                }
+            } catch (error) {
+                console.error('Error loading project:', error);
+            }
+        }
+
+        // Load doors in project
+        async function loadProjectDoors() {
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/doors`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderDoorsList(result.data);
+                } else {
+                    document.getElementById('doorsList').innerHTML = `<div class="text-center py-8 text-gray-400">Không thể tải danh sách cửa</div>`;
+                }
+            } catch (error) {
+                console.error('Error loading project doors:', error);
+                document.getElementById('doorsList').innerHTML = `<div class="text-center py-8 text-red-400">Lỗi kết nối server</div>`;
+            }
+        }
+
+        // Render doors list
+        function renderDoorsList(doors) {
+            const container = document.getElementById('doorsList');
+            const summary = document.getElementById('doorSummary');
+
+            if (!doors || doors.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p class="text-gray-400 mb-4">Chưa có cửa nào trong dự án này</p>
+                        <button onclick="openAddDoorModal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
+                            + Thêm cửa đầu tiên
+                        </button>
+                    </div>
+                `;
+                summary.textContent = '0 mẫu cửa | 0 cái tổng';
+                return;
+            }
+
+            const totalQty = doors.reduce((sum, d) => sum + (d.quantity || 1), 0);
+            summary.textContent = `${doors.length} mẫu cửa | ${totalQty} cái tổng`;
+
+            container.innerHTML = doors.map(door => `
+                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl card-hover transition">
+                    <div class="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden border">
+                        ${door.preview_image
+                    ? `<img src="${API_BASE.replace('/api', '')}${door.preview_image}" class="w-full h-full object-contain">`
+                    : `<svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                               </svg>`
+                }
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-semibold text-gray-800">${door.door_name || 'N/A'}</h3>
+                            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">${door.door_code || ''}</span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <span class="mr-4">Hệ nhôm: <strong>${door.aluminum_system}</strong></span>
+                            <span class="mr-4">Kích thước: <strong>${door.width_mm || '?'} × ${door.height_mm || '?'} mm</strong></span>
+                            ${door.location ? `<span>Vị trí: <strong>${door.location}</strong></span>` : ''}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-blue-600">${door.quantity}</div>
+                        <div class="text-xs text-gray-500">cái</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editProjectDoor(${door.id})" class="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </button>
+                        <button onclick="removeProjectDoor(${door.id})" class="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'border-blue-600');
+                btn.classList.add('text-gray-500', 'border-transparent');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            document.getElementById(`tab-${tab}`).classList.add('text-blue-600', 'border-blue-600');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-500', 'border-transparent');
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+        }
+
+        // Load catalog doors
+        async function loadCatalog() {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates`);
+                const result = await response.json();
+                if (result.success) {
+                    catalogDoors = result.data;
+                    renderCatalogGrid();
+                }
+            } catch (error) {
+                console.error('Error loading catalog:', error);
+            }
+        }
+
+        // Load aluminum systems
+        async function loadSystems() {
+            try {
+                const response = await fetch(`${API_BASE}/door-templates/systems`);
+                const result = await response.json();
+                if (result.success) {
+                    allSystems = result.data;
+                    const select = document.getElementById('aluminumSystem');
+                    select.innerHTML = '<option value="">-- Chọn hệ nhôm --</option>' +
+                        allSystems.map(s => `<option value="${s.code}">${s.name || s.code}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading systems:', error);
+            }
+        }
+
+        // Render catalog grid in modal
+        function renderCatalogGrid() {
+            const container = document.getElementById('catalogGrid');
+            if (catalogDoors.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center py-4 text-gray-400">Chưa có mẫu cửa nào</div>';
+                return;
+            }
+
+            container.innerHTML = catalogDoors.map(door => `
+                <div class="catalog-item p-3 border rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition ${selectedDoorId === door.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : ''}" 
+                     onclick="selectDoor(${door.id})">
+                    <div class="w-full h-16 bg-gray-100 rounded mb-2 flex items-center justify-center overflow-hidden">
+                        ${door.preview_image
+                    ? `<img src="${API_BASE.replace('/api', '')}${door.preview_image}" class="h-full object-contain">`
+                    : `<svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                               </svg>`
+                }
+                    </div>
+                    <p class="text-xs font-medium text-gray-800 truncate">${door.name}</p>
+                    <p class="text-xs text-gray-500">${door.code || ''}</p>
+                </div>
+            `).join('');
+        }
+
+        // Select door from catalog
+        function selectDoor(doorId) {
+            selectedDoorId = doorId;
+            const door = catalogDoors.find(d => d.id === doorId);
+
+            if (door) {
+                document.getElementById('selectedDoorInfo').classList.remove('hidden');
+                document.getElementById('selectedDoorName').textContent = door.name;
+                document.getElementById('btnAddDoor').disabled = false;
+
+                // Set default dimensions
+                const paramSchema = typeof door.param_schema === 'string' ? JSON.parse(door.param_schema || '{}') : door.param_schema || {};
+                document.getElementById('doorWidth').placeholder = door.default_width_mm || paramSchema.defaultWidth || 1200;
+                document.getElementById('doorHeight').placeholder = door.default_height_mm || paramSchema.defaultHeight || 2200;
+            }
+
+            renderCatalogGrid(); // Re-render to update selection
+        }
+
+        // Open/Close modal
+        function openAddDoorModal() {
+            selectedDoorId = null;
+            document.getElementById('selectedDoorInfo').classList.add('hidden');
+            document.getElementById('btnAddDoor').disabled = true;
+            document.getElementById('doorQuantity').value = 1;
+            document.getElementById('doorWidth').value = '';
+            document.getElementById('doorHeight').value = '';
+            document.getElementById('doorLocation').value = '';
+            document.getElementById('aluminumSystem').value = '';
+            renderCatalogGrid();
+            document.getElementById('addDoorModal').classList.remove('hidden');
+            document.getElementById('addDoorModal').classList.add('flex');
+        }
+
+        function closeAddDoorModal() {
+            document.getElementById('addDoorModal').classList.add('hidden');
+            document.getElementById('addDoorModal').classList.remove('flex');
+        }
+
+        // Add door to project
+        async function addDoorToProject() {
+            if (!selectedDoorId) {
+                alert('Vui lòng chọn một mẫu cửa');
+                return;
+            }
+
+            const aluminumSystem = document.getElementById('aluminumSystem').value;
+            if (!aluminumSystem) {
+                alert('Vui lòng chọn hệ nhôm');
+                return;
+            }
+
+            const data = {
+                door_template_id: selectedDoorId,
+                aluminum_system: aluminumSystem,
+                quantity: parseInt(document.getElementById('doorQuantity').value) || 1,
+                custom_width_mm: document.getElementById('doorWidth').value || null,
+                custom_height_mm: document.getElementById('doorHeight').value || null,
+                location: document.getElementById('doorLocation').value || null
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/doors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    closeAddDoorModal();
+                    loadProjectDoors();
+                    alert('Đã thêm cửa vào dự án!');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error adding door:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // Remove door from project
+        async function removeProjectDoor(doorId) {
+            if (!confirm('Bạn có chắc muốn xóa cửa này khỏi dự án?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/doors/${doorId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    loadProjectDoors();
+                    alert('Đã xóa cửa khỏi dự án');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error removing door:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // Edit door - placeholder
+        function editProjectDoor(doorId) {
+            alert('Tính năng sửa đang được phát triển');
+        }
+
+        // Extract BOM
+        async function extractBOM() {
+            const container = document.getElementById('bomContent');
+            container.innerHTML = '<div class="text-center py-8"><div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div><p class="text-gray-500 mt-2">Đang bóc tách vật tư...</p></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/doors/bom`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderBOM(result.data);
+                } else {
+                    container.innerHTML = `<div class="text-center py-8 text-red-400">Lỗi: ${result.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error extracting BOM:', error);
+                container.innerHTML = '<div class="text-center py-8 text-red-400">Lỗi kết nối server</div>';
+            }
+        }
+
+        // Render BOM
+        function renderBOM(data) {
+            const container = document.getElementById('bomContent');
+
+            if (!data.total || (data.total.profiles.length === 0 && data.total.glass.length === 0 && data.total.accessories.length === 0)) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-400">Chưa có vật tư nào. Hãy thêm cửa vào dự án trước.</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="grid grid-cols-4 gap-4 text-center">
+                        <div>
+                            <div class="text-3xl font-bold text-blue-600">${data.summary.total_doors}</div>
+                            <div class="text-sm text-gray-500">Tổng số cửa</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-purple-600">${data.summary.total_door_types}</div>
+                            <div class="text-sm text-gray-500">Loại cửa</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-green-600">${data.summary.total_profile_types}</div>
+                            <div class="text-sm text-gray-500">Loại nhôm</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-orange-600">${data.summary.total_accessory_types}</div>
+                            <div class="text-sm text-gray-500">Loại phụ kiện</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Profiles -->
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                            Thanh nhôm
+                        </h4>
+                        <div class="space-y-2">
+                            ${data.total.profiles.map(p => `
+                                <div class="bom-row flex justify-between py-2 px-3 bg-white rounded text-sm">
+                                    <span>${p.name}</span>
+                                    <span class="font-semibold">${(p.total_length_m || 0).toFixed(2)} m</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Glass -->
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h4 class="font-bold text-green-800 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                            </svg>
+                            Kính
+                        </h4>
+                        <div class="space-y-2">
+                            ${data.total.glass.map(g => `
+                                <div class="bom-row flex justify-between py-2 px-3 bg-white rounded text-sm">
+                                    <span>${g.name}</span>
+                                    <span class="font-semibold">${(g.total_area_m2 || 0).toFixed(2)} m²</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Accessories -->
+                    <div class="bg-orange-50 rounded-lg p-4">
+                        <h4 class="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Phụ kiện
+                        </h4>
+                        <div class="space-y-2">
+                            ${data.total.accessories.map(a => `
+                                <div class="bom-row flex justify-between py-2 px-3 bg-white rounded text-sm">
+                                    <span>${a.name}</span>
+                                    <span class="font-semibold">${a.total_qty} ${a.unit || 'bộ'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Check stock
+        async function checkStock() {
+            const container = document.getElementById('stockContent');
+            container.innerHTML = '<div class="text-center py-8"><div class="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto"></div><p class="text-gray-500 mt-2">Đang kiểm tra tồn kho...</p></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/doors/stock-check`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderStockCheck(result.data);
+                } else {
+                    container.innerHTML = `<div class="text-center py-8 text-red-400">Lỗi: ${result.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error checking stock:', error);
+                container.innerHTML = '<div class="text-center py-8 text-red-400">Lỗi kết nối server</div>';
+            }
+        }
+
+        // Render stock check results
+        function renderStockCheck(data) {
+            const container = document.getElementById('stockContent');
+
+            const statusBadge = data.status === 'available'
+                ? '<span class="status-badge px-4 py-2 bg-green-100 text-green-700 rounded-full font-medium"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Đủ vật tư</span>'
+                : '<span class="status-badge px-4 py-2 bg-red-100 text-red-700 rounded-full font-medium"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Thiếu vật tư</span>';
+
+            container.innerHTML = `
+                <div class="text-center mb-6">
+                    ${statusBadge}
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <div class="text-3xl font-bold text-green-600">${data.available_count}</div>
+                        <div class="text-sm text-gray-500">Đủ kho</div>
+                    </div>
+                    <div class="text-center p-4 bg-red-50 rounded-lg">
+                        <div class="text-3xl font-bold text-red-600">${data.insufficient_count}</div>
+                        <div class="text-sm text-gray-500">Thiếu</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <div class="text-3xl font-bold text-gray-600">${data.not_found_count}</div>
+                        <div class="text-sm text-gray-500">Không tìm thấy</div>
+                    </div>
+                </div>
+
+                ${data.details.insufficient.length > 0 ? `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <h4 class="font-bold text-red-800 mb-3">⚠️ Vật tư thiếu</h4>
+                        <table class="w-full text-sm">
+                            <thead class="text-red-600">
+                                <tr><th class="text-left py-2">Tên</th><th class="text-right">Cần</th><th class="text-right">Có</th><th class="text-right">Thiếu</th></tr>
+                            </thead>
+                            <tbody class="text-red-800">
+                                ${data.details.insufficient.map(item => `
+                                    <tr class="border-t border-red-200">
+                                        <td class="py-2">${item.name}</td>
+                                        <td class="text-right">${item.required}</td>
+                                        <td class="text-right">${item.available}</td>
+                                        <td class="text-right font-bold">${item.shortage}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+
+                ${data.details.available.length > 0 ? `
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <h4 class="font-bold text-green-800 mb-3">✓ Vật tư đủ kho</h4>
+                        <table class="w-full text-sm">
+                            <thead class="text-green-600">
+                                <tr><th class="text-left py-2">Tên</th><th class="text-right">Cần</th><th class="text-right">Có</th><th class="text-right">Còn lại</th></tr>
+                            </thead>
+                            <tbody class="text-green-800">
+                                ${data.details.available.slice(0, 10).map(item => `
+                                    <tr class="border-t border-green-200">
+                                        <td class="py-2">${item.name}</td>
+                                        <td class="text-right">${item.required}</td>
+                                        <td class="text-right">${item.available}</td>
+                                        <td class="text-right">${item.remaining}</td>
+                                    </tr>
+                                `).join('')}
+                                ${data.details.available.length > 10 ? `<tr><td colspan="4" class="text-center py-2 text-gray-500">... và ${data.details.available.length - 10} vật tư khác</td></tr>` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Export BOM to Warehouse
+        async function exportToWarehouse() {
+            if (!confirm('Bạn có chắc muốn xuất vật tư BOM ra kho?\n\nHành động này sẽ trừ tồn kho!')) return;
+
+            const btn = document.getElementById('btnExport');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang xuất...';
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}/doors/export`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes: 'Xuất từ Door Catalog BOM' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(`✅ ${result.message}\n\nĐã xuất ${result.data.exported_items.length} vật tư.${result.data.errors ? '\n\n⚠️ Một số vật tư không xuất được.' : ''}`);
+                } else {
+                    alert('❌ Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error exporting to warehouse:', error);
+                alert('❌ Lỗi kết nối server');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    </script>
+</body>
+
+</html>

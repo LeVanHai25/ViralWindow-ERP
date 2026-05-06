@@ -1,0 +1,1219 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu thu - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="finance-date-range-picker.js"></script>
+    <style>
+        /* Modern gradient background - đồng bộ với phần mềm */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Modern header with gradient */
+        .header-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Filter bar modern */
+        .filter-bar-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+            z-index: 10;
+        }
+
+        /* Table modern */
+        .table-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-modern thead {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #f8fafc;
+            transform: scale(1.01);
+        }
+
+        /* Button modern */
+        .btn-modern {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Modal modern */
+        .modal-modern {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/finance-sidebar.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR (loaded from finance-sidebar.js) -->
+    <div id="sidebarContainer"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <div class="bg-white shadow p-5 flex justify-between items-center header-gradient backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Phiếu thu</h1>
+                    <p class="text-blue-100 text-sm">Quản lý các phiếu thu tiền</p>
+                </div>
+            </div>
+            <button onclick="openReceiptModal()"
+                class="px-6 py-2.5 bg-white text-blue-600 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-50 transition-all btn-modern shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tạo phiếu thu
+            </button>
+        </div>
+
+        <div class="p-6">
+
+            <!-- TABS -->
+            <div class="bg-white rounded-xl shadow-sm mb-6 p-2 fade-in">
+                <div class="flex gap-2 border-b border-gray-200">
+                    <button onclick="switchTab('all')" id="tab-all"
+                        class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                        Tất cả
+                    </button>
+                    <button onclick="switchTab('draft')" id="tab-draft"
+                        class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                        Nháp
+                    </button>
+                    <button onclick="switchTab('posted')" id="tab-posted"
+                        class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                        Đã ghi sổ
+                    </button>
+                    <button onclick="switchTab('cancelled')" id="tab-cancelled"
+                        class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                        Đã hủy
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTERS — Modern 2-Tier Layout -->
+            <div class="filter-bar-modern mb-6 fade-in" style="background:white; border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); border:1px solid #f1f5f9; overflow:visible;">
+                <!-- Tier 1: Search + Date Range -->
+                <div style="padding:20px 24px 16px 24px; display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+                    <div style="flex:2; min-width:260px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;color:#6366f1;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                            Tìm kiếm
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" id="searchInput" placeholder="Nhập mã phiếu, tên dự án, khách hàng..." oninput="handleSearch()"
+                                style="width:100%; padding:10px 14px 10px 40px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:13px; color:#1e293b; background:#f8fafc; outline:none; transition:all 0.2s ease; box-sizing:border-box;"
+                                onfocus="this.style.background='#fff';this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'"
+                                onblur="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                            <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;color:#94a3b8;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex:1.5; min-width:220px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;color:#8b5cf6;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                            Thời gian
+                        </label>
+                        <div id="dateRangePicker"></div>
+                    </div>
+                </div>
+                <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0 20%,#e2e8f0 80%,transparent);margin:0 24px;"></div>
+                <!-- Tier 2: Advanced Filters -->
+                <div style="padding:16px 24px 20px 24px; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+                    <div style="flex:1; min-width:180px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;color:#3b82f6;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                            Khách hàng
+                        </label>
+                        <select id="filterCustomer" onchange="loadReceipts()"
+                            style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all 0.2s ease;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                            <option value="">-- Chọn khách hàng --</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; min-width:180px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;color:#f59e0b;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
+                            Dự án
+                        </label>
+                        <select id="filterProject" onchange="loadReceipts()"
+                            style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all 0.2s ease;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                            <option value="">-- Chọn dự án --</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; min-width:160px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;color:#10b981;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>
+                            Trạng thái
+                        </label>
+                        <select id="filterStatus" onchange="onStatusFilterChange()"
+                            style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:all 0.2s ease;"
+                            onfocus="this.style.borderColor='#818cf8';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
+                            <option value="">Tất cả</option>
+                            <option value="draft">Nháp</option>
+                            <option value="posted">Đã ghi sổ</option>
+                            <option value="cancelled">Đã hủy</option>
+                        </select>
+                    </div>
+                    <div style="flex-grow:1;"></div>
+                    <div style="flex-shrink:0;">
+                        <label style="display:block;font-size:11px;margin-bottom:6px;color:transparent;user-select:none;">&nbsp;</label>
+                        <button onclick="resetFilters()" id="btnClearFilters"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;color:#94a3b8;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease;white-space:nowrap;"
+                            onmouseover="this.style.borderColor='#fca5a5';this.style.color='#ef4444';this.style.background='#fef2f2'"
+                            onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#94a3b8';this.style.background='#fff'">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-modern fade-in" style="animation-delay: 0.1s;">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Số PT</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Ngày</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Khách hàng</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Dự án</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Số tiền</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Hình thức</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Trạng thái</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiptsTable" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <p>Đang tải dữ liệu...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- MODAL: Create/Edit Receipt -->
+        <div id="receiptModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center"
+            style="display: none; z-index: 99999 !important;">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden mx-4"
+                style="z-index: 100000 !important; position: relative;">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-white" id="receiptModalTitle">Tạo phiếu thu</h2>
+                    <button type="button" onclick="closeReceiptModal()" class="text-white hover:text-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Body - Scrollable -->
+                <div class="p-6 overflow-y-auto" style="max-height: 60vh;">
+                    <form id="receiptForm" onsubmit="saveReceipt(event)">
+                        <!-- Row 1: Số phiếu + Ngày -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Số phiếu</label>
+                                <input type="text" id="receiptCode"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly
+                                    placeholder="Tự động tạo">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ngày thu <span
+                                        class="text-red-500">*</span></label>
+                                <input type="date" id="receiptDate"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Tài khoản tiền -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tài khoản tiền <span
+                                    class="text-red-500">*</span></label>
+                            <select id="receiptAccount" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                required>
+                                <option value="cash">Tiền mặt</option>
+                                <option value="bank_transfer">Chuyển khoản</option>
+                            </select>
+                        </div>
+
+                        <!-- Row 3: Khách hàng + Dự án -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Khách hàng <span
+                                        class="text-red-500">*</span></label>
+                                <select id="receiptCustomer" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                    required onchange="loadProjectsForReceipt()">
+                                    <option value="">-- Chọn khách hàng --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dự án</label>
+                                <select id="receiptProject" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="">-- Chọn dự án --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Đợt thanh toán -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Đợt thanh toán</label>
+                            <select id="receiptPaymentTerm" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="deposit">Đặt cọc</option>
+                                <option value="installment_1">Đợt 1</option>
+                                <option value="installment_2">Đợt 2</option>
+                                <option value="final">Quyết toán</option>
+                            </select>
+                        </div>
+
+                        <!-- Divider -->
+                        <hr class="my-4 border-gray-200">
+
+                        <!-- Chi tiết các khoản thu - Editable Table -->
+                        <div class="mb-4" id="receiptItemsEditSection">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-lg font-semibold text-gray-800">Chi tiết các khoản thu</h3>
+                                <button type="button" onclick="addReceiptItem()"
+                                    class="px-3 py-1.5 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 flex items-center gap-1"
+                                    id="addReceiptItemBtn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Thêm dòng
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-2 py-2 text-xs font-medium text-gray-600 text-left w-24">Mã
+                                            </th>
+                                            <th class="px-2 py-2 text-xs font-medium text-gray-600 text-left">Khoản thu
+                                            </th>
+                                            <th class="px-2 py-2 text-xs font-medium text-gray-600 text-center w-20">SL
+                                            </th>
+                                            <th class="px-2 py-2 text-xs font-medium text-gray-600 text-right w-32">Đơn
+                                                giá</th>
+                                            <th class="px-2 py-2 text-xs font-medium text-gray-600 text-right w-32">
+                                                Thành tiền</th>
+                                            <th class="px-2 py-2 w-10"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="receiptItemsEditTable" class="divide-y divide-gray-100">
+                                        <!-- Items will be rendered here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Nhấn "Thêm dòng" để thêm khoản thu. Tổng tiền sẽ tự
+                                động tính.</p>
+                        </div>
+
+                        <!-- Row: Diễn giải -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Diễn giải</label>
+                            <textarea id="receiptDescription"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none" rows="2"
+                                placeholder="Ghi chú thêm..."></textarea>
+                        </div>
+
+
+                        <!-- Total -->
+                        <div class="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
+                            <span class="text-base font-semibold text-gray-700">Tổng tiền:</span>
+                            <span class="text-2xl font-bold text-green-600" id="receiptTotal">0 ₫</span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Footer -->
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                    <button type="button" onclick="closeReceiptModal()"
+                        class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">
+                        Hủy
+                    </button>
+                    <button type="button" onclick="saveReceiptDraft()"
+                        class="px-5 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200"
+                        id="saveDraftBtn">
+                        Lưu nháp
+                    </button>
+                    <button type="button" onclick="document.getElementById('receiptForm').requestSubmit()"
+                        class="px-5 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                        id="postReceiptBtn">
+                        Ghi sổ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/finance-sync-manager.js"></script>
+        <script src="finance-common.js"></script>
+        <script>
+            let currentReceiptId = null;
+            let isDraft = false;
+            let dateRangePicker = null;
+
+            // Current active tab
+            let currentTab = 'all';
+
+            // Receipt items state for editable table
+            let receiptItems = [];
+            // View-only mode flag
+            let isViewOnlyMode = false;
+
+            // ============================================
+            // RECEIPT ITEMS MANAGEMENT
+            // ============================================
+
+            // Add new item row
+            function addReceiptItem() {
+                const newItem = {
+                    id: Date.now(),
+                    code: '',
+                    name: '',
+                    quantity: 1,
+                    unit_price: 0,
+                    amount: 0
+                };
+                receiptItems.push(newItem);
+                renderEditableReceiptItems();
+            }
+
+            // Remove item
+            function removeReceiptItem(id) {
+                receiptItems = receiptItems.filter(item => item.id !== id);
+                renderEditableReceiptItems();
+                calculateReceiptTotal();
+            }
+
+            // Update item field
+            function updateReceiptItemField(id, field, value) {
+                const item = receiptItems.find(i => i.id === id);
+                if (item) {
+                    if (field === 'quantity') {
+                        item[field] = parseInt(value) || 0;
+                    } else if (field === 'unit_price') {
+                        item[field] = parseFloat(value) || 0;
+                    } else {
+                        item[field] = value;
+                    }
+                    item.amount = item.quantity * item.unit_price;
+                    renderEditableReceiptItems();
+                    calculateReceiptTotal();
+                }
+            }
+
+            // Render editable items table
+            function renderEditableReceiptItems() {
+                const tbody = document.getElementById('receiptItemsEditTable');
+                if (!tbody) return;
+
+                if (receiptItems.length === 0) {
+                    const emptyMsg = isViewOnlyMode
+                        ? 'Không có khoản thu nào.'
+                        : 'Chưa có khoản thu nào. Nhấn "Thêm dòng" để thêm.';
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-3 py-4 text-center text-gray-400 text-sm">
+                                ${emptyMsg}
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const disabledAttr = isViewOnlyMode ? 'disabled' : '';
+                const inputBgClass = isViewOnlyMode ? 'bg-gray-100' : '';
+
+                tbody.innerHTML = receiptItems.map(item => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-1 py-1">
+                            <input type="text" value="${escapeHtml(item.code || '')}" 
+                                onchange="updateReceiptItemField(${item.id}, 'code', this.value)"
+                                class="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:border-green-400 focus:ring-1 focus:ring-green-400 ${inputBgClass}" 
+                                placeholder="Mã" ${disabledAttr}>
+                        </td>
+                        <td class="px-1 py-1">
+                            <input type="text" value="${escapeHtml(item.name || '')}" 
+                                onchange="updateReceiptItemField(${item.id}, 'name', this.value)"
+                                class="w-full px-2 py-1.5 border border-gray-200 rounded text-sm focus:border-green-400 focus:ring-1 focus:ring-green-400 ${inputBgClass}" 
+                                placeholder="Khoản thu" ${disabledAttr}>
+                        </td>
+                        <td class="px-1 py-1">
+                            <input type="number" value="${item.quantity}" min="1" step="1"
+                                onchange="updateReceiptItemField(${item.id}, 'quantity', this.value)"
+                                class="w-full px-2 py-1.5 border border-gray-200 rounded text-sm text-center focus:border-green-400 focus:ring-1 focus:ring-green-400 ${inputBgClass}" ${disabledAttr}>
+                        </td>
+                        <td class="px-1 py-1">
+                            <input type="number" value="${item.unit_price}" min="0" step="1000"
+                                onchange="updateReceiptItemField(${item.id}, 'unit_price', this.value)"
+                                class="w-full px-2 py-1.5 border border-gray-200 rounded text-sm text-right focus:border-green-400 focus:ring-1 focus:ring-green-400 ${inputBgClass}" ${disabledAttr}>
+                        </td>
+                        <td class="px-1 py-1 text-right text-sm font-medium text-green-600">
+                            ${formatCurrency(item.amount)}
+                        </td>
+                        <td class="px-1 py-1 text-center">
+                            ${!isViewOnlyMode ? `
+                                <button type="button" onclick="removeReceiptItem(${item.id})"
+                                    class="p-1 text-red-500 hover:bg-red-50 rounded">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Calculate and display total
+            function calculateReceiptTotal() {
+                const total = receiptItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+                document.getElementById('receiptTotal').textContent = formatCurrency(total);
+            }
+
+            // Switch tab
+            function switchTab(tab) {
+                currentTab = tab;
+
+                // Update tab buttons
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold');
+                    btn.classList.add('text-gray-700', 'border-transparent');
+                });
+
+                const activeTab = document.getElementById(`tab-${tab}`);
+                if (activeTab) {
+                    activeTab.classList.remove('text-gray-700', 'border-transparent');
+                    activeTab.classList.add('text-blue-600', 'border-blue-600', 'font-semibold');
+                }
+
+                // Update filter status to match tab
+                document.getElementById('filterStatus').value = tab === 'all' ? '' : tab;
+
+                // Reload receipts
+                loadReceipts();
+            }
+
+            // Handle status filter change
+            function onStatusFilterChange() {
+                const statusValue = document.getElementById('filterStatus').value;
+                // Update currentTab to match filter
+                if (statusValue === '') {
+                    currentTab = 'all';
+                } else {
+                    currentTab = statusValue;
+                    // Update tab button
+                    switchTab(statusValue);
+                    return; // switchTab will call loadReceipts
+                }
+                // Update tab button
+                switchTab('all');
+            }
+
+            // Search handle
+            let searchTimeout = null;
+            function handleSearch() {
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Visual feedback: dim table or show loading state immediately
+                const tbody = document.getElementById('receiptsTable');
+                if (tbody) tbody.style.opacity = '0.5';
+
+                searchTimeout = setTimeout(() => {
+                    loadReceipts();
+                }, 300); // Reduced to 300ms for more "instant" feel
+            }
+
+            // Load receipts
+            async function loadReceipts() {
+                try {
+                    const params = new URLSearchParams();
+                    const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
+                    const customerId = document.getElementById('filterCustomer').value;
+                    const projectId = document.getElementById('filterProject').value;
+                    const keyword = document.getElementById('searchInput').value;
+                    // Use currentTab if filterStatus is empty, otherwise use filterStatus
+                    const status = document.getElementById('filterStatus').value || (currentTab !== 'all' ? currentTab : '');
+
+                    if (range.startDate) params.append('startDate', range.startDate);
+                    if (range.endDate) params.append('endDate', range.endDate);
+                    if (customerId) params.append('customerId', customerId);
+                    if (projectId) params.append('projectId', projectId);
+                    if (status) params.append('status', status);
+                    if (keyword) params.append('keyword', keyword);
+                    params.append('type', 'revenue');
+
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/financial/transactions?${params}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    const tbody = document.getElementById('receiptsTable');
+                    tbody.style.opacity = '1'; // Restore opacity
+                    if (!data.success || !data.data || data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">Chưa có phiếu thu nào</td></tr>';
+                        return;
+                    }
+
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p class="text-lg font-medium">Chưa có phiếu thu nào</p>
+                                    <p class="text-sm text-gray-400 mt-1">Nhấn "Tạo phiếu thu" để bắt đầu</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.data.map(receipt => {
+                        const status = receipt.status || 'draft';
+                        return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">${escapeHtml(receipt.transaction_code || 'N/A')}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${formatDate(receipt.transaction_date)}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(receipt.customer_name || 'N/A')}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${escapeHtml(receipt.project_name || 'N/A')}</td>
+                            <td class="px-6 py-4 text-sm font-semibold text-green-600">${formatCurrency(receipt.amount)}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${formatPaymentMethod(receipt.payment_method)}</td>
+                            <td class="px-6 py-4">${getStatusBadge(status)}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="viewReceipt(${receipt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#6366f1;background:#eff0fe;border:1px solid #c7d2fe;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eff0fe'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Xem
+                                    </button>
+                                    <button onclick="exportReceiptExcel(${receipt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#059669;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;cursor:pointer;transition:all 0.2s;" title="Xuất Excel" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#ecfdf5'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> Excel
+                                    </button>
+                                    ${status === 'draft' ? `
+                                        <button onclick="editReceipt(${receipt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg> Sửa</button>
+                                        <button onclick="postReceipt(${receipt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg> Ghi sổ</button>
+                                        <button onclick="cancelReceipt(${receipt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#e11d48;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Hủy</button>
+                                    ` : status === 'posted' ? `
+                                        <button onclick="cancelReceipt(${receipt.id})" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;font-weight:600;color:#e11d48;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:13px;height:13px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Hủy</button>
+                                    ` : ''}
+
+
+
+
+
+
+
+
+
+
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    }).join('');
+                } catch (error) {
+                    console.error('Error loading receipts:', error);
+                    const tbody = document.getElementById('receiptsTable');
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="text-lg font-medium text-red-600">Lỗi khi tải dữ liệu</p>
+                                <p class="text-sm text-gray-400 mt-1">Vui lòng thử lại sau</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }
+            }
+
+            // Open receipt modal
+            async function openReceiptModal(id = null, viewOnly = false) {
+                currentReceiptId = id;
+                isDraft = false;
+                isViewOnlyMode = viewOnly;
+
+                // Set modal title based on mode
+                let title = 'Tạo phiếu thu';
+                if (id) {
+                    title = viewOnly ? 'Xem phiếu thu' : 'Sửa phiếu thu';
+                }
+                document.getElementById('receiptModalTitle').textContent = title;
+
+                const modal = document.getElementById('receiptModal');
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                // Dùng local date thay vì UTC để đảm bảo đúng ngày ở timezone Vietnam
+                const now = new Date();
+                const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                document.getElementById('receiptDate').value = localDate;
+
+                await loadCustomers(document.getElementById('receiptCustomer'));
+                await loadProjects(document.getElementById('receiptProject'));
+
+                // Reset items array
+                receiptItems = [];
+
+                if (id) {
+                    await loadReceiptData(id, viewOnly);
+                } else {
+                    resetForm(document.getElementById('receiptForm'));
+                    document.getElementById('receiptCode').value = '';
+                    // Add one default item
+                    addReceiptItem();
+                }
+
+                // Update UI based on view mode
+                if (viewOnly) {
+                    document.getElementById('addReceiptItemBtn').classList.add('hidden');
+                    document.getElementById('receiptForm').querySelectorAll('input, select, textarea').forEach(el => {
+                        el.disabled = true;
+                    });
+                    document.getElementById('saveDraftBtn').classList.add('hidden');
+                    document.getElementById('postReceiptBtn').classList.add('hidden');
+                } else {
+                    document.getElementById('addReceiptItemBtn').classList.remove('hidden');
+                }
+
+                renderEditableReceiptItems();
+                calculateReceiptTotal();
+            }
+
+            // Load receipt data
+            async function loadReceiptData(id, viewOnly = false) {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const receipt = data.data;
+                        document.getElementById('receiptCode').value = receipt.transaction_code || '';
+                        document.getElementById('receiptDate').value = receipt.transaction_date.split('T')[0];
+                        document.getElementById('receiptAccount').value = receipt.payment_method || 'cash';
+                        document.getElementById('receiptCustomer').value = receipt.customer_id || '';
+                        document.getElementById('receiptProject').value = receipt.project_id || '';
+                        document.getElementById('receiptDescription').value = receipt.description || '';
+
+                        // Load items into editable array
+                        if (receipt.items && receipt.items.length > 0) {
+                            receiptItems = receipt.items.map(item => ({
+                                id: item.id || Date.now() + Math.random(),
+                                code: item.item_code || '',
+                                name: item.item_name || '',
+                                quantity: parseInt(item.quantity) || 1,
+                                unit_price: parseFloat(item.unit_price) || 0,
+                                amount: parseFloat(item.amount) || 0
+                            }));
+                        } else {
+                            // If no items, create one with the total amount
+                            receiptItems = [{
+                                id: Date.now(),
+                                code: '',
+                                name: receipt.category || 'Khoản thu',
+                                quantity: 1,
+                                unit_price: parseFloat(receipt.amount) || 0,
+                                amount: parseFloat(receipt.amount) || 0
+                            }];
+                        }
+
+                        renderEditableReceiptItems();
+                        calculateReceiptTotal();
+
+                        // Disable if posted or viewOnly
+                        if (receipt.status === 'posted' || viewOnly) {
+                            document.getElementById('receiptForm').querySelectorAll('input, select, textarea').forEach(el => {
+                                el.disabled = true;
+                            });
+                            document.getElementById('saveDraftBtn').classList.add('hidden');
+                            document.getElementById('postReceiptBtn').classList.add('hidden');
+                            document.getElementById('addReceiptItemBtn').classList.add('hidden');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading receipt:', error);
+                    showAlert('Lỗi khi tải dữ liệu phiếu thu');
+                }
+            }
+
+            // (Removed: renderReceiptItems and updateReceiptTotal - replaced by renderEditableReceiptItems and calculateReceiptTotal)
+
+            // Load projects for selected customer
+            async function loadProjectsForReceipt() {
+                const customerId = document.getElementById('receiptCustomer').value;
+                if (!customerId) {
+                    await loadProjects(document.getElementById('receiptProject'));
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${API_BASE}/projects?customerId=${customerId}`);
+                    const data = await res.json();
+
+                    const select = document.getElementById('receiptProject');
+                    select.innerHTML = '<option value="">-- Chọn dự án --</option>';
+
+                    if (data.success && data.data) {
+                        data.data.forEach(project => {
+                            const option = document.createElement('option');
+                            option.value = project.id;
+                            option.textContent = `${project.project_code} - ${project.project_name}`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading projects:', error);
+                }
+            }
+
+            // Close receipt modal
+            function closeReceiptModal() {
+                const modal = document.getElementById('receiptModal');
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                resetForm(document.getElementById('receiptForm'));
+                currentReceiptId = null;
+                isDraft = false;
+                isViewOnlyMode = false;
+                receiptItems = [];
+                document.getElementById('receiptForm').querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = false;
+                });
+                document.getElementById('saveDraftBtn').classList.remove('hidden');
+                document.getElementById('postReceiptBtn').classList.remove('hidden');
+                document.getElementById('addReceiptItemBtn').classList.remove('hidden');
+                document.getElementById('receiptTotal').textContent = '0 ₫';
+            }
+
+            // Save receipt (post)
+            async function saveReceipt(event) {
+                event.preventDefault();
+                await saveReceiptData(false);
+            }
+
+            // Save receipt draft
+            async function saveReceiptDraft() {
+                await saveReceiptData(true);
+            }
+
+            // Save receipt data
+            async function saveReceiptData(draft = false) {
+                // Validate at least one item with amount > 0
+                const validItems = receiptItems.filter(item => item.name && item.amount > 0);
+                if (validItems.length === 0) {
+                    showAlert('Vui lòng thêm ít nhất một khoản thu');
+                    return;
+                }
+
+                // Calculate total amount from items
+                const totalAmount = receiptItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+
+                // Prepare items for API
+                const items = receiptItems.map(item => ({
+                    item_code: item.code || null,
+                    item_name: item.name,
+                    quantity: item.quantity || 1,
+                    unit: 'lần',
+                    unit_price: item.unit_price || 0,
+                    amount: item.amount || 0
+                }));
+
+                const data = {
+                    transaction_date: document.getElementById('receiptDate').value,
+                    transaction_type: 'revenue',
+                    category: items[0]?.item_name || 'Khoản thu',
+                    amount: totalAmount,
+                    description: document.getElementById('receiptDescription').value || null,
+                    customer_id: document.getElementById('receiptCustomer').value || null,
+                    project_id: document.getElementById('receiptProject').value || null,
+                    payment_method: document.getElementById('receiptAccount').value,
+                    items: items
+                };
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    let transactionId = currentReceiptId;
+
+                    // Tạo mới hoặc cập nhật (luôn lưu với status = 'draft' trước)
+                    if (transactionId) {
+                        // Update existing
+                        const res = await fetch(`${API_BASE}/financial/transactions/${transactionId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await res.json();
+                        if (!result.success) {
+                            showAlert('Lỗi: ' + (result.message || 'Không thể cập nhật phiếu thu'));
+                            return;
+                        }
+                    } else {
+                        // Create new
+                        const res = await fetch(`${API_BASE}/financial/transactions`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ ...data, status: 'draft' })
+                        });
+                        const result = await res.json();
+                        if (!result.success) {
+                            showAlert('Lỗi: ' + (result.message || 'Không thể tạo phiếu thu'));
+                            return;
+                        }
+                        transactionId = result.data?.id;
+                    }
+
+                    // Nếu không phải draft, gọi API post để ghi sổ
+                    if (!draft && transactionId) {
+                        const postRes = await fetch(`${API_BASE}/financial/transactions/${transactionId}/post`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        const postResult = await postRes.json();
+                        if (!postResult.success) {
+                            showAlert('Lỗi: ' + (postResult.message || 'Không thể ghi sổ'));
+                            return;
+                        }
+                        // Notify other tabs (e.g. dashboard) about the financial update
+                        FinanceSyncManager.trigger('receipt_posted', { transactionId: transactionId });
+                    }
+
+                    showAlert(draft ? 'Lưu nháp thành công!' : 'Ghi sổ thành công!');
+                    closeReceiptModal();
+                    loadReceipts();
+                } catch (error) {
+                    console.error('Error saving receipt:', error);
+                    showAlert('Lỗi kết nối server');
+                }
+            }
+
+            // View receipt (readonly mode)
+            function viewReceipt(id) {
+                openReceiptModal(id, true); // true = viewOnly mode
+            }
+
+            // Edit receipt
+            function editReceipt(id) {
+                openReceiptModal(id, false); // false = edit mode
+            }
+
+            // Post receipt
+            async function postReceipt(id) {
+                // VWModal.confirm returns Promise, must use await
+                const confirmed = await VWModal.confirm('Ghi sổ phiếu thu', 'Bạn có chắc muốn ghi sổ phiếu thu này?');
+                if (!confirmed) return;
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/financial/transactions/${id}/post`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await res.json();
+                    if (result.success) {
+                        showAlert('Ghi sổ thành công!');
+                        // Notify other tabs (e.g. dashboard) about the financial update
+                        FinanceSyncManager.trigger('receipt_posted', { transactionId: id });
+                        loadReceipts();
+                    } else {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể ghi sổ'));
+                    }
+                } catch (error) {
+                    console.error('Error posting receipt:', error);
+                    showAlert('Lỗi kết nối server');
+                }
+            }
+
+            // Cancel receipt
+            async function cancelReceipt(id) {
+                // VWModal.prompt returns Promise, must use await
+                const cancelReason = await VWModal.prompt('Nhập lý do hủy', 'Vui lòng nhập lý do hủy phiếu thu:');
+                if (!cancelReason || (typeof cancelReason === 'string' && !cancelReason.trim())) {
+                    if (cancelReason !== false) { // Only show error if user didn't click Cancel
+                        showAlert('Vui lòng nhập lý do hủy');
+                    }
+                    return;
+                }
+
+                // VWModal.confirm returns Promise, must use await
+                const confirmed = await VWModal.confirm('Hủy phiếu thu', 'Bạn có chắc muốn hủy phiếu thu này?');
+                if (!confirmed) return;
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const res = await fetch(`${API_BASE}/financial/transactions/${id}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ cancel_reason: typeof cancelReason === 'string' ? cancelReason.trim() : cancelReason })
+                    });
+
+                    const result = await res.json();
+                    if (result.success) {
+                        showAlert(result.message || 'Hủy phiếu thu thành công!');
+                        // Notify other tabs about the cancellation
+                        FinanceSyncManager.trigger('transaction_cancelled', { transactionId: id });
+                        loadReceipts();
+                    } else {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể hủy phiếu thu'));
+                    }
+                } catch (error) {
+                    console.error('Error cancelling receipt:', error);
+                    showAlert('Lỗi kết nối server');
+                }
+            }
+
+            // Export receipt to Excel
+            function exportReceiptExcel(id) {
+                const token = sessionStorage.getItem('token');
+                // Note: receipts use the same transactions endpoint with type=revenue
+                // So we use the same export endpoint
+                const url = `${API_BASE}/financial/transactions/${id}/export-excel`;
+
+                // Create a temporary link to trigger download
+                fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể xuất Excel');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `PhieuThu_${id}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(downloadUrl);
+                        document.body.removeChild(a);
+                        showAlert(' Xuất Excel thành công!');
+                    })
+                    .catch(error => {
+                        console.error('Error exporting Excel:', error);
+                        showAlert(' Lỗi xuất Excel: ' + error.message);
+                    });
+            }
+
+            // Reset filters
+            function resetFilters() {
+                if (dateRangePicker) {
+                    dateRangePicker.setRange('month');
+                }
+                document.getElementById('filterCustomer').value = '';
+                document.getElementById('filterProject').value = '';
+                document.getElementById('filterStatus').value = '';
+                document.getElementById('searchInput').value = '';
+                switchTab('all');
+            }
+
+            // Initialize
+            document.addEventListener('DOMContentLoaded', function() {
+            initFinanceSidebar('finance-receipts');
+                checkAuth();
+
+                // Initialize date range picker
+                dateRangePicker = new DateRangePicker('dateRangePicker', {
+                    defaultRange: 'month',
+                    onRangeChange: function (range) {
+                        loadReceipts();
+                    }
+                });
+
+                // Set default active tab
+                switchTab('all');
+
+                loadReceipts();
+                loadCustomers(document.getElementById('filterCustomer'));
+                loadProjects(document.getElementById('filterProject'));
+            });
+        </script>
+
+    </div><!-- End p-6 -->
+    </div><!-- End main-content -->
+
+    <!-- Sidebar Enterprise Script -->
+    <script src="js/sidebar-enterprise.js"></script>
+    <script>
+        // Initialize sidebar with user data
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof EnterpriseSidebar !== 'undefined') {
+                const sidebar = new EnterpriseSidebar();
+            }
+        });
+    </script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['finance'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadReceipts === 'function') {
+                        loadReceipts();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

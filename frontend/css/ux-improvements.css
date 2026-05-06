@@ -1,0 +1,614 @@
+/* ================================================================
+   VIRALWINDOW – UX IMPROVEMENTS v1.0
+   Sprint 1: Global quick wins – apply to every page
+   Load AFTER sidebar-enterprise.css and design-tokens.css
+   ================================================================ */
+
+/* ============================================================
+   1. KPI CARDS – Clickable / Filterable
+   Usage: add class .vw-kpi-clickable + data-kpi-filter + data-kpi-value
+   ============================================================ */
+.vw-kpi-clickable {
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                outline 0.1s ease;
+    position: relative;
+}
+
+.vw-kpi-clickable:hover {
+    transform: translateY(-5px) scale(1.015);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.18);
+    outline: 2px solid rgba(59, 130, 246, 0.35);
+    outline-offset: 2px;
+}
+
+.vw-kpi-clickable:active {
+    transform: translateY(-2px) scale(0.99);
+    transition-duration: 80ms;
+}
+
+/* "Nhấn để lọc" hint badge on hover */
+.vw-kpi-clickable::after {
+    content: attr(data-hint);
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(0, 0, 0, 0.18);
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.vw-kpi-clickable:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Active filter state */
+.vw-kpi-clickable.vw-kpi-active {
+    outline: 3px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.4),
+                0 12px 24px -6px rgba(0, 0, 0, 0.25);
+}
+
+/* White/light-bg card variant – hint text is dark */
+.vw-kpi-clickable.vw-kpi-white::after {
+    color: #475569;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.vw-kpi-clickable.vw-kpi-white.vw-kpi-active {
+    outline: 3px solid #2563EB;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15),
+                0 8px 24px -6px rgba(0, 0, 0, 0.12);
+}
+
+/* Clear filter chip – shown when a KPI filter is active */
+.vw-filter-active-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 12px;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.vw-filter-active-chip:hover {
+    background: #DBEAFE;
+}
+
+.vw-filter-active-chip .chip-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #BFDBFE;
+    color: #1E40AF;
+    font-size: 10px;
+    line-height: 1;
+    transition: background 0.15s;
+}
+
+.vw-filter-active-chip:hover .chip-close {
+    background: #93C5FD;
+}
+
+
+/* ============================================================
+   2. AUTO LATE BADGE
+   Injected by JS: computeLateBadges()
+   ============================================================ */
+.vw-late-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-left: 6px;
+    animation: vw-pulse-danger 2.4s ease-in-out infinite;
+}
+
+.vw-late-badge .vw-late-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+@keyframes vw-pulse-danger {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(220, 38, 38, 0);
+    }
+}
+
+/* Warning deadline text (turns red when near/past deadline) */
+.vw-deadline-warn {
+    color: #DC2626;
+    font-weight: 600;
+}
+
+.vw-deadline-ok {
+    color: #6B7280;
+}
+
+
+/* ============================================================
+   3. EMPTY STATE – Modern
+   Usage: <div class="vw-empty-state-v2"> ... </div>
+   ============================================================ */
+.vw-empty-state-v2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 32px;
+    text-align: center;
+    background: linear-gradient(160deg, #F8FAFC 0%, #F1F5F9 100%);
+    border-radius: 16px;
+    border: 2px dashed #CBD5E1;
+    min-height: 240px;
+    transition: border-color 0.2s;
+}
+
+.vw-empty-state-v2:hover {
+    border-color: #94A3B8;
+}
+
+.vw-empty-state-v2 .vw-es-icon-wrap {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border: 1.5px solid #BFDBFE;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: #3B82F6;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.vw-empty-state-v2 .vw-es-icon-wrap svg,
+.vw-empty-state-v2 .vw-es-icon-wrap i {
+    width: 32px;
+    height: 32px;
+    font-size: 28px;
+    color: #3B82F6;
+    opacity: 0.85;
+}
+
+.vw-empty-state-v2 .vw-es-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+}
+
+.vw-empty-state-v2 .vw-es-desc {
+    font-size: 13.5px;
+    color: #64748B;
+    line-height: 1.65;
+    max-width: 340px;
+    margin-bottom: 24px;
+}
+
+.vw-empty-state-v2 .vw-es-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+
+/* ============================================================
+   4. BADGE LEGEND TOOLTIP
+   Usage: <span class="vw-badge-tip" data-legend="Giải thích...">
+   ============================================================ */
+.vw-badge-tip {
+    position: relative;
+    cursor: help;
+}
+
+.vw-badge-tip::before {
+    content: attr(data-legend);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.92);
+    background: #1E293B;
+    color: #F8FAFC;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 9000;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    max-width: 220px;
+    white-space: normal;
+    text-align: center;
+}
+
+/* Arrow */
+.vw-badge-tip::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1E293B;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 9001;
+}
+
+.vw-badge-tip:hover::before,
+.vw-badge-tip:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+
+/* ============================================================
+   5. STICKY FILTER BAR
+   Usage: wrap filter row in <div class="vw-filter-sticky">
+   ============================================================ */
+.vw-filter-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 150;
+    background: #FFFFFF;
+    padding: 10px 24px;
+    border-bottom: 1px solid #E2E8F0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    transition: box-shadow 0.2s;
+}
+
+.vw-filter-sticky.is-scrolled {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Divider between filter groups */
+.vw-filter-sep {
+    width: 1px;
+    height: 28px;
+    background: #E2E8F0;
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   6. FORM PROGRESS STEPPER
+   Usage: see HTML structure below
+   ============================================================ */
+.vw-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 32px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    gap: 0;
+    overflow-x: auto;
+}
+
+.vw-stepper-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.vw-stepper-step:hover:not(.vw-step-active) {
+    background: #F8FAFC;
+    color: #64748B;
+}
+
+/* Step number circle */
+.vw-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #E2E8F0;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+
+/* Active step */
+.vw-stepper-step.vw-step-active {
+    color: #1D4ED8;
+    background: #EFF6FF;
+    font-weight: 600;
+}
+
+.vw-stepper-step.vw-step-active .vw-step-num {
+    background: #2563EB;
+    color: #FFFFFF;
+}
+
+/* Completed step */
+.vw-stepper-step.vw-step-done {
+    color: #15803D;
+}
+
+.vw-stepper-step.vw-step-done .vw-step-num {
+    background: #22C55E;
+    color: #FFFFFF;
+}
+
+/* Connector line between steps */
+.vw-stepper-connector {
+    flex: 1;
+    min-width: 24px;
+    max-width: 72px;
+    height: 2px;
+    background: #E2E8F0;
+    border-radius: 2px;
+    transition: background 0.3s;
+    flex-shrink: 0;
+}
+
+.vw-stepper-connector.vw-connector-done {
+    background: #22C55E;
+}
+
+
+/* ============================================================
+   7. SIDEBAR NOTIFICATION BADGES
+   Injected into sidebar nav items by JS
+   ============================================================ */
+.vw-nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #EF4444;
+    color: #FFFFFF;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-left: auto;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.vw-nav-badge:empty,
+.vw-nav-badge[data-count="0"] {
+    display: none;
+}
+
+/* Warning variant (yellow) */
+.vw-nav-badge-warn {
+    background: #F59E0B;
+}
+
+/* Info variant (blue) */
+.vw-nav-badge-info {
+    background: #3B82F6;
+}
+
+/* Scale-in animation when value changes */
+.vw-nav-badge.vw-badge-update {
+    animation: vw-badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes vw-badge-pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+
+/* ============================================================
+   8. SECTION HEADER – Neutral with accent (replaces gradient)
+   Usage: <div class="vw-section-header">
+   ============================================================ */
+.vw-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: #F8FAFC;
+    border-left: 3px solid #2563EB;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E293B;
+    letter-spacing: -0.01em;
+}
+
+.vw-section-header .vw-sh-icon {
+    color: #2563EB;
+    font-size: 15px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.vw-section-header.vw-sh-warning {
+    border-left-color: #F59E0B;
+}
+.vw-section-header.vw-sh-warning .vw-sh-icon { color: #D97706; }
+
+.vw-section-header.vw-sh-success {
+    border-left-color: #22C55E;
+}
+.vw-section-header.vw-sh-success .vw-sh-icon { color: #16A34A; }
+
+.vw-section-header.vw-sh-danger {
+    border-left-color: #EF4444;
+}
+.vw-section-header.vw-sh-danger .vw-sh-icon { color: #DC2626; }
+
+
+/* ============================================================
+   9. VIEW TOGGLE (Card / List switch)
+   Usage: <div class="vw-view-toggle">
+   ============================================================ */
+.vw-view-toggle {
+    display: inline-flex;
+    align-items: center;
+    background: #F1F5F9;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+}
+
+.vw-view-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+}
+
+.vw-view-btn svg, .vw-view-btn i {
+    width: 14px;
+    height: 14px;
+    font-size: 13px;
+}
+
+.vw-view-btn:hover:not(.vw-view-active) {
+    color: #334155;
+    background: #E2E8F0;
+}
+
+.vw-view-btn.vw-view-active {
+    background: #FFFFFF;
+    color: #1D4ED8;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ============================================================
+   10. COMPACT / EXPANDED PROJECT ROW
+   JS toggles .vw-project-detail on .vw-project-row
+   ============================================================ */
+.vw-project-compact .vw-project-detail {
+    display: none !important;
+}
+
+.vw-project-row {
+    transition: background 0.15s;
+}
+
+.vw-project-row:hover {
+    background: #F8FAFC;
+}
+
+/* ============================================================
+   11. UTILITY – Miscellaneous helpers
+   ============================================================ */
+
+/* Unit suffix label (e.g. "ngày" after input) */
+.vw-input-suffix {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    background: #F1F5F9;
+    border: 2px solid #E2E8F0;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #64748B;
+    font-weight: 500;
+    height: 42px;
+    flex-shrink: 0;
+}
+
+.vw-input-with-suffix {
+    display: flex;
+    align-items: stretch;
+}
+
+.vw-input-with-suffix input {
+    border-radius: 8px 0 0 8px !important;
+    border-right-color: transparent !important;
+    flex: 1;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Smooth page entrance */
+.vw-page-enter {
+    animation: vw-enter 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes vw-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

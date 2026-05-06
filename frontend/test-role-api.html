@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Test Role API</title>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <script src="js/vw-modal.js"></script>
+</head>
+
+<body>
+    <h1>Test /auth/me API</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            const token = sessionStorage.getItem('token');
+            const resultEl = document.getElementById('result');
+
+            if (!token) {
+                resultEl.textContent = 'ERROR: No token in sessionStorage. Please login first.';
+                return;
+            }
+
+            try {
+                const response = await fetch((window.API_BASE || '/api') + '/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                resultEl.textContent = JSON.stringify(result, null, 2);
+
+                if (result.success && result.data) {
+                    console.log('User:', result.data.full_name);
+                    console.log('Role ID:', result.data.role_id);
+                    console.log('Role Name:', result.data.role_name);
+                }
+            } catch (error) {
+                resultEl.textContent = 'ERROR: ' + error.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

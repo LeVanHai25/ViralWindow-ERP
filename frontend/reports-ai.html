@@ -1,0 +1,728 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo AI - ViralWindow</title>
+    <script>
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/notification-system.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <script src="js/permission-guard.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; }
+        /* Category pills */
+        .cat-pill { display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;border:2px solid #e2e8f0;background:white;cursor:pointer;transition:all .2s;font-size:13px;font-weight:600;color:#64748b;white-space:nowrap; }
+        .cat-pill:hover { border-color:#c7d2fe;color:#6366f1;transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.08); }
+        .cat-pill.active { border-color:#6366f1;background:linear-gradient(135deg,#eff6ff,#f5f3ff);color:#6366f1; }
+        .cat-pill .cat-icon { width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px; }
+        /* Time cards */
+        .time-card { flex:1;min-width:120px;padding:14px;border-radius:12px;border:2px solid #e2e8f0;background:white;cursor:pointer;transition:all .2s;text-align:center; }
+        .time-card:hover { border-color:#c7d2fe;transform:translateY(-1px); }
+        .time-card.active { border-color:#6366f1;background:linear-gradient(135deg,#eff6ff,#f5f3ff); }
+        .time-card .tc-icon { font-size:24px;margin-bottom:6px; }
+        .time-card .tc-label { font-size:13px;font-weight:700;color:#1e293b; }
+        .time-card .tc-desc { font-size:11px;color:#94a3b8;margin-top:2px; }
+        /* Filter controls */
+        .filter-row { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px; }
+        .filter-group { display:flex;flex-direction:column;gap:4px; }
+        .filter-group label { font-size:12px;font-weight:600;color:#64748b; }
+        .filter-group select, .filter-group input[type="date"] { padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:white;transition:border-color .2s;outline:none; }
+        .filter-group select:focus, .filter-group input[type="date"]:focus { border-color:#6366f1; }
+        /* Report output */
+        .report-output { background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:32px;min-height:300px; }
+        .ai-report h2 { color:#1e293b;font-size:20px;font-weight:700;margin-bottom:8px; }
+        .ai-report h3 { color:#4f46e5;font-size:16px;font-weight:600;margin:16px 0 8px; }
+        .ai-report ul { padding-left:20px;margin:8px 0; }
+        .ai-report li { margin:4px 0;color:#475569;line-height:1.6; }
+        .ai-report-section { margin-bottom:16px;padding:16px;background:#f8fafc;border-radius:12px; }
+        .ai-report-summary { background:linear-gradient(135deg,#eff6ff,#f5f3ff);padding:16px;border-radius:12px;border:1px solid #c7d2fe; }
+        .ai-report-date { color:#94a3b8;font-size:13px;margin-bottom:16px; }
+        .loading-spinner { display:inline-block;width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin .6s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @keyframes fadeIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
+        .raw-data-toggle { cursor:pointer;color:#6366f1;font-size:13px;font-weight:600; }
+        .raw-data-toggle:hover { text-decoration:underline; }
+        /* Generate button */
+        .btn-generate { padding:14px 32px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;cursor:pointer;font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px;transition:all .2s;box-shadow:0 4px 16px rgba(99,102,241,.3); }
+        .btn-generate:hover:not(:disabled) { transform:translateY(-1px);box-shadow:0 6px 24px rgba(99,102,241,.4); }
+        .btn-generate:disabled { opacity:.6;cursor:not-allowed;transform:none; }
+        /* Panel card */
+        .panel-card { background:white;border-radius:16px;border:1px solid #e2e8f0;padding:24px;margin-bottom:20px; }
+        .panel-card h2 { margin:0 0 16px;font-size:15px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px; }
+        /* Active filters summary */
+        .active-filters { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+        .active-filter-tag { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:#eff6ff;color:#6366f1;font-size:12px;font-weight:600; }
+        .lucide { vertical-align: middle; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Notification -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header"><h3>Thông báo</h3></div>
+            <div id="headerNotificationsList" class="header-notifications-list"></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Đang tải...</div>
+                    <div class="text-xs text-blue-200" id="sidebarUserRole">Đang tải...</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg><span>Khách hàng</span></a>
+                <a href="projects-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg><span>Dự án</span></a>
+                <a href="production.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg><span>Quy trình dự án</span></a>
+                <a href="product-catalog-v2.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg><span>Sản phẩm</span></a>
+                <a href="quotation-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><span>Báo giá</span></a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg><span>Thiết kế & Bóc tách</span></a>
+                <a href="material-requests.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><span>Yêu cầu vật tư</span></a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>Tạo phiếu yêu cầu VT</span></a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg><span>Kho vật tư</span></a>
+                <a href="exported-materials.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg><span>Xuất vật tư</span></a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg><span>Sản xuất sản phẩm</span></a>
+                <a href="installation.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg><span>Lắp đặt</span></a>
+                <a href="handover.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg><span>Bàn giao</span></a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg><span>Tổng quan</span></a>
+                <a href="finance-receipts.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg><span>Phiếu thu</span></a>
+                <a href="finance-payments.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg><span>Phiếu chi</span></a>
+                <a href="finance-debt.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg><span>Công nợ</span></a>
+            </div>
+
+            <!-- AI ASSISTANT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <span>TRỢ LÝ AI</span>
+                    <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;">AI</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="reports-ai.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><span>Báo cáo AI</span></a>
+                <a href="javascript:void(0)" class="submenu-item" onclick="if(window.openAISearch)window.openAISearch();else alert('Nhấn Ctrl+K');"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg><span>Tìm kiếm AI</span><span style="font-size:10px;color:#94a3b8;margin-left:auto;">Ctrl+K</span></a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg><span>Phân quyền</span></a>
+                <a href="settings.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg><span>Cài đặt hệ thống</span></a>
+                <a href="agencies.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg><span>Chi nhánh</span></a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" style="overflow-y:auto;">
+        <div class="w-full p-4 md:p-6 lg:p-8">
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(99,102,241,.2); color:white;">
+                        <i data-lucide="bot" style="width:32px;height:32px;"></i>
+                    </div>
+                    <div>
+                        <h1 style="margin:0;font-size:24px;font-weight:800;color:#1e293b;">Báo Cáo AI Thông Minh</h1>
+                        <p style="margin:0;font-size:13px;color:#94a3b8;">Chọn danh mục, bộ lọc và tạo báo cáo phân tích chuyên sâu theo ý muốn</p>
+                    </div>
+                </div>
+                <div id="reportStatus" style="font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:4px;"></div>
+            </div>
+
+            <!-- 1. REPORT CATEGORY -->
+            <div class="panel-card" style="animation:fadeIn .3s ease;">
+                <h2 style="display:flex;align-items:center;gap:8px;"><i data-lucide="folder-open" class="w-5 h-5 text-indigo-500"></i> Danh mục báo cáo</h2>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;" id="categoryList">
+                    <div class="cat-pill active" onclick="selectCategory('overview',this)">
+                        <div class="cat-icon" style="background:#dbeafe; color:#3b82f6;"><i data-lucide="pie-chart" class="w-5 h-5"></i></div> Tổng quan hệ thống
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('projects',this)">
+                        <div class="cat-icon" style="background:#fef3c7; color:#f59e0b;"><i data-lucide="building-2" class="w-5 h-5"></i></div> Dự án & Tiến độ
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('finance',this)">
+                        <div class="cat-icon" style="background:#dcfce7; color:#10b981;"><i data-lucide="dollar-sign" class="w-5 h-5"></i></div> Tài chính & Doanh thu
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('inventory',this)">
+                        <div class="cat-icon" style="background:#fce7f3; color:#ec4899;"><i data-lucide="package" class="w-5 h-5"></i></div> Kho & Vật tư
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('customers',this)">
+                        <div class="cat-icon" style="background:#e0e7ff; color:#6366f1;"><i data-lucide="users" class="w-5 h-5"></i></div> Khách hàng
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('hr',this)">
+                        <div class="cat-icon" style="background:#fef9c3; color:#eab308;"><i data-lucide="user-cog" class="w-5 h-5"></i></div> Nhân sự & Năng suất
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. TIME RANGE -->
+            <div class="panel-card" style="animation:fadeIn .3s ease .1s both;">
+                <h2 style="display:flex;align-items:center;gap:8px;"><i data-lucide="calendar" class="w-5 h-5 text-indigo-500"></i> Khoảng thời gian</h2>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+                    <div class="time-card" onclick="selectTimeRange('today',this)">
+                        <div class="tc-icon text-indigo-500"><i data-lucide="calendar-check" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">Hôm nay</div>
+                    </div>
+                    <div class="time-card active" onclick="selectTimeRange('week',this)">
+                        <div class="tc-icon text-indigo-500"><i data-lucide="bar-chart-2" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">7 ngày</div>
+                        <div class="tc-desc">Tuần này</div>
+                    </div>
+                    <div class="time-card" onclick="selectTimeRange('month',this)">
+                        <div class="tc-icon text-indigo-500"><i data-lucide="trending-up" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">30 ngày</div>
+                        <div class="tc-desc">Tháng này</div>
+                    </div>
+                    <div class="time-card" onclick="selectTimeRange('quarter',this)">
+                        <div class="tc-icon text-indigo-500"><i data-lucide="calendar-days" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">Quý</div>
+                        <div class="tc-desc">3 tháng</div>
+                    </div>
+                    <div class="time-card" onclick="selectTimeRange('custom',this)">
+                        <div class="tc-icon text-indigo-500"><i data-lucide="settings-2" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">Tuỳ chọn</div>
+                        <div class="tc-desc">Chọn ngày</div>
+                    </div>
+                </div>
+                <!-- Custom date range (hidden by default) -->
+                <div id="customDateRange" style="display:none;" class="filter-row">
+                    <div class="filter-group">
+                        <label>Từ ngày</label>
+                        <input type="date" id="dateFrom">
+                    </div>
+                    <div class="filter-group">
+                        <label>Đến ngày</label>
+                        <input type="date" id="dateTo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ADVANCED FILTERS -->
+            <div class="panel-card" style="animation:fadeIn .3s ease .2s both;">
+                <h2 style="display:flex;align-items:center;gap:8px;"><i data-lucide="filter" class="w-5 h-5 text-indigo-500"></i> Bộ lọc nâng cao <span style="font-size:11px;color:#94a3b8;font-weight:400;margin-left:8px;">(tuỳ chọn — để trống sẽ báo cáo toàn hệ thống)</span></h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-500"></i> Dự án</label>
+                        <select id="filterProject">
+                            <option value="">Tất cả dự án</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i> Khách hàng</label>
+                        <select id="filterCustomer">
+                            <option value="">Tất cả khách hàng</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="flex items-center gap-1.5"><i data-lucide="store" class="w-3.5 h-3.5 text-emerald-500"></i> Chi nhánh</label>
+                        <select id="filterBranch">
+                            <option value="">Tất cả chi nhánh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="flex items-center gap-1.5"><i data-lucide="activity" class="w-3.5 h-3.5 text-blue-500"></i> Trạng thái dự án</label>
+                        <select id="filterStatus">
+                            <option value="">Tất cả</option>
+                            <option value="pending">Chờ xử lý</option>
+                            <option value="in_progress">Đang thực hiện</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="overdue">Quá hạn</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-500"></i> Định dạng báo cáo</label>
+                        <select id="filterFormat">
+                            <option value="detailed">Chi tiết (đầy đủ)</option>
+                            <option value="summary">Tóm tắt ngắn gọn</option>
+                            <option value="executive">Dành cho lãnh đạo</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="justify-content:flex-end;">
+                        <label>&nbsp;</label>
+                        <button type="button" onclick="resetFilters()" style="padding:10px 16px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;justify-content:center;" onmouseover="this.style.borderColor='#fca5a5';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'"><i data-lucide="trash-2" class="w-4 h-4"></i> Xóa bộ lọc</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. GENERATE BUTTON + ACTIVE FILTERS SUMMARY -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;animation:fadeIn .3s ease .3s both;">
+                <div>
+                    <button type="button" onclick="generateReport()" id="btnGenerate" class="btn-generate">
+                         Tạo Báo Cáo AI
+                    </button>
+                    <div class="active-filters" id="activeFilters"></div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="exportReport()" id="btnExport" style="padding:10px 18px;border-radius:10px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;display:none;transition:all .2s;" onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'"> Xuất PDF</button>
+                    <button type="button" onclick="printReport()" id="btnPrint" style="padding:10px 18px;border-radius:10px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;display:none;transition:all .2s;" onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'"> In</button>
+                </div>
+            </div>
+
+            <!-- 5. REPORT OUTPUT -->
+            <div class="report-output" id="reportOutput" style="animation:fadeIn .3s ease .4s both;">
+                <div style="text-align:center;padding:60px 20px;">
+                    <div style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:20px;"></div>
+                    <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin:0 0 8px;">Tạo Báo Cáo AI Thông Minh</h3>
+                    <p style="font-size:14px;color:#94a3b8;margin:0 0 24px;max-width:500px;margin-left:auto;margin-right:auto;">Chọn danh mục, thời gian và bộ lọc phía trên, sau đó nhấn <strong style="color:#6366f1;"> Tạo Báo Cáo AI</strong> để nhận phân tích chi tiết</p>
+                    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">❶</div>
+                            <div style="font-size:12px;color:#64748b;font-weight:600;">Chọn danh mục</div>
+                        </div>
+                        <div style="font-size:24px;color:#e2e8f0;display:flex;align-items:center;">→</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">❷</div>
+                            <div style="font-size:12px;color:#64748b;font-weight:600;">Chọn thời gian</div>
+                        </div>
+                        <div style="font-size:24px;color:#e2e8f0;display:flex;align-items:center;">→</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">❸</div>
+                            <div style="font-size:12px;color:#64748b;font-weight:600;">Thêm bộ lọc</div>
+                        </div>
+                        <div style="font-size:24px;color:#e2e8f0;display:flex;align-items:center;">→</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">✚</div>
+                            <div style="font-size:12px;color:#6366f1;font-weight:700;">Tạo báo cáo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw Data (collapsible) -->
+            <div style="margin-top:24px;" id="rawDataSection" class="hidden">
+                <div class="raw-data-toggle flex items-center gap-1.5" onclick="document.getElementById('rawDataContent').classList.toggle('hidden')">
+                    <i data-lucide="database" class="w-4 h-4"></i> Xem dữ liệu gốc ▼
+                </div>
+                <pre id="rawDataContent" class="hidden" style="margin-top:8px;padding:16px;background:#f1f5f9;border-radius:12px;font-size:12px;overflow-x:auto;max-height:400px;overflow-y:auto;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let selectedCategory = 'overview';
+        let selectedTimeRange = 'week';
+
+        const CATEGORY_MAP = {
+            overview: 'Tổng quan hệ thống',
+            projects: 'Dự án & Tiến độ',
+            finance: 'Tài chính & Doanh thu',
+            inventory: 'Kho & Vật tư',
+            customers: 'Khách hàng',
+            hr: 'Nhân sự & Năng suất'
+        };
+        const TIME_MAP = {
+            today: 'Hôm nay', week: '7 ngày', month: '30 ngày', quarter: 'Quý', custom: 'Tuỳ chọn'
+        };
+        // Map categories to API report types
+        const CATEGORY_TO_API = {
+            overview: 'daily', projects: 'weekly', finance: 'monthly',
+            inventory: 'daily', customers: 'monthly', hr: 'weekly'
+        };
+
+        function checkAuth() {
+            if (window.AuthHelper) return window.AuthHelper.checkAuth();
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return false; }
+            if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
+            return true;
+        }
+
+        function selectCategory(cat, el) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            updateActiveFilters();
+        }
+
+        function selectTimeRange(range, el) {
+            selectedTimeRange = range;
+            document.querySelectorAll('.time-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('customDateRange').style.display = range === 'custom' ? 'grid' : 'none';
+            updateActiveFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterProject').value = '';
+            document.getElementById('filterCustomer').value = '';
+            document.getElementById('filterBranch').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterFormat').value = 'detailed';
+            updateActiveFilters();
+        }
+
+        function updateActiveFilters() {
+            const tags = [];
+            tags.push(`<span class="active-filter-tag"><i data-lucide="folder-open" class="w-3.5 h-3.5"></i> ${CATEGORY_MAP[selectedCategory]}</span>`);
+            tags.push(`<span class="active-filter-tag"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${TIME_MAP[selectedTimeRange]}</span>`);
+            const project = document.getElementById('filterProject');
+            const customer = document.getElementById('filterCustomer');
+            const branch = document.getElementById('filterBranch');
+            const status = document.getElementById('filterStatus');
+            if (project && project.value) tags.push(`<span class="active-filter-tag"><i data-lucide="building-2" class="w-3.5 h-3.5"></i> ${project.options[project.selectedIndex].text}</span>`);
+            if (customer && customer.value) tags.push(`<span class="active-filter-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> ${customer.options[customer.selectedIndex].text}</span>`);
+            if (branch && branch.value) tags.push(`<span class="active-filter-tag"><i data-lucide="store" class="w-3.5 h-3.5"></i> ${branch.options[branch.selectedIndex].text}</span>`);
+            if (status && status.value) tags.push(`<span class="active-filter-tag"><i data-lucide="activity" class="w-3.5 h-3.5"></i> ${status.options[status.selectedIndex].text}</span>`);
+            document.getElementById('activeFilters').innerHTML = tags.join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function loadFilterData() {
+            const token = sessionStorage.getItem('token');
+            if (!token) return;
+            const headers = { 'Authorization': `Bearer ${token}` };
+
+            // Load projects
+            try {
+                const res = await fetch(`${API_BASE}/projects`, { headers });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const sel = document.getElementById('filterProject');
+                    (Array.isArray(data.data) ? data.data : data.data.projects || []).forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.ma_don || p.code || ''} - ${p.don_hang || p.name || p.project_name || ''}`;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.warn('Load projects error:', e); }
+
+            // Load customers
+            try {
+                const res = await fetch(`${API_BASE}/customers`, { headers });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const sel = document.getElementById('filterCustomer');
+                    const customers = Array.isArray(data.data) ? data.data : data.data.customers || [];
+                    customers.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.full_name || c.name || c.customer_name || '';
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.warn('Load customers error:', e); }
+
+            // Load branches
+            try {
+                const res = await fetch(`${API_BASE}/agencies`, { headers });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const sel = document.getElementById('filterBranch');
+                    data.data.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.id;
+                        opt.textContent = b.name || b.agency_name || '';
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.warn('Load branches error:', e); }
+        }
+
+        async function generateReport() {
+            if (!checkAuth()) return;
+
+            const output = document.getElementById('reportOutput');
+            const status = document.getElementById('reportStatus');
+            const btn = document.getElementById('btnGenerate');
+
+            btn.disabled = true;
+            status.innerHTML = '<i data-lucide="hourglass" class="w-4 h-4 animate-pulse"></i> AI đang phân tích dữ liệu...';
+            if (window.lucide) lucide.createIcons();
+
+            // Build active filter summary for display
+            const filterSummary = [];
+            filterSummary.push(`Danh mục: ${CATEGORY_MAP[selectedCategory]}`);
+            filterSummary.push(`Thời gian: ${TIME_MAP[selectedTimeRange]}`);
+
+            output.innerHTML = `
+                <div style="text-align:center;padding:60px 0;color:#94a3b8;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top:16px;font-size:14px;font-weight:600;color:#6366f1;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="bot" class="w-5 h-5"></i> AI đang thu thập và phân tích dữ liệu...</p>
+                    <p style="font-size:12px;">${filterSummary.join(' · ')}</p>
+                    <p style="font-size:11px;color:#cbd5e1;">Có thể mất 10-30 giây tuỳ thuộc lượng dữ liệu</p>
+                </div>
+            `;
+
+            try {
+                const token = sessionStorage.getItem('token');
+                // Build query params from filters
+                const params = new URLSearchParams();
+                params.set('category', selectedCategory);
+                params.set('timeRange', selectedTimeRange);
+                if (document.getElementById('filterProject').value) params.set('project_id', document.getElementById('filterProject').value);
+                if (document.getElementById('filterCustomer').value) params.set('customer_id', document.getElementById('filterCustomer').value);
+                if (document.getElementById('filterBranch').value) params.set('branch_id', document.getElementById('filterBranch').value);
+                if (document.getElementById('filterStatus').value) params.set('status', document.getElementById('filterStatus').value);
+                if (document.getElementById('filterFormat').value) params.set('format', document.getElementById('filterFormat').value);
+                if (selectedTimeRange === 'custom') {
+                    params.set('date_from', document.getElementById('dateFrom').value || '');
+                    params.set('date_to', document.getElementById('dateTo').value || '');
+                }
+
+                // Use the API type mapping
+                const apiType = CATEGORY_TO_API[selectedCategory] || 'daily';
+                const response = await fetch(`${API_BASE}/ai/reports/${apiType}?${params.toString()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    output.innerHTML = `<div class="ai-report" style="animation:fadeIn .3s ease;">${result.data.report}</div>`;
+                    status.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i> Báo cáo lúc <strong>${new Date(result.data.generated_at).toLocaleString('vi-VN')}</strong>`;
+
+                    // Show export/print buttons
+                    document.getElementById('btnExport').style.display = 'inline-flex';
+                    document.getElementById('btnPrint').style.display = 'inline-flex';
+
+                    if (result.data.raw_data) {
+                        document.getElementById('rawDataSection').classList.remove('hidden');
+                        document.getElementById('rawDataContent').textContent = JSON.stringify(result.data.raw_data, null, 2);
+                    }
+                } else {
+                    output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
+                        <div style="margin-bottom:12px;display:flex;justify-content:center;"><i data-lucide="alert-triangle" class="w-12 h-12 text-red-500"></i></div>
+                        <h3 style="margin:0 0 8px;font-size:16px;">Không thể tạo báo cáo</h3>
+                        <p style="font-size:13px;">${result.message || 'Lỗi không xác định'}</p>
+                        <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Thử lại</button>
+                    </div>`;
+                    status.innerHTML = '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i> Lỗi';
+                }
+            } catch (error) {
+                output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
+                    <div style="margin-bottom:12px;display:flex;justify-content:center;"><i data-lucide="wifi-off" class="w-12 h-12 text-rose-500"></i></div>
+                    <h3 style="margin:0 0 8px;font-size:16px;">Không thể kết nối máy chủ AI</h3>
+                    <p style="font-size:13px;">${error.message}</p>
+                    <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Thử lại</button>
+                </div>`;
+                status.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-rose-500"></i> Lỗi kết nối';
+            }
+
+            btn.disabled = false;
+            // Scan for any new icons injected
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function exportReport() {
+            const content = document.getElementById('reportOutput');
+            if (!content) return;
+            const win = window.open('', '_blank');
+            var h = '<html><head><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
+            win.document.write(h);
+            win.document.close();
+            win.print();
+        }
+
+        function printReport() {
+            const content = document.getElementById('reportOutput');
+            if (!content) return;
+            const printWindow = window.open('', '_blank');
+            var h = '<html><head><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}@media print{body{padding:16px;}}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
+            printWindow.document.write(h);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // On change filter → update tags
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadFilterData();
+            updateActiveFilters();
+            // Init Lucide icons
+            if (window.lucide) lucide.createIcons();
+
+            // Set today's date as default for custom range
+            const today = new Date().toISOString().split('T')[0];
+            const weekAgo = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = weekAgo;
+            document.getElementById('dateTo').value = today;
+
+            // Listen to filter changes
+            ['filterProject','filterCustomer','filterBranch','filterStatus','filterFormat'].forEach(id => {
+                document.getElementById(id)?.addEventListener('change', updateActiveFilters);
+            });
+        });
+    </script>
+    <script src="js/sidebar-enterprise.js"></script>
+    <script src="js/ai-chatbot-widget.js"></script>
+    <script src="js/ai-search-widget.js"></script>
+</body>
+</html>

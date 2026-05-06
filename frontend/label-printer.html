@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In tem nhãn QR Code - Hệ thống quản lý cửa nhôm kính</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        .label-card {
+            page-break-inside: avoid;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+<body class="bg-gray-100">
+    <!-- HEADER -->
+    <div class="bg-white shadow p-5 flex justify-between items-center no-print">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="icon-square bg-blue-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold">In tem nhãn QR Code</h1>
+                <p class="text-gray-500 text-sm">In tem nhãn cho vật tư và cửa</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.print()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                In
+            </button>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- SELECTION PANEL -->
+        <div class="bg-white rounded-xl shadow p-6 mb-6 no-print">
+            <h2 class="text-lg font-bold mb-4">Chọn loại tem nhãn</h2>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loại tem</label>
+                    <select id="labelType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="onLabelTypeChange()">
+                        <option value="inventory">Vật tư</option>
+                        <option value="door">Cửa</option>
+                        <option value="production-order">Lệnh sản xuất</option>
+                    </select>
+                </div>
+
+                <div id="inventorySelection" class="label-selection">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Chọn vật tư</label>
+                    <select id="inventorySelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Chọn vật tư --</option>
+                    </select>
+                </div>
+
+                <div id="doorSelection" class="label-selection hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Chọn cửa</label>
+                    <select id="doorSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Chọn cửa --</option>
+                    </select>
+                </div>
+
+                <div id="orderSelection" class="label-selection hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Chọn lệnh sản xuất</label>
+                    <select id="orderSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Chọn lệnh SX --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="loadLabel()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                    Tải tem nhãn
+                </button>
+                <button onclick="clearLabels()" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600">
+                    Xóa
+                </button>
+            </div>
+        </div>
+
+        <!-- LABELS DISPLAY -->
+        <div id="labelsContainer" class="print-area">
+            <!-- Labels will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInventories();
+            loadDoors();
+            loadProductionOrders();
+        });
+
+        function onLabelTypeChange() {
+            const type = document.getElementById('labelType').value;
+            document.getElementById('inventorySelection').classList.toggle('hidden', type !== 'inventory');
+            document.getElementById('doorSelection').classList.toggle('hidden', type !== 'door');
+            document.getElementById('orderSelection').classList.toggle('hidden', type !== 'production-order');
+        }
+
+        // Load inventories
+        async function loadInventories() {
+            try {
+                const response = await fetch(`${API_BASE}/inventory`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const select = document.getElementById('inventorySelect');
+                    result.data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = `${item.item_code} - ${item.item_name}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading inventories:', error);
+            }
+        }
+
+        // Load doors
+        async function loadDoors() {
+            try {
+                const response = await fetch(`${API_BASE}/projects`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // Load doors from all projects
+                    const doorSelect = document.getElementById('doorSelect');
+                    for (const project of result.data) {
+                        try {
+                            const doorResponse = await fetch(`${API_BASE}/projects/${project.id}/doors`);
+                            const doorResult = await doorResponse.json();
+                            
+                            if (doorResult.success && doorResult.data) {
+                                doorResult.data.forEach(door => {
+                                    const option = document.createElement('option');
+                                    option.value = door.id;
+                                    const code = door.design_code || door.template_code || `DOOR-${door.id}`;
+                                    option.textContent = `${code} - ${project.project_name}`;
+                                    option.dataset.project = project.project_name;
+                                    doorSelect.appendChild(option);
+                                });
+                            }
+                        } catch (err) {
+                            console.error(`Error loading doors for project ${project.id}:`, err);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading doors:', error);
+            }
+        }
+
+        // Load production orders
+        async function loadProductionOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/production-orders`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const select = document.getElementById('orderSelect');
+                    result.data.forEach(order => {
+                        const option = document.createElement('option');
+                        option.value = order.id;
+                        option.textContent = `${order.order_code} - ${order.project_name || 'N/A'}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading production orders:', error);
+            }
+        }
+
+        // Load label
+        async function loadLabel() {
+            const type = document.getElementById('labelType').value;
+            const container = document.getElementById('labelsContainer');
+            
+            try {
+                if (type === 'inventory') {
+                    const inventoryId = document.getElementById('inventorySelect').value;
+                    if (!inventoryId) {
+                        alert('Vui lòng chọn vật tư');
+                        return;
+                    }
+                    
+                    const response = await fetch(`${API_BASE}/labels/inventory/${inventoryId}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        displayInventoryLabel(result.data);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể tải tem nhãn'));
+                    }
+                } else if (type === 'door') {
+                    const doorId = document.getElementById('doorSelect').value;
+                    if (!doorId) {
+                        alert('Vui lòng chọn cửa');
+                        return;
+                    }
+                    
+                    const response = await fetch(`${API_BASE}/labels/doors/${doorId}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        displayDoorLabel(result.data);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể tải tem nhãn'));
+                    }
+                } else if (type === 'production-order') {
+                    const orderId = document.getElementById('orderSelect').value;
+                    if (!orderId) {
+                        alert('Vui lòng chọn lệnh sản xuất');
+                        return;
+                    }
+                    
+                    const response = await fetch(`${API_BASE}/labels/production-orders/${orderId}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        displayProductionOrderLabels(result.data);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể tải tem nhãn'));
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading label:', error);
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        // Display inventory label
+        function displayInventoryLabel(data) {
+            const { item, qrCode } = data;
+            const container = document.getElementById('labelsContainer');
+            
+            const labelHtml = `
+                <div class="label-card bg-white border-2 border-gray-400 rounded-lg p-3 mb-4 inline-block mx-2" style="width: 90mm; height: 50mm; box-sizing: border-box;">
+                    <div class="flex items-start justify-between h-full">
+                        <div class="flex-1 pr-2">
+                            <div class="text-sm font-bold text-gray-900 mb-1 border-b border-gray-300 pb-1">${escapeHtml(item.item_code || 'N/A')}</div>
+                            <div class="text-xs text-gray-800 mb-2 font-semibold line-clamp-2">${escapeHtml(item.item_name || 'N/A')}</div>
+                            <div class="text-xs text-gray-600 space-y-0.5">
+                                <div><span class="font-semibold">Loại:</span> ${escapeHtml(getItemTypeLabel(item.item_type))}</div>
+                                <div><span class="font-semibold">SL:</span> ${item.quantity || 0} ${escapeHtml(item.unit || '')}</div>
+                                ${item.location ? `<div><span class="font-semibold">Vị trí:</span> ${escapeHtml(item.location)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <img src="${qrCode}" alt="QR Code" class="w-16 h-16 border border-gray-300" />
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML += labelHtml;
+        }
+
+        // Display door label
+        function displayDoorLabel(data) {
+            const { door, qrCode } = data;
+            const container = document.getElementById('labelsContainer');
+            
+            const labelHtml = `
+                <div class="label-card bg-white border-2 border-gray-400 rounded-lg p-3 mb-4 inline-block mx-2" style="width: 90mm; height: 60mm; box-sizing: border-box;">
+                    <div class="flex flex-col h-full">
+                        <div class="flex-1">
+                            <div class="text-sm font-bold text-gray-900 mb-1 border-b border-gray-300 pb-1">${escapeHtml(door.design_code || door.template_code || `DOOR-${door.id}`)}</div>
+                            <div class="text-xs text-gray-800 mb-2 font-semibold">${escapeHtml(door.template_name || 'N/A')}</div>
+                            <div class="text-xs text-gray-600 mb-2 space-y-0.5">
+                                <div><span class="font-semibold">Dự án:</span> ${escapeHtml(door.project_name || 'N/A')}</div>
+                                <div><span class="font-semibold">KH:</span> ${escapeHtml(door.customer_name || 'N/A')}</div>
+                            </div>
+                            <div class="text-xs text-gray-600 space-y-0.5">
+                                <div><span class="font-semibold">KT:</span> ${door.width_mm || 0} x ${door.height_mm || 0} mm</div>
+                                <div><span class="font-semibold">Hệ nhôm:</span> ${escapeHtml(door.aluminum_system_name || 'N/A')}</div>
+                                ${door.color ? `<div><span class="font-semibold">Màu:</span> ${escapeHtml(door.color)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end mt-2 pt-2 border-t border-gray-300">
+                            <div class="text-xs text-gray-500">${new Date().toLocaleDateString('vi-VN')}</div>
+                            <img src="${qrCode}" alt="QR Code" class="w-16 h-16 border border-gray-300" />
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML += labelHtml;
+        }
+
+        // Display production order labels
+        function displayProductionOrderLabels(data) {
+            const { order, labels } = data;
+            const container = document.getElementById('labelsContainer');
+            
+            // Add order header
+            container.innerHTML += `
+                <div class="w-full mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h3 class="text-lg font-bold text-gray-900">Lệnh SX: ${escapeHtml(order.order_code || 'N/A')}</h3>
+                    <p class="text-sm text-gray-600">Dự án: ${escapeHtml(order.project_name || 'N/A')}</p>
+                </div>
+            `;
+            
+            labels.forEach(labelData => {
+                displayDoorLabel(labelData);
+            });
+        }
+
+        // Clear labels
+        function clearLabels() {
+            document.getElementById('labelsContainer').innerHTML = '';
+        }
+
+        // Helper functions
+        function escapeHtml(text) {
+            if (!text) return '';
+            if (typeof text !== 'string') text = String(text);
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getItemTypeLabel(type) {
+            const labels = {
+                'aluminum': 'Nhôm',
+                'glass': 'Kính',
+                'accessory': 'Phụ kiện',
+                'other': 'Khác'
+            };
+            return labels[type] || type;
+        }
+    </script>
+
+    <style>
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</body>
+</html>
+
+

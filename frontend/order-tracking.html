@@ -1,0 +1,747 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theo Dõi Đơn Hàng - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/sidebar-enterprise.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #0ea5e9 100%);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .table-row:hover {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-secondary {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .search-input {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Sidebar -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <div class="ml-64 transition-all duration-300" id="mainContent">
+        <!-- Header -->
+        <div class="gradient-header text-white sticky top-0 z-40">
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold flex items-center gap-3">
+                            <i class="fas fa-chart-line"></i>
+                            Theo Dõi Đơn Hàng
+                        </h1>
+                        <p class="text-blue-100 mt-1">Quản lý tổng quan và theo dõi tiến độ đơn hàng</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Month Filter -->
+                        <div class="flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2">
+                            <i class="fas fa-calendar-alt"></i>
+                            <select id="monthFilter"
+                                class="bg-transparent border-none text-white focus:outline-none cursor-pointer">
+                                <option value="" class="text-gray-800">Tất cả</option>
+                            </select>
+                        </div>
+                        <!-- Export Button -->
+                        <button onclick="exportExcel()"
+                            class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                            <i class="fas fa-file-excel"></i>
+                            Xuất Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="px-6 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Total Orders -->
+                <div class="stat-card">
+                    <div class="flex items-center gap-4">
+                        <div class="stat-icon bg-blue-100 text-blue-600">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Tổng đơn hàng</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statTotalOrders">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Volume -->
+                <div class="stat-card">
+                    <div class="flex items-center gap-4">
+                        <div class="stat-icon bg-purple-100 text-purple-600">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Tổng khối lượng</p>
+                            <p class="text-2xl font-bold text-gray-800"><span id="statTotalVolume">0</span> m²</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In Production -->
+                <div class="stat-card">
+                    <div class="flex items-center gap-4">
+                        <div class="stat-icon bg-yellow-100 text-yellow-600">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Đang sản xuất</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statInProduction">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivered -->
+                <div class="stat-card">
+                    <div class="flex items-center gap-4">
+                        <div class="stat-icon bg-green-100 text-green-600">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Đã giao hàng</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statDelivered">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overdue -->
+                <div class="stat-card">
+                    <div class="flex items-center gap-4">
+                        <div class="stat-icon bg-red-100 text-red-600">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Trễ hạn</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statOverdue">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart & Table Container -->
+        <div class="px-6 pb-6">
+            <!-- Chart Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-blue-500"></i>
+                    Biểu đồ đơn hàng theo tháng
+                </h3>
+                <div class="h-64">
+                    <canvas id="orderChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <!-- Table Header -->
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <!-- Search -->
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="searchInput" placeholder="Tìm kiếm đơn hàng..."
+                                class="search-input pl-11 pr-4 py-2.5 w-80 focus:outline-none"
+                                onkeyup="debounceSearch()">
+                        </div>
+
+                        <!-- Status Filter -->
+                        <select id="statusFilter" onchange="loadOrders()"
+                            class="border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:outline-none">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="completed">✅ Đã giao hàng</option>
+                            <option value="production">⚙️ Đang sản xuất</option>
+                            <option value="design">🎨 Đang thiết kế</option>
+                            <option value="quotation">📝 Báo giá</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                        <span>Hiển thị</span>
+                        <span class="font-semibold text-gray-800" id="showingCount">0</span>
+                        <span>/ <span id="totalCount">0</span> đơn hàng</span>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    TT</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Đơn hàng</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Khối lượng</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Ngày tạo</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Deadline</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Ngày giao</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Đơn vị SX</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Trạng thái</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-gray-100">
+                            <!-- Orders will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Trang <span id="currentPage">1</span> / <span id="totalPages">1</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="prevPage()" id="btnPrev" disabled
+                            class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextPage()" id="btnNext" disabled
+                            class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderDetailModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+            <div class="gradient-header text-white px-6 py-4 flex items-center justify-between">
+                <h3 class="text-xl font-bold" id="modalTitle">Chi tiết đơn hàng</h3>
+                <button onclick="closeModal()" class="text-white/80 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]" id="modalContent">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== CONSTANTS & STATE ==========
+        const API_URL = (window.API_BASE || '/api') + '/order-tracking';
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchTimeout = null;
+        let orderChart = null;
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            initMonthFilter();
+            loadStats();
+            loadOrders();
+        });
+
+        // ========== MONTH FILTER ==========
+        function initMonthFilter() {
+            const select = document.getElementById('monthFilter');
+            const now = new Date();
+
+            for (let i = 0; i < 12; i++) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const option = document.createElement('option');
+                option.value = `${date.getMonth() + 1}-${date.getFullYear()}`;
+                option.textContent = `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`;
+                option.className = 'text-gray-800';
+                select.appendChild(option);
+            }
+
+            select.addEventListener('change', () => {
+                currentPage = 1;
+                loadStats();
+                loadOrders();
+            });
+        }
+
+        // ========== LOAD STATS ==========
+        async function loadStats() {
+            try {
+                const monthFilter = document.getElementById('monthFilter').value;
+                let url = `${API_URL}/stats`;
+                if (monthFilter) {
+                    const [month, year] = monthFilter.split('-');
+                    url += `?month=${month}&year=${year}`;
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    document.getElementById('statTotalOrders').textContent = data.totalOrders;
+                    document.getElementById('statTotalVolume').textContent = parseFloat(data.totalVolume).toLocaleString('vi-VN');
+                    document.getElementById('statInProduction').textContent = data.inProduction;
+                    document.getElementById('statDelivered').textContent = data.delivered;
+                    document.getElementById('statOverdue').textContent = data.overdue;
+
+                    // Update chart
+                    renderChart(data.monthlyStats);
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // ========== RENDER CHART ==========
+        function renderChart(monthlyStats) {
+            const ctx = document.getElementById('orderChart').getContext('2d');
+
+            if (orderChart) {
+                orderChart.destroy();
+            }
+
+            const labels = monthlyStats.map(s => {
+                const [year, month] = s.month.split('-');
+                return `T${month}/${year.slice(2)}`;
+            });
+
+            orderChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Tổng đơn',
+                            data: monthlyStats.map(s => s.count),
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Đã giao',
+                            data: monthlyStats.map(s => s.delivered),
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: '#10b981',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== LOAD ORDERS ==========
+        async function loadOrders() {
+            try {
+                const search = document.getElementById('searchInput').value;
+                const status = document.getElementById('statusFilter').value;
+                const monthFilter = document.getElementById('monthFilter').value;
+
+                let url = `${API_URL}?page=${currentPage}&limit=20`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (status !== 'all') url += `&status=${status}`;
+                if (monthFilter) {
+                    const [month, year] = monthFilter.split('-');
+                    url += `&month=${month}&year=${year}`;
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderOrders(result.data);
+                    updatePagination(result.pagination);
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        // ========== RENDER ORDERS TABLE ==========
+        function renderOrders(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+
+            if (orders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-4 py-12 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-4 block"></i>
+                            Không có đơn hàng nào
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = orders.map((order, index) => {
+                const statusClass = getStatusClass(order.status_color);
+                const statusIcon = getStatusIcon(order.status);
+
+                return `
+                    <tr class="table-row hover:bg-gray-50 transition">
+                        <td class="px-4 py-3 text-sm text-gray-600">${(currentPage - 1) * 20 + index + 1}</td>
+                        <td class="px-4 py-3">
+                            <div class="font-medium text-gray-800">${order.project_code || ''}</div>
+                            <div class="text-sm text-gray-500">${order.project_name || ''}</div>
+                            <div class="text-xs text-gray-400">${order.customer_name || ''}</div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="font-medium">${order.volume ? parseFloat(order.volume).toFixed(2) : '-'}</span>
+                            <span class="text-gray-400 text-sm">m²</span>
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm text-gray-600">
+                            ${formatDate(order.created_at)}
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm ${isOverdue(order) ? 'text-red-600 font-medium' : 'text-gray-600'}">
+                            ${formatDate(order.deadline) || '-'}
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm text-gray-600">
+                            ${formatDate(order.handover_date) || '-'}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-600">
+                            ${order.manufacturer || '-'}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="status-badge ${statusClass}">
+                                ${statusIcon} ${order.status_text}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="viewDetail(${order.id})" class="text-blue-500 hover:text-blue-700 px-2 py-1" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <a href="project-detail.html?id=${order.id}" class="text-gray-500 hover:text-gray-700 px-2 py-1" title="Đến dự án">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ========== HELPER FUNCTIONS ==========
+        function getStatusClass(color) {
+            const classes = {
+                'success': 'status-success',
+                'warning': 'status-warning',
+                'danger': 'status-danger',
+                'secondary': 'status-secondary',
+                'info': 'status-info'
+            };
+            return classes[color] || 'status-secondary';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'completed': '<i class="fas fa-check"></i>',
+                'installation': '<i class="fas fa-tools"></i>',
+                'production': '<i class="fas fa-cog fa-spin"></i>',
+                'bom': '<i class="fas fa-list"></i>',
+                'design': '<i class="fas fa-pencil-ruler"></i>',
+                'quotation': '<i class="fas fa-file-invoice"></i>'
+            };
+            return icons[status] || '<i class="fas fa-clock"></i>';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function isOverdue(order) {
+            if (order.status === 'completed' || !order.deadline) return false;
+            return new Date(order.deadline) < new Date();
+        }
+
+        function updatePagination(pagination) {
+            currentPage = pagination.page;
+            totalPages = pagination.totalPages;
+
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            document.getElementById('showingCount').textContent = pagination.page * pagination.limit;
+            document.getElementById('totalCount').textContent = pagination.total;
+
+            document.getElementById('btnPrev').disabled = currentPage <= 1;
+            document.getElementById('btnNext').disabled = currentPage >= totalPages;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadOrders();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadOrders();
+            }
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadOrders();
+            }, 300);
+        }
+
+        // ========== VIEW DETAIL ==========
+        async function viewDetail(orderId) {
+            try {
+                const response = await fetch(`${API_URL}/${orderId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const { order, timeline } = result.data;
+
+                    document.getElementById('modalTitle').textContent = `${order.project_code} - ${order.project_name}`;
+                    document.getElementById('modalContent').innerHTML = `
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <p class="text-sm text-gray-500">Khách hàng</p>
+                                <p class="font-medium">${order.customer_name || '-'}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Khối lượng</p>
+                                <p class="font-medium">${order.total_area ? parseFloat(order.total_area).toFixed(2) + ' m²' : '-'}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Deadline</p>
+                                <p class="font-medium">${formatDate(order.deadline) || '-'}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Đơn vị SX</p>
+                                <p class="font-medium">${order.manufacturer || '-'}</p>
+                            </div>
+                        </div>
+                        
+                        <h4 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-history text-blue-500"></i> Timeline
+                        </h4>
+                        <div class="space-y-4">
+                            ${timeline.map(t => `
+                                <div class="flex items-start gap-4">
+                                    <div class="w-3 h-3 rounded-full bg-blue-500 mt-1.5"></div>
+                                    <div>
+                                        <p class="font-medium">${t.action}</p>
+                                        <p class="text-sm text-gray-500">${t.description}</p>
+                                        <p class="text-xs text-gray-400">${formatDate(t.date)}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+
+                    document.getElementById('orderDetailModal').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading detail:', error);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('orderDetailModal').classList.add('hidden');
+        }
+
+        // ========== EXPORT EXCEL ==========
+        async function exportExcel() {
+            try {
+                const status = document.getElementById('statusFilter').value;
+                const monthFilter = document.getElementById('monthFilter').value;
+
+                let url = `${API_URL}/export?`;
+                if (status !== 'all') url += `status=${status}&`;
+                if (monthFilter) {
+                    const [month, year] = monthFilter.split('-');
+                    url += `month=${month}&year=${year}`;
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    // Convert to CSV
+                    const headers = Object.keys(result.data[0]);
+                    const csv = [
+                        headers.join(','),
+                        ...result.data.map(row => headers.map(h => `"${row[h] || ''}"`).join(','))
+                    ].join('\n');
+
+                    // Download
+                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `theo-doi-don-hang-${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                } else {
+                    alert('Không có dữ liệu để xuất');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Lỗi khi xuất file');
+            }
+        }
+    </script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['orders'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadOrders === 'function') {
+                        loadOrders();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

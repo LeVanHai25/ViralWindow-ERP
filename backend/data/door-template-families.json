@@ -1,0 +1,810 @@
+{
+  "families": [
+    {
+      "code": "DOOR_OUT_1L_01",
+      "name": "Cửa đi 1 cánh mở ngoài trái",
+      "category": "door_out_swing",
+      "family": "door_out_1l",
+      "system": "XINGFA_55",
+      "defaultWidth": 900,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "door",
+        "openType": "turn-left",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "DOOR_OUT_1R_01",
+      "name": "Cửa đi 1 cánh mở ngoài phải",
+      "category": "door_out_swing",
+      "family": "door_out_1r",
+      "system": "XINGFA_55",
+      "defaultWidth": 900,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "door",
+        "openType": "turn-right",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "DOOR_OUT_2LR_01",
+      "name": "Cửa đi 2 cánh mở quay ngoài (2 cánh bằng)",
+      "category": "door_out_swing",
+      "family": "door_out_2lr",
+      "system": "XINGFA_55",
+      "defaultWidth": 1600,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "DOOR_OUT_2LR_ASYM_01",
+      "name": "Cửa đi 2 cánh lệch (cánh chính + cánh phụ)",
+      "category": "door_out_swing",
+      "family": "door_out_2lr_asym",
+      "system": "XINGFA_55",
+      "defaultWidth": 1500,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [2, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "DOOR_OUT_2LR_TOPFIX_01",
+      "name": "Cửa đi 2 cánh + fix trên",
+      "category": "door_out_swing",
+      "family": "door_out_2lr_topfix",
+      "system": "XINGFA_55",
+      "defaultWidth": 1600,
+      "defaultHeight": 2600,
+      "panelTree": {
+        "direction": "horizontal",
+        "split": true,
+        "ratio": [4, 1],
+        "children": [
+          {
+            "direction": "vertical",
+            "split": true,
+            "ratio": [1, 1],
+            "children": [
+              {
+                "type": "leaf",
+                "id": "K1",
+                "role": "door",
+                "openType": "turn-left",
+                "glass": "CLEAR_8"
+              },
+              {
+                "type": "leaf",
+                "id": "K2",
+                "role": "door",
+                "openType": "turn-right",
+                "glass": "CLEAR_8"
+              }
+            ]
+          },
+          {
+            "type": "leaf",
+            "id": "F1",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "DOOR_OUT_2LR_SIDEFIX_01",
+      "name": "Cửa đi 2 cánh + fix 2 bên",
+      "category": "door_out_swing",
+      "family": "door_out_2lr_sidefix",
+      "system": "XINGFA_55",
+      "defaultWidth": 2200,
+      "defaultHeight": 2300,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 2, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "F1",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          },
+          {
+            "direction": "vertical",
+            "split": true,
+            "ratio": [1, 1],
+            "children": [
+              {
+                "type": "leaf",
+                "id": "K1",
+                "role": "door",
+                "openType": "turn-left",
+                "glass": "CLEAR_8"
+              },
+              {
+                "type": "leaf",
+                "id": "K2",
+                "role": "door",
+                "openType": "turn-right",
+                "glass": "CLEAR_8"
+              }
+            ]
+          },
+          {
+            "type": "leaf",
+            "id": "F2",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "DOOR_OUT_4L_01",
+      "name": "Cửa đi 4 cánh mở quay ngoài",
+      "category": "door_out_swing",
+      "family": "door_out_4l",
+      "system": "XINGFA_55",
+      "defaultWidth": 3200,
+      "defaultHeight": 2400,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K3",
+            "role": "door",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K4",
+            "role": "door",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "DOOR_IN_1L_01",
+      "name": "Cửa đi 1 cánh mở trong trái",
+      "category": "door_in_swing",
+      "family": "door_in_1l",
+      "system": "XINGFA_55",
+      "defaultWidth": 900,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "door",
+        "openType": "turn-left",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "DOOR_IN_1R_01",
+      "name": "Cửa đi 1 cánh mở trong phải",
+      "category": "door_in_swing",
+      "family": "door_in_1r",
+      "system": "XINGFA_55",
+      "defaultWidth": 900,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "door",
+        "openType": "turn-right",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "DOOR_IN_2LR_01",
+      "name": "Cửa đi 2 cánh mở quay trong (2 cánh bằng)",
+      "category": "door_in_swing",
+      "family": "door_in_2lr",
+      "system": "XINGFA_55",
+      "defaultWidth": 1600,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "WIN_SWING_1L_01",
+      "name": "Cửa sổ 1 cánh mở quay trái",
+      "category": "window_swing",
+      "family": "win_swing_1l",
+      "system": "XINGFA_55",
+      "defaultWidth": 800,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "window",
+        "openType": "turn-left",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "WIN_SWING_1R_01",
+      "name": "Cửa sổ 1 cánh mở quay phải",
+      "category": "window_swing",
+      "family": "win_swing_1r",
+      "system": "XINGFA_55",
+      "defaultWidth": 800,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "window",
+        "openType": "turn-right",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "WIN_SWING_2LR_01",
+      "name": "Cửa sổ 2 cánh mở quay",
+      "category": "window_swing",
+      "family": "win_swing_2lr",
+      "system": "XINGFA_55",
+      "defaultWidth": 1200,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "WIN_SWING_3_01",
+      "name": "Cửa sổ 3 cánh (2 mở quay + 1 fix giữa)",
+      "category": "window_swing",
+      "family": "win_swing_3",
+      "system": "XINGFA_55",
+      "defaultWidth": 1800,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "F1",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "WIN_SWING_4_01",
+      "name": "Cửa sổ 4 cánh mở quay",
+      "category": "window_swing",
+      "family": "win_swing_4",
+      "system": "XINGFA_55",
+      "defaultWidth": 2400,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K3",
+            "role": "window",
+            "openType": "turn-left",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K4",
+            "role": "window",
+            "openType": "turn-right",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "WIN_TILT_1_01",
+      "name": "Cửa sổ 1 cánh mở hất",
+      "category": "window_tilt",
+      "family": "win_tilt_1",
+      "system": "XINGFA_55",
+      "defaultWidth": 900,
+      "defaultHeight": 900,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "window",
+        "openType": "tilt",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "WIN_TILT_2_01",
+      "name": "Cửa sổ 2 cánh mở hất",
+      "category": "window_tilt",
+      "family": "win_tilt_2",
+      "system": "XINGFA_55",
+      "defaultWidth": 1600,
+      "defaultHeight": 900,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "tilt",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "tilt",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "WIN_TILT_TURN_1_01",
+      "name": "Cửa sổ 1 cánh mở hất mở quay",
+      "category": "window_tilt_turn",
+      "family": "win_tilt_turn_1",
+      "system": "XINGFA_55",
+      "defaultWidth": 900,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "type": "leaf",
+        "id": "K1",
+        "role": "window",
+        "openType": "tilt-turn",
+        "glass": "CLEAR_8"
+      }
+    },
+    {
+      "code": "SLID_WIN_2_01",
+      "name": "Cửa sổ lùa 2 cánh",
+      "category": "window_sliding",
+      "family": "slid_win_2",
+      "system": "XINGFA_93",
+      "defaultWidth": 1600,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SLID_WIN_3_01",
+      "name": "Cửa sổ lùa 3 cánh",
+      "category": "window_sliding",
+      "family": "slid_win_3",
+      "system": "XINGFA_93",
+      "defaultWidth": 2100,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K3",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SLID_WIN_4_01",
+      "name": "Cửa sổ lùa 4 cánh",
+      "category": "window_sliding",
+      "family": "slid_win_4",
+      "system": "XINGFA_93",
+      "defaultWidth": 3200,
+      "defaultHeight": 1200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K3",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K4",
+            "role": "window",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SLID_DOOR_2_01",
+      "name": "Cửa đi lùa 2 cánh",
+      "category": "door_sliding",
+      "family": "slid_door_2",
+      "system": "XINGFA_93",
+      "defaultWidth": 2000,
+      "defaultHeight": 2200,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SLID_DOOR_4_01",
+      "name": "Cửa đi lùa 4 cánh",
+      "category": "door_sliding",
+      "family": "slid_door_4",
+      "system": "XINGFA_93",
+      "defaultWidth": 3200,
+      "defaultHeight": 2300,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "K1",
+            "role": "door",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K2",
+            "role": "door",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K3",
+            "role": "door",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          },
+          {
+            "type": "leaf",
+            "id": "K4",
+            "role": "door",
+            "openType": "sliding",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "PARTITION_DOOR_1L_01",
+      "name": "Vách 2 bên + cửa đi 1 cánh giữa",
+      "category": "partition_door",
+      "family": "partition_door_1l",
+      "system": "XINGFA_55",
+      "defaultWidth": 2600,
+      "defaultHeight": 2600,
+      "panelTree": {
+        "direction": "vertical",
+        "split": true,
+        "ratio": [1, 1, 1],
+        "children": [
+          {
+            "type": "leaf",
+            "id": "F1",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          },
+          {
+            "direction": "horizontal",
+            "split": true,
+            "ratio": [4, 1],
+            "children": [
+              {
+                "type": "leaf",
+                "id": "K1",
+                "role": "door",
+                "openType": "turn-left",
+                "glass": "CLEAR_8"
+              },
+              {
+                "type": "leaf",
+                "id": "F2",
+                "role": "fixed",
+                "openType": "fixed",
+                "glass": "CLEAR_8"
+              }
+            ]
+          },
+          {
+            "type": "leaf",
+            "id": "F3",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    },
+    {
+      "code": "PARTITION_DOOR_2LR_01",
+      "name": "Vách 2 bên + cửa đi 2 cánh giữa + fix trên",
+      "category": "partition_door",
+      "family": "partition_door_2lr",
+      "system": "XINGFA_55",
+      "defaultWidth": 3200,
+      "defaultHeight": 2800,
+      "panelTree": {
+        "direction": "horizontal",
+        "split": true,
+        "ratio": [4, 1],
+        "children": [
+          {
+            "direction": "vertical",
+            "split": true,
+            "ratio": [1, 2, 1],
+            "children": [
+              {
+                "type": "leaf",
+                "id": "F1",
+                "role": "fixed",
+                "openType": "fixed",
+                "glass": "CLEAR_8"
+              },
+              {
+                "direction": "vertical",
+                "split": true,
+                "ratio": [1, 1],
+                "children": [
+                  {
+                    "type": "leaf",
+                    "id": "K1",
+                    "role": "door",
+                    "openType": "turn-left",
+                    "glass": "CLEAR_8"
+                  },
+                  {
+                    "type": "leaf",
+                    "id": "K2",
+                    "role": "door",
+                    "openType": "turn-right",
+                    "glass": "CLEAR_8"
+                  }
+                ]
+              },
+              {
+                "type": "leaf",
+                "id": "F2",
+                "role": "fixed",
+                "openType": "fixed",
+                "glass": "CLEAR_8"
+              }
+            ]
+          },
+          {
+            "type": "leaf",
+            "id": "F3",
+            "role": "fixed",
+            "openType": "fixed",
+            "glass": "CLEAR_8"
+          }
+        ]
+      }
+    }
+  ],
+  "variants": {
+    "widthFactors": [0.9, 1.0, 1.1, 1.2],
+    "heightFactors": [1.0, 1.05, 1.1],
+    "systems": ["XINGFA_55", "XINGFA_63", "VIVA_55", "VIRAL_55"],
+    "glassTypes": ["CLEAR_8", "CLEAR_10", "LOWE_8", "LOWE_10"]
+  }
+}
+

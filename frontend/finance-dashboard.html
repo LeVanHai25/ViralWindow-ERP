@@ -1,0 +1,929 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Tài chính - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/notification-system.css">
+    <link rel="stylesheet" href="css/notification-header.css">
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="finance-date-range-picker.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Sidebar and main-content styles are now in sidebar-enterprise.css */
+        /* Keeping only page-specific styles here */
+
+        .header-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* Enhanced KPI cards with gradients */
+        .kpi-card-modern {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .kpi-card-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .kpi-card-modern:hover::before {
+            transform: scaleX(1);
+        }
+
+        .kpi-card-modern:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .kpi-card-green::before {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+
+        .kpi-card-red::before {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .kpi-card-blue::before {
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .kpi-card-orange::before {
+            background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+        }
+
+        .kpi-card-purple::before {
+            background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .fade-in-delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .fade-in-delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .fade-in-delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .fade-in-delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        .fade-in-delay-5 {
+            animation-delay: 0.5s;
+        }
+
+        /* Chart card modern */
+        .chart-card-modern {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .chart-card-modern:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Alert card modern */
+        .alert-card-modern {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .alert-card-modern:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .alert-card-red {
+            border-left-color: #ef4444;
+        }
+
+        .alert-card-yellow {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-card-orange {
+            border-left-color: #f97316;
+        }
+
+        /* Button modern */
+        .btn-modern {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/finance-sidebar.js"></script>
+</head>
+
+<body>
+
+    <!-- Header Notification (Top Right) -->
+    <div class="header-notification-container">
+        <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
+        </button>
+
+        <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
+            <div class="header-notifications-header">
+                <h3>Thông báo</h3>
+            </div>
+            <div id="headerNotificationsList" class="header-notifications-list">
+                <!-- Notifications will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <!-- SIDEBAR (loaded from finance-sidebar.js) -->
+    <div id="sidebarContainer"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Top Header Bar -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-800">Dashboard Tài chính</h1>
+                <p class="text-sm text-gray-500 mt-1">Tổng quan tình hình tài chính</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="finance-receipts.html"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all btn-modern">
+                    Phiếu thu
+                </a>
+                <a href="finance-payments.html"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all btn-modern">
+                    Phiếu chi
+                </a>
+                <a href="finance-debt.html"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all btn-modern">
+                    Công nợ
+                </a>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- HÀNG 1: KPI CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <!-- Tổng thu hôm nay -->
+                <div class="kpi-card-modern kpi-card-green p-6 fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center gap-1 text-green-600 text-sm font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                            <span id="todayRevenueChange">+0%</span>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 mb-1" id="todayRevenue">0 ₫</div>
+                    <div class="text-sm text-gray-500">Tổng thu hôm nay</div>
+                </div>
+
+                <!-- Tổng chi hôm nay -->
+                <div class="kpi-card-modern kpi-card-red p-6 fade-in fade-in-delay-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center gap-1 text-red-600 text-sm font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                            </svg>
+                            <span id="todayExpenseChange">+0%</span>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-red-600 mb-1" id="todayExpense">0 ₫</div>
+                    <div class="text-sm text-gray-500">Tổng chi hôm nay</div>
+                </div>
+
+                <!-- Công nợ phải thu -->
+                <div class="kpi-card-modern kpi-card-blue p-6 fade-in fade-in-delay-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-blue-600 mb-1" id="totalReceivable">0 ₫</div>
+                    <div class="text-sm text-gray-500">Công nợ phải thu</div>
+                </div>
+
+                <!-- Công nợ phải trả -->
+                <div class="kpi-card-modern kpi-card-orange p-6 fade-in fade-in-delay-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-orange-600 mb-1" id="totalPayable">0 ₫</div>
+                    <div class="text-sm text-gray-500">Công nợ phải trả</div>
+                </div>
+
+                <!-- Lãi/lỗ tháng -->
+                <div class="kpi-card-modern kpi-card-purple p-6 fade-in fade-in-delay-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                        <div class="flex items-center gap-1 text-sm font-semibold" id="monthProfitTrend">
+                            <span id="monthProfitChange">+0%</span>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900 mb-1" id="monthProfit">0 ₫</div>
+                    <div class="text-sm text-gray-500">Lãi/lỗ tháng này</div>
+                </div>
+            </div>
+
+            <!-- HÀNG 2: BIỂU ĐỒ -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Biểu đồ cột: Thu - Chi theo ngày -->
+                <div class="chart-card-modern p-6 fade-in fade-in-delay-1">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-gray-900">Thu - Chi theo ngày</h3>
+                        <select id="chartPeriod"
+                            class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                            onchange="loadRevenueExpenseChart()">
+                            <option value="7">7 ngày</option>
+                            <option value="30">30 ngày</option>
+                            <option value="90">90 ngày</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="revenueExpenseChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Biểu đồ line: Dòng tiền -->
+                <div class="chart-card-modern p-6 fade-in fade-in-delay-2">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-gray-900">Dòng tiền</h3>
+                        <select id="cashflowPeriod"
+                            class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                            onchange="loadCashflowChart()">
+                            <option value="7">7 ngày</option>
+                            <option value="30">30 ngày</option>
+                            <option value="90">90 ngày</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="cashflowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HÀNG 3: CẢNH BÁO -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Dự án âm tiền -->
+                <div class="alert-card-modern alert-card-red p-6 fade-in fade-in-delay-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900">Dự án âm tiền</h3>
+                        </div>
+                        <span class="bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full"
+                            id="negativeProjectCount">0</span>
+                    </div>
+                    <div class="space-y-2" id="negativeProjectsList">
+                        <p class="text-sm text-gray-500">Không có dự án nào</p>
+                    </div>
+                </div>
+
+                <!-- Công nợ quá hạn -->
+                <div class="alert-card-modern alert-card-yellow p-6 fade-in fade-in-delay-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900">Công nợ quá hạn</h3>
+                        </div>
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full"
+                            id="overdueDebtCount">0</span>
+                    </div>
+                    <div class="space-y-2" id="overdueDebtsList">
+                        <p class="text-sm text-gray-500">Không có công nợ quá hạn</p>
+                    </div>
+                </div>
+
+                <!-- Chi phí vượt báo giá -->
+                <div class="alert-card-modern alert-card-orange p-6 fade-in fade-in-delay-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                </svg>
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900">Chi phí vượt báo giá</h3>
+                        </div>
+                        <span class="bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full"
+                            id="overBudgetCount">0</span>
+                    </div>
+                    <div class="space-y-2" id="overBudgetProjectsList">
+                        <p class="text-sm text-gray-500">Không có dự án nào</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/finance-sync-manager.js"></script>
+        <script src="finance-common.js"></script>
+        <script>
+            // API_BASE is already defined in finance-common.js
+            let revenueExpenseChart = null;
+            let cashflowChart = null;
+
+            // Load dashboard data
+            async function loadDashboard() {
+                console.log('🚀 Loading dashboard...');
+
+                // First, sync data from projects to ensure latest data
+                try {
+                    console.log('📡 Syncing financial data...');
+                    const syncRes = await fetch(`${API_BASE}/financial/sync`, { method: 'POST', headers: getApiHeaders() });
+                    const syncData = await syncRes.json();
+                    console.log('✅ Sync result:', syncData);
+                } catch (e) {
+                    console.log('⚠️ Sync skipped:', e.message);
+                }
+
+                await Promise.all([
+                    loadKPIs(),
+                    loadRevenueExpenseChart(),
+                    loadCashflowChart(),
+                    loadAlerts()
+                ]);
+                console.log('✅ Dashboard loaded!');
+            }
+
+            // Load KPI cards
+            async function loadKPIs() {
+                console.log('📊 Loading KPIs...');
+                try {
+                    // Use the new dashboard API for optimized data fetching
+                    console.log('📡 Fetching from:', `${API_BASE}/financial/dashboard`);
+                    const dashRes = await fetch(`${API_BASE}/financial/dashboard`, { headers: getApiHeaders() });
+                    console.log('📩 Response status:', dashRes.status);
+                    const dashData = await dashRes.json();
+                    console.log('📦 Dashboard data:', dashData);
+
+                    if (dashData.success && dashData.data) {
+                        const d = dashData.data;
+                        console.log('📈 Data received:', d);
+
+                        // Today's revenue and expense
+                        const todayRevenueEl = document.getElementById('todayRevenue');
+                        const todayExpenseEl = document.getElementById('todayExpense');
+                        const todayRevenueChangeEl = document.getElementById('todayRevenueChange');
+                        const todayExpenseChangeEl = document.getElementById('todayExpenseChange');
+
+                        if (todayRevenueEl) todayRevenueEl.textContent = formatCurrency(d.today_revenue || 0);
+                        if (todayExpenseEl) todayExpenseEl.textContent = formatCurrency(d.today_expense || 0);
+                        if (todayRevenueChangeEl) todayRevenueChangeEl.textContent = '+0%';
+                        if (todayExpenseChangeEl) todayExpenseChangeEl.textContent = '+0%';
+
+                        // Debt statistics
+                        const totalReceivableEl = document.getElementById('totalReceivable');
+                        const totalPayableEl = document.getElementById('totalPayable');
+                        if (totalReceivableEl) totalReceivableEl.textContent = formatCurrency(d.total_receivable || 0);
+                        if (totalPayableEl) totalPayableEl.textContent = formatCurrency(d.total_payable || 0);
+
+                        // Month profit
+                        const profit = d.month_profit || 0;
+                        const profitEl = document.getElementById('monthProfit');
+                        const trendEl = document.getElementById('monthProfitTrend');
+                        const monthProfitChangeEl = document.getElementById('monthProfitChange');
+
+                        if (profitEl) {
+                            profitEl.textContent = formatCurrency(profit);
+                            profitEl.className = profit >= 0 ? 'text-2xl font-bold text-green-600 mb-1' : 'text-2xl font-bold text-red-600 mb-1';
+                        }
+                        if (trendEl) {
+                            trendEl.className = profit >= 0 ? 'flex items-center gap-1 text-green-600 text-sm font-semibold' : 'flex items-center gap-1 text-red-600 text-sm font-semibold';
+                        }
+                        if (monthProfitChangeEl) monthProfitChangeEl.textContent = profit >= 0 ? '+0%' : '-0%';
+
+                        // Update negative projects alert
+                        const negProjects = d.negative_balance_projects || [];
+                        const negativeProjectCountEl = document.getElementById('negativeProjectCount');
+                        const negativeProjectsListEl = document.getElementById('negativeProjectsList');
+
+                        if (negativeProjectCountEl) negativeProjectCountEl.textContent = negProjects.length;
+                        if (negativeProjectsListEl) {
+                            if (negProjects.length > 0) {
+                                negativeProjectsListEl.innerHTML = negProjects.slice(0, 5).map(p => `
+                                <div class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0">
+                                    <div class="font-medium text-gray-900">${escapeHtml(p.project_name || p.project_code || 'Dự án #' + p.id)}</div>
+                                    <div class="text-sm text-red-500 mt-1">${formatCurrency(p.balance || 0)}</div>
+                                </div>
+                            `).join('');
+                            } else {
+                                negativeProjectsListEl.innerHTML = '<p class="text-sm text-gray-500">Không có dự án nào</p>';
+                            }
+                        }
+                    } else {
+                        // Fallback to old method if new API fails
+                        await loadKPIsLegacy();
+                    }
+                } catch (error) {
+                    console.error('Error loading KPIs:', error);
+                    // Fallback to old method
+                    await loadKPIsLegacy();
+                }
+            }
+
+            // Legacy KPI loading (fallback)
+            async function loadKPIsLegacy() {
+                try {
+                    const today = new Date().toISOString().split('T')[0];
+
+                    // Today's revenue and expense
+                    const todayRes = await fetch(`${API_BASE}/financial/transactions?startDate=${today}&endDate=${today}`, { headers: getApiHeaders() });
+                    const todayData = await todayRes.json();
+
+                    let todayRevenue = 0;
+                    let todayExpense = 0;
+                    if (todayData.success && todayData.data) {
+                        todayData.data.forEach(t => {
+                            if (t.transaction_type === 'revenue') todayRevenue += parseFloat(t.amount || 0);
+                            if (t.transaction_type === 'expense') todayExpense += parseFloat(t.amount || 0);
+                        });
+                    }
+
+                    const todayRevenueEl = document.getElementById('todayRevenue');
+                    const todayExpenseEl = document.getElementById('todayExpense');
+                    const todayRevenueChangeEl = document.getElementById('todayRevenueChange');
+                    const todayExpenseChangeEl = document.getElementById('todayExpenseChange');
+
+                    if (todayRevenueEl) todayRevenueEl.textContent = formatCurrency(todayRevenue);
+                    if (todayExpenseEl) todayExpenseEl.textContent = formatCurrency(todayExpense);
+                    if (todayRevenueChangeEl) todayRevenueChangeEl.textContent = '+0%';
+                    if (todayExpenseChangeEl) todayExpenseChangeEl.textContent = '+0%';
+
+                    // Debt statistics
+                    const debtRes = await fetch(`${API_BASE}/debts/statistics`, { headers: getApiHeaders() });
+                    const debtData = await debtRes.json();
+                    if (debtData.success) {
+                        const totalReceivableEl = document.getElementById('totalReceivable');
+                        const totalPayableEl = document.getElementById('totalPayable');
+                        if (totalReceivableEl) totalReceivableEl.textContent = formatCurrency(debtData.data.receivable?.remaining_amount || 0);
+                        if (totalPayableEl) totalPayableEl.textContent = formatCurrency(debtData.data.payable?.remaining_amount || 0);
+                    }
+
+                    // Month profit
+                    const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+                    const lastDay = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
+
+                    const monthRes = await fetch(`${API_BASE}/financial/statistics?startDate=${firstDay}&endDate=${lastDay}`, { headers: getApiHeaders() });
+                    const monthData = await monthRes.json();
+                    if (monthData.success) {
+                        const profit = (monthData.data.total_revenue || 0) - (monthData.data.total_expense || 0);
+                        const profitEl = document.getElementById('monthProfit');
+                        const trendEl = document.getElementById('monthProfitTrend');
+                        const monthProfitChangeEl = document.getElementById('monthProfitChange');
+
+                        if (profitEl) {
+                            profitEl.textContent = formatCurrency(profit);
+                            profitEl.className = profit >= 0 ? 'text-2xl font-bold text-green-600 mb-1' : 'text-2xl font-bold text-red-600 mb-1';
+                        }
+                        if (trendEl) {
+                            trendEl.className = profit >= 0 ? 'flex items-center gap-1 text-green-600 text-sm font-semibold' : 'flex items-center gap-1 text-red-600 text-sm font-semibold';
+                        }
+                        if (monthProfitChangeEl) monthProfitChangeEl.textContent = profit >= 0 ? '+0%' : '-0%';
+                    }
+                } catch (error) {
+                    console.error('Error loading KPIs (legacy):', error);
+                }
+            }
+
+            // Load revenue/expense chart
+            async function loadRevenueExpenseChart() {
+                try {
+                    const days = parseInt(document.getElementById('chartPeriod').value);
+                    const endDate = new Date();
+                    const startDate = new Date(endDate.getTime() - days * 86400000);
+
+                    const res = await fetch(`${API_BASE}/financial/transactions?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`, { headers: getApiHeaders() });
+                    const data = await res.json();
+
+                    if (!data.success) return;
+
+                    // Group by date
+                    const grouped = {};
+                    data.data.forEach(t => {
+                        const date = t.transaction_date.split('T')[0];
+                        if (!grouped[date]) {
+                            grouped[date] = { revenue: 0, expense: 0 };
+                        }
+                        if (t.transaction_type === 'revenue') {
+                            grouped[date].revenue += parseFloat(t.amount || 0);
+                        } else {
+                            grouped[date].expense += parseFloat(t.amount || 0);
+                        }
+                    });
+
+                    const labels = Object.keys(grouped).sort();
+                    const revenueData = labels.map(d => grouped[d].revenue);
+                    const expenseData = labels.map(d => grouped[d].expense);
+
+                    const ctx = document.getElementById('revenueExpenseChart').getContext('2d');
+                    if (revenueExpenseChart) revenueExpenseChart.destroy();
+
+                    revenueExpenseChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels.map(d => formatDate(d)),
+                            datasets: [{
+                                label: 'Thu',
+                                data: revenueData,
+                                backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1
+                            }, {
+                                label: 'Chi',
+                                data: expenseData,
+                                backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function (value) {
+                                            return (value / 1000000).toFixed(0) + 'M';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading chart:', error);
+                }
+            }
+
+            // Load cashflow chart
+            async function loadCashflowChart() {
+                try {
+                    const days = parseInt(document.getElementById('cashflowPeriod').value);
+                    const endDate = new Date();
+                    const startDate = new Date(endDate.getTime() - days * 86400000);
+
+                    const res = await fetch(`${API_BASE}/financial/transactions?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`, { headers: getApiHeaders() });
+                    const data = await res.json();
+
+                    if (!data.success) return;
+
+                    // Calculate cumulative cashflow
+                    const grouped = {};
+                    data.data.forEach(t => {
+                        const date = t.transaction_date.split('T')[0];
+                        if (!grouped[date]) {
+                            grouped[date] = 0;
+                        }
+                        if (t.transaction_type === 'revenue') {
+                            grouped[date] += parseFloat(t.amount || 0);
+                        } else {
+                            grouped[date] -= parseFloat(t.amount || 0);
+                        }
+                    });
+
+                    const labels = Object.keys(grouped).sort();
+                    let cumulative = 0;
+                    const cashflowData = labels.map(d => {
+                        cumulative += grouped[d];
+                        return cumulative;
+                    });
+
+                    const ctx = document.getElementById('cashflowChart').getContext('2d');
+                    if (cashflowChart) cashflowChart.destroy();
+
+                    cashflowChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels.map(d => formatDate(d)),
+                            datasets: [{
+                                label: 'Dòng tiền',
+                                data: cashflowData,
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: function (value) {
+                                            return (value / 1000000).toFixed(0) + 'M';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading cashflow chart:', error);
+                }
+            }
+
+            // Load alerts
+            async function loadAlerts() {
+                // Note: Negative projects are already loaded in loadKPIs from dashboard API
+                // Only load overdue debts and over budget here
+
+                // Load overdue debts
+                try {
+                    const res = await fetch(`${API_BASE}/debts?status=overdue`, { headers: getApiHeaders() });
+                    const data = await res.json();
+                    if (data.success) {
+                        const overdue = data.data.filter(d => {
+                            if (!d.due_date) return false;
+                            return new Date(d.due_date) < new Date();
+                        });
+                        const overdueDebtCountEl = document.getElementById('overdueDebtCount');
+                        const overdueDebtsListEl = document.getElementById('overdueDebtsList');
+
+                        if (overdueDebtCountEl) overdueDebtCountEl.textContent = overdue.length;
+                        if (overdueDebtsListEl) {
+                            if (overdue.length > 0) {
+                                overdueDebtsListEl.innerHTML = overdue.slice(0, 5).map(d => `
+                                <div class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0" onclick="window.location.href='finance-debt.html?id=${d.id}'">
+                                    <div class="font-medium text-gray-900">${escapeHtml(d.customer_name || d.supplier || 'N/A')}</div>
+                                    <div class="text-sm text-gray-500 mt-1">${formatCurrency(d.remaining_amount || 0)}</div>
+                                </div>
+                            `).join('');
+                            } else {
+                                overdueDebtsListEl.innerHTML = '<p class="text-sm text-gray-500">Không có công nợ quá hạn</p>';
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading overdue debts:', error);
+                }
+            }
+
+            // Initialize
+            // Load company logo and name
+            async function loadCompanyLogo() {
+                try {
+                    const API_BASE = window.API_BASE || '/api';
+                    const response = await fetch(`${API_BASE}/company-settings`, { headers: getApiHeaders() });
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        // Load logo
+                        if (result.data.logo_path) {
+                            const logoImg = document.getElementById('companyLogo');
+                            const logoIcon = document.getElementById('companyLogoIcon');
+                            if (logoImg && logoIcon) {
+                                logoImg.src = result.data.logo_path;
+                                logoImg.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            }
+                        }
+
+                        // Load company name
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl && result.data.company_name) {
+                            companyNameEl.textContent = result.data.company_name;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi load logo:', error);
+                }
+            }
+
+            // Load sidebar user info
+            async function loadSidebarUserInfo() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) return;
+
+                    const response = await fetch(`${API_BASE}/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        const user = result.data;
+
+                        // Update user name
+                        const userNameEl = document.getElementById('sidebarUserName');
+                        if (userNameEl) userNameEl.textContent = user.full_name || 'User';
+
+                        // Update avatar
+                        const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                        const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                        if (avatarInitial && avatarImage) {
+                            if (user.avatar_url) {
+                                avatarImage.src = user.avatar_url;
+                                avatarImage.classList.remove('hidden');
+                                avatarInitial.classList.add('hidden');
+                            } else {
+                                const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                                avatarInitial.textContent = initial;
+                                avatarInitial.classList.remove('hidden');
+                                avatarImage.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading sidebar user info:', error);
+                }
+            }
+
+            // Toggle sidebar user menu
+            function toggleSidebarUserMenu() {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                }
+            }
+
+            // Handle logout (shared function)
+            async function handleLogout() {
+                const confirmed = await VWModal.confirm('ÄÄƒng xuáº¥t', 'Bạn có chắc muốn đăng xuất?');
+                if (confirmed) {
+                    sessionStorage.removeItem('token');
+                    sessionStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function (event) {
+                const sidebarUserMenuDropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (sidebarUserMenuDropdown && !sidebarUserMenuDropdown.contains(event.target) && !event.target.closest('[onclick="toggleSidebarUserMenu()"]')) {
+                    sidebarUserMenuDropdown.classList.add('hidden');
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', async function () {
+                initFinanceSidebar('finance-dashboard');
+                // Load dashboard data first (important for displaying data)
+                try {
+                    await loadDashboard();
+                } catch (e) {
+                    console.error('Dashboard load error:', e);
+                }
+
+                // Listen for cross-tab financial updates (e.g. receipt posted on another tab)
+                FinanceSyncManager.listen(function (event) {
+                    console.log('📢 Dashboard received financial update:', event.type);
+                    if (['receipt_posted', 'payment_posted', 'transaction_updated', 'transaction_cancelled'].includes(event.type)) {
+                        // Reload KPIs and charts to reflect latest data
+                        loadKPIs();
+                        loadRevenueExpenseChart();
+                        loadCashflowChart();
+                        loadAlerts();
+                    }
+                });
+
+                // Optionally check auth after dashboard loads
+                // checkAuth(); // Commented out to allow viewing data without login
+            });
+        </script>
+    </div> <!-- End main-content -->
+    <script src="js/sidebar-enterprise.js"></script>
+    <script src="js/notification-system.js"></script>
+    <script src="js/notification-header.js"></script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['finance'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadFinanceDashboard === 'function') {
+                        loadFinanceDashboard();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

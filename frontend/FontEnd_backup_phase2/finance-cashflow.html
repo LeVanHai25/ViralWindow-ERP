@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dòng tiền - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+<body class="bg-gray-50">
+    <!-- HEADER -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước" class="text-gray-600 hover:text-gray-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Dòng tiền</h1>
+                    <p class="text-sm text-gray-500">Theo dõi dòng tiền vào - ra</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <select id="periodSelect" class="form-select" onchange="loadCashflow()">
+                    <option value="7">7 ngày</option>
+                    <option value="30" selected>30 ngày</option>
+                    <option value="90">90 ngày</option>
+                    <option value="365">1 năm</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- SUMMARY CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="kpi-card">
+                <div class="kpi-label">Tổng thu</div>
+                <div class="kpi-value text-green-600" id="totalInflow">0 ₫</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Tổng chi</div>
+                <div class="kpi-value text-red-600" id="totalOutflow">0 ₫</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Dòng tiền ròng</div>
+                <div class="kpi-value" id="netCashflow">0 ₫</div>
+            </div>
+        </div>
+
+        <!-- CHART -->
+        <div class="chart-card mb-6">
+            <div class="chart-header">
+                <h3 class="chart-title">Biểu đồ dòng tiền</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="cashflowChart"></canvas>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="data-table">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Thu</th>
+                        <th>Chi</th>
+                        <th>Dòng tiền ròng</th>
+                        <th>Dòng tiền tích lũy</th>
+                    </tr>
+                </thead>
+                <tbody id="cashflowTable">
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">Đang tải...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="finance-common.js"></script>
+    <script>
+        let cashflowChart = null;
+
+        // Load cashflow
+        async function loadCashflow() {
+            try {
+                const days = parseInt(document.getElementById('periodSelect').value);
+                const endDate = new Date();
+                const startDate = new Date(endDate.getTime() - days * 86400000);
+                
+                const res = await fetch(`${API_BASE}/financial/transactions?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
+                const data = await res.json();
+                
+                if (!data.success) return;
+
+                // Group by date
+                const grouped = {};
+                data.data.forEach(t => {
+                    const date = t.transaction_date.split('T')[0];
+                    if (!grouped[date]) {
+                        grouped[date] = { inflow: 0, outflow: 0 };
+                    }
+                    if (t.transaction_type === 'revenue') {
+                        grouped[date].inflow += parseFloat(t.amount || 0);
+                    } else {
+                        grouped[date].outflow += parseFloat(t.amount || 0);
+                    }
+                });
+
+                const labels = Object.keys(grouped).sort();
+                const inflowData = labels.map(d => grouped[d].inflow);
+                const outflowData = labels.map(d => grouped[d].outflow);
+                const netData = labels.map(d => grouped[d].inflow - grouped[d].outflow);
+                
+                let cumulative = 0;
+                const cumulativeData = netData.map(net => {
+                    cumulative += net;
+                    return cumulative;
+                });
+
+                // Update summary
+                const totalInflow = inflowData.reduce((a, b) => a + b, 0);
+                const totalOutflow = outflowData.reduce((a, b) => a + b, 0);
+                const netCashflow = totalInflow - totalOutflow;
+                
+                document.getElementById('totalInflow').textContent = formatCurrency(totalInflow);
+                document.getElementById('totalOutflow').textContent = formatCurrency(totalOutflow);
+                document.getElementById('netCashflow').textContent = formatCurrency(netCashflow);
+                document.getElementById('netCashflow').className = netCashflow >= 0 ? 'kpi-value text-green-600' : 'kpi-value text-red-600';
+
+                // Update chart
+                const ctx = document.getElementById('cashflowChart').getContext('2d');
+                if (cashflowChart) cashflowChart.destroy();
+
+                cashflowChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels.map(d => formatDate(d)),
+                        datasets: [{
+                            label: 'Dòng tiền tích lũy',
+                            data: cumulativeData,
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: function(value) {
+                                        return (value / 1000000).toFixed(0) + 'M';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Update table
+                const tbody = document.getElementById('cashflowTable');
+                if (labels.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Không có dữ liệu</td></tr>';
+                    return;
+                }
+
+                let tableCumulative = 0;
+                tbody.innerHTML = labels.map((date, index) => {
+                    const inflow = inflowData[index];
+                    const outflow = outflowData[index];
+                    const net = netData[index];
+                    tableCumulative += net;
+                    
+                    return `
+                        <tr>
+                            <td>${formatDate(date)}</td>
+                            <td class="money-positive">${formatCurrency(inflow)}</td>
+                            <td class="money-negative">${formatCurrency(outflow)}</td>
+                            <td class="${net >= 0 ? 'money-positive' : 'money-negative'}">${formatCurrency(net)}</td>
+                            <td class="${tableCumulative >= 0 ? 'money-positive' : 'money-negative'}">${formatCurrency(tableCumulative)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading cashflow:', error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadCashflow();
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,498 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Chức Vụ - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .permission-checkbox:checked+label {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            color: white;
+        }
+
+        .permission-group {
+            border-left: 3px solid #8B5CF6;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+    <!-- HEADER -->
+    <div class="header-gradient p-5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại"
+                class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center text-white hover:bg-opacity-30 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Quản Lý Chức Vụ</h1>
+                <p class="text-white text-opacity-90 text-sm">Tạo và phân quyền cho các chức vụ trong hệ thống</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <a href="user-management.html"
+                class="px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-all flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Quản lý Người dùng
+            </a>
+            <button onclick="openRoleModal()"
+                class="px-4 py-2 bg-white text-purple-600 rounded-lg hover:bg-gray-100 transition-all font-semibold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Thêm Chức Vụ
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="p-6 max-w-7xl mx-auto">
+        <!-- Roles Grid -->
+        <div id="rolesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Roles will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                class="w-16 h-16 mx-auto text-gray-400 mb-4">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <p class="text-gray-500 text-lg">Chưa có chức vụ nào</p>
+            <button onclick="openRoleModal()"
+                class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all">
+                Tạo chức vụ đầu tiên
+            </button>
+        </div>
+    </div>
+
+    <!-- Role Modal -->
+    <div id="roleModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl m-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-purple-600 to-blue-600">
+                <div class="flex justify-between items-center">
+                    <h2 id="modalTitle" class="text-xl font-bold text-white">Thêm Chức Vụ Mới</h2>
+                    <button onclick="closeRoleModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="roleForm">
+                    <input type="hidden" id="roleId">
+
+                    <!-- Role Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Tên chức vụ <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="roleName" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="VD: Nhân viên Thiết kế">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Mô tả</label>
+                            <input type="text" id="roleDescription"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="Mô tả ngắn về chức vụ">
+                        </div>
+                    </div>
+
+                    <!-- Permissions -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5 text-purple-600">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Phân Quyền
+                        </h3>
+
+                        <div class="flex gap-2 mb-4">
+                            <button type="button" onclick="selectAllPermissions()"
+                                class="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all">
+                                Chọn tất cả
+                            </button>
+                            <button type="button" onclick="deselectAllPermissions()"
+                                class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">
+                                Bỏ chọn tất cả
+                            </button>
+                        </div>
+
+                        <div id="permissionsContainer" class="space-y-4">
+                            <!-- Permissions will be loaded here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+                <button type="button" onclick="closeRoleModal()"
+                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-all">
+                    Hủy
+                </button>
+                <button type="button" onclick="saveRole()"
+                    class="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all font-semibold">
+                    Lưu Chức Vụ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let allPermissions = [];
+        let currentRoleId = null;
+
+        // Get auth token
+        function getAuthToken() {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return token;
+        }
+
+        // Fetch with auth
+        async function fetchWithAuth(url, options = {}) {
+            const token = getAuthToken();
+            if (!token) return null;
+
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(url, options);
+            if (response.status === 401 || response.status === 403) {
+                alert('Phiên đăng nhập hết hạn hoặc không có quyền truy cập');
+                window.location.href = 'login.html';
+                return null;
+            }
+            return response;
+        }
+
+        // Load roles
+        async function loadRoles() {
+            try {
+                const response = await fetchWithAuth(`${API_BASE}/roles`);
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success) {
+                    renderRoles(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading roles:', error);
+            }
+        }
+
+        // Render roles
+        function renderRoles(roles) {
+            const container = document.getElementById('rolesContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (!roles || roles.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = roles.map(role => `
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-bold text-gray-800">${role.name}</h3>
+                                ${role.is_system ? '<span class="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">Hệ thống</span>' : ''}
+                            </div>
+                            <p class="text-gray-500 text-sm mt-1">${role.description || 'Không có mô tả'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editRole(${role.id})" title="Chỉnh sửa"
+                                class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            ${!role.is_system ? `
+                            <button onclick="deleteRole(${role.id}, '${role.name}')" title="Xóa"
+                                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 text-sm text-gray-600">
+                        <div class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>${role.permission_count || 0} quyền</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <span>${role.user_count || 0} người dùng</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load permissions
+        async function loadPermissions() {
+            try {
+                const response = await fetchWithAuth(`${API_BASE}/permissions/grouped`);
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success) {
+                    allPermissions = [];
+                    renderPermissions(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading permissions:', error);
+            }
+        }
+
+        // Render permissions
+        function renderPermissions(groupedPermissions) {
+            const container = document.getElementById('permissionsContainer');
+            container.innerHTML = '';
+
+            for (const [module, permissions] of Object.entries(groupedPermissions)) {
+                allPermissions.push(...permissions);
+
+                const moduleHtml = `
+                    <div class="permission-group bg-gray-50 rounded-xl p-4 pl-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-gray-800">${module}</h4>
+                            <button type="button" onclick="toggleModulePermissions('${module}')"
+                                class="text-xs text-purple-600 hover:text-purple-800">
+                                Chọn/Bỏ chọn
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            ${permissions.map(p => `
+                                <div>
+                                    <input type="checkbox" id="perm_${p.id}" value="${p.id}"
+                                        class="permission-checkbox hidden" data-module="${module}">
+                                    <label for="perm_${p.id}"
+                                        class="inline-block px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm cursor-pointer hover:border-purple-400 transition-all">
+                                        ${p.name}
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', moduleHtml);
+            }
+        }
+
+        // Toggle module permissions
+        function toggleModulePermissions(module) {
+            const checkboxes = document.querySelectorAll(`input[data-module="${module}"]`);
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+        }
+
+        // Select all permissions
+        function selectAllPermissions() {
+            document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = true);
+        }
+
+        // Deselect all permissions
+        function deselectAllPermissions() {
+            document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        // Open role modal
+        function openRoleModal() {
+            currentRoleId = null;
+            document.getElementById('modalTitle').textContent = 'Thêm Chức Vụ Mới';
+            document.getElementById('roleId').value = '';
+            document.getElementById('roleName').value = '';
+            document.getElementById('roleDescription').value = '';
+            deselectAllPermissions();
+            document.getElementById('roleModal').classList.remove('hidden');
+            document.getElementById('roleModal').classList.add('flex');
+        }
+
+        // Close role modal
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.add('hidden');
+            document.getElementById('roleModal').classList.remove('flex');
+        }
+
+        // Edit role
+        async function editRole(id) {
+            try {
+                const response = await fetchWithAuth(`${API_BASE}/roles/${id}`);
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success) {
+                    const role = result.data;
+                    currentRoleId = role.id;
+
+                    document.getElementById('modalTitle').textContent = 'Chỉnh Sửa Chức Vụ';
+                    document.getElementById('roleId').value = role.id;
+                    document.getElementById('roleName').value = role.name;
+                    document.getElementById('roleDescription').value = role.description || '';
+
+                    // Set permissions
+                    deselectAllPermissions();
+                    if (role.permissions) {
+                        role.permissions.forEach(p => {
+                            const checkbox = document.getElementById(`perm_${p.id}`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+
+                    document.getElementById('roleModal').classList.remove('hidden');
+                    document.getElementById('roleModal').classList.add('flex');
+                }
+            } catch (error) {
+                console.error('Error loading role:', error);
+            }
+        }
+
+        // Save role
+        async function saveRole() {
+            const name = document.getElementById('roleName').value.trim();
+            const description = document.getElementById('roleDescription').value.trim();
+            const selectedPermissions = Array.from(document.querySelectorAll('.permission-checkbox:checked'))
+                .map(cb => parseInt(cb.value));
+
+            if (!name) {
+                alert('Vui lòng nhập tên chức vụ');
+                return;
+            }
+
+            const data = {
+                name,
+                description,
+                permissions: selectedPermissions
+            };
+
+            try {
+                const url = currentRoleId
+                    ? `${API_BASE}/roles/${currentRoleId}`
+                    : `${API_BASE}/roles`;
+
+                const response = await fetchWithAuth(url, {
+                    method: currentRoleId ? 'PUT' : 'POST',
+                    body: JSON.stringify(data)
+                });
+
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success) {
+                    closeRoleModal();
+                    loadRoles();
+                    alert(currentRoleId ? 'Cập nhật chức vụ thành công!' : 'Tạo chức vụ thành công!');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving role:', error);
+                alert('Lỗi khi lưu chức vụ');
+            }
+        }
+
+        // Delete role
+        async function deleteRole(id, name) {
+            if (!(await confirm(`Bạn có chắc muốn xóa chức vụ "${name}"?`))) return;
+
+            try {
+                const response = await fetchWithAuth(`${API_BASE}/roles/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response) return;
+
+                const result = await response.json();
+                if (result.success) {
+                    loadRoles();
+                    alert('Xóa chức vụ thành công!');
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting role:', error);
+                alert('Lỗi khi xóa chức vụ');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRoles();
+            loadPermissions();
+        });
+    </script>
+</body>
+
+</html>

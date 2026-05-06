@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "template_code": "D8",
+    "template_name": "Cửa đi 1 cánh + Fix dưới",
+    "category": "door",
+    "sub_type": "swing",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 900,
+    "height_mm": 2400,
+    "khoang_ho_mm": 7,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/D8.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "vertical",
+    "children": [
+      {
+        "id": "leaf",
+        "type": "panel",
+        "panelType": "door-leaf",
+        "heightRatio": 0.8,
+        "openDirection": "right",
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "fix_bottom",
+        "type": "panel",
+        "panelType": "fixed",
+        "heightRatio": 0.2,
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

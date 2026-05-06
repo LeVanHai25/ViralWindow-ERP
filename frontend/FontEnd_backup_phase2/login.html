@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống quản lý cửa nhôm kính</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Inter', sans-serif; }
+        body { display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* ===== FULL-SCREEN SPLIT ===== */
+        .auth-wrapper { display: flex; width: 100%; min-height: 100vh; }
+
+        .left-panel {
+            position: relative; width: 45%; min-height: 100vh;
+            background: url('images/auth_bg.png') left center / cover no-repeat;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 48px; z-index: 1; flex-shrink: 0; overflow: hidden;
+        }
+        .left-panel::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(13,71,161,0.15) 0%, rgba(13,71,161,0.75) 100%);
+            z-index: 0;
+        }
+
+        /* Features */
+        .features-wrap { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 2; }
+        .feat-card {
+            background: rgba(255,255,255,0.12); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.18); border-radius: 14px;
+            padding: 16px 18px; display: flex; align-items: center; gap: 14px; color: #fff;
+            transition: background .3s, transform .2s;
+        }
+        .feat-card:hover { background: rgba(255,255,255,0.22); transform: translateX(4px); }
+        .feat-icon {
+            width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .feat-icon svg { width: 22px; height: 22px; }
+        .feat-text strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+        .feat-text span { font-size: 0.8rem; opacity: 0.85; line-height: 1.4; display: block; }
+
+        /* Contact */
+        .contact-info {
+            display: flex; gap: 20px; color: #fff; font-size: 0.85rem; font-weight: 500;
+            margin-top: 28px; position: relative; z-index: 2; flex-wrap: wrap;
+        }
+        .contact-info a { color: #fff; text-decoration: none; display: flex; align-items: center; gap: 6px; opacity: 0.9; transition: opacity .2s; }
+        .contact-info a:hover { opacity: 1; }
+
+        /* --- WAVY CLOUD EDGE (Ảnh mẫu 4) --- */
+        .wavy-edge {
+            position: absolute; right: -1px; top: 0; height: 100%; width: 150px;
+            z-index: 3; pointer-events: none;
+        }
+
+        /* --- RIGHT PANEL --- */
+        .right-panel {
+            flex: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 48px 40px; position: relative; background: #fff; z-index: 4;
+        }
+        .form-container { width: 100%; max-width: 420px; }
+
+        /* Logo block */
+        .logo-block { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 28px; }
+        .logo-icon-wrap {
+            width: 64px; height: 64px; border-radius: 16px; background: #F0F4F8;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .logo-icon-wrap img { width: 42px; height: 42px; object-fit: contain; }
+        .logo-icon-wrap svg { width: 34px; height: 34px; color: #1565C0; }
+        .company-name { font-weight: 800; font-size: 1.1rem; color: #0D47A1; letter-spacing: 0.5px; text-transform: uppercase; }
+
+        /* Form */
+        .form-title { font-size: 2rem; font-weight: 800; color: #0D47A1; margin-bottom: 6px; text-align: center; }
+        .form-sub { font-size: 0.95rem; color: #6B7280; margin-bottom: 28px; text-align: center; }
+
+        .field { margin-bottom: 22px; }
+        .field label { display: block; font-size: 0.78rem; font-weight: 700; color: #374151; margin-bottom: 7px; letter-spacing: 0.04em; text-transform: uppercase; }
+        .inp-wrap { position: relative; }
+        .inp-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9CA3AF; display: flex; }
+        .inp-icon svg { width: 18px; height: 18px; }
+        .inp {
+            width: 100%; padding: 13px 14px 13px 42px;
+            border: 1.8px solid #E5E7EB; border-radius: 12px;
+            font-size: 0.92rem; color: #111827; background: #F9FAFB; outline: none;
+            transition: all .25s;
+        }
+        .inp:focus { border-color: #1565C0; background: #fff; box-shadow: 0 0 0 3px rgba(21,101,192,0.1); }
+        .inp-pr { padding-right: 42px; }
+        .btn-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #9CA3AF; display: flex; padding: 2px; }
+        .btn-eye:hover { color: #374151; }
+
+        .row-opt { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 8px; }
+        .chk-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #374151; }
+        .chk-label input { width: 16px; height: 16px; accent-color: #1565C0; }
+        .link-f { font-size: 0.85rem; font-weight: 700; color: #1565C0; text-decoration: none; }
+        .link-f:hover { color: #0D47A1; }
+
+        .btn-sub {
+            width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer;
+            font-size: 1rem; font-weight: 800; color: #fff;
+            background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .btn-sub:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(21,101,192,0.35); }
+        .btn-sub:disabled { opacity: .7; cursor: not-allowed; }
+
+        .reg-link { text-align: center; margin-top: 24px; font-size: 0.9rem; color: #6B7280; }
+        .reg-link a { color: #1565C0; font-weight: 700; text-decoration: none; }
+        .reg-link a:hover { text-decoration: underline; }
+
+        .alert-box { display: none; margin-bottom: 18px; padding: 12px 16px; border-radius: 12px; font-size: 0.875rem; font-weight: 500; }
+        .err { color: #EF4444; font-size: 0.78rem; margin-top: 4px; }
+        .spinner { width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .left-panel { width: 42%; padding: 36px; }
+            .wavy-edge { width: 120px; }
+        }
+        @media (max-width: 1024px) {
+            .auth-wrapper { flex-direction: column; }
+            .left-panel { width: 100%; min-height: 280px; padding: 32px; justify-content: center; align-items: center; }
+            .features-wrap, .contact-info { display: none; }
+            .wavy-edge { display: none; }
+            .right-panel { min-height: auto; padding: 40px 32px; }
+        }
+        @media (max-width: 640px) {
+            .left-panel { min-height: 200px; padding: 24px; }
+            .right-panel { padding: 32px 20px; }
+            .form-title { font-size: 1.6rem; }
+            .form-container { max-width: 100%; }
+        }
+    </style>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <script src="js/vw-modal.js"></script>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <!-- ========== LEFT PANEL ========== -->
+        <div class="left-panel">
+            <div style="position:relative;z-index:2;flex:1;"></div>
+
+            <!-- Features -->
+            <div class="features-wrap">
+                <div class="feat-card">
+                    <div class="feat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                    <div class="feat-text">
+                        <strong>Quản lý dự án &amp; báo giá</strong>
+                        <span>Theo dõi tiến độ và doanh thu tức thời</span>
+                    </div>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div class="feat-text">
+                        <strong>Quản lý nhân sự &amp; phân quyền</strong>
+                        <span>Điều phối nhóm linh hoạt, chính xác</span>
+                    </div>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </div>
+                    <div class="feat-text">
+                        <strong>Kiểm soát kho hàng &amp; vật tư</strong>
+                        <span>Tồn kho minh bạch, xuất nhập chính xác</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="contact-info">
+                <a href="https://viralwindow.vn/" onclick="event.preventDefault(); window.confirm('Bạn có muốn mở trang web https://viralwindow.vn/ trong tab mới không?').then(function(res){ if(res) window.open('https://viralwindow.vn/', '_blank'); });"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg> Viralwindow.vn</a>
+                <span style="opacity:0.5">|</span>
+                <a href="#"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg> 1800 28 28 39</a>
+            </div>
+
+            <!-- Wavy Cloud Edge -->
+            <svg class="wavy-edge" viewBox="0 0 150 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill="rgba(255,255,255,0.12)" d="M150 0 C60 50 30 120 60 200 C90 280 20 360 60 450 C100 540 30 640 60 720 C90 800 50 850 150 900 L150 0Z"/>
+                <path fill="rgba(255,255,255,0.35)" d="M150 0 C80 60 50 130 80 210 C110 290 50 380 80 460 C110 540 50 650 80 730 C110 810 70 860 150 900 L150 0Z"/>
+                <path fill="rgba(255,255,255,0.7)" d="M150 0 C100 70 75 150 100 230 C125 310 80 400 100 480 C120 560 75 660 100 740 C125 820 90 870 150 900 L150 0Z"/>
+                <path fill="#ffffff" d="M150 0 C120 80 100 160 120 240 C140 320 105 420 120 500 C135 580 100 680 120 760 C140 840 115 880 150 900 L150 0Z"/>
+            </svg>
+        </div>
+
+        <!-- ========== RIGHT PANEL ========== -->
+        <div class="right-panel">
+            <div class="form-container">
+                <!-- Logo -->
+                <div class="logo-block">
+                    <div class="logo-icon-wrap">
+                        <img id="companyLogoLeft" src="" alt="Logo" style="display:none;">
+                        <svg id="defaultLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </div>
+                    <span id="companyNameLeft" class="company-name">VIRALWINDOW</span>
+                </div>
+
+                <h2 class="form-title">Chào mừng trở lại!</h2>
+                <p class="form-sub">Đăng nhập để tiếp tục quản lý công việc</p>
+
+                <div id="alertMessage" class="alert-box"></div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <div class="inp-wrap">
+                            <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                            <input type="email" id="email" name="email" required placeholder="Nhập email của bạn" class="inp">
+                        </div>
+                        <p id="emailError" class="err hidden"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="password">Mật khẩu</label>
+                        <div class="inp-wrap">
+                            <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></span>
+                            <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu" class="inp inp-pr">
+                            <button type="button" class="btn-eye" onclick="togglePasswordVisibility()">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </div>
+                        <p id="passwordError" class="err hidden"></p>
+                    </div>
+
+                    <div class="row-opt">
+                        <label class="chk-label"><input type="checkbox" id="rememberMe"> Ghi nhớ đăng nhập</label>
+                        <a href="forgot-password.html" class="link-f">Quên mật khẩu?</a>
+                    </div>
+
+                    <button type="submit" id="loginButton" class="btn-sub">
+                        <span id="loginButtonText">Đăng nhập</span>
+                        <span id="loginButtonLoader" class="hidden"><span class="spinner"></span></span>
+                    </button>
+                </form>
+
+                <div class="reg-link">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const API_BASE = window.API_BASE || '/api';
+
+    function togglePasswordVisibility() {
+        const p = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+        if (p.type === 'password') {
+            p.type = 'text';
+            icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
+        } else {
+            p.type = 'password';
+            icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
+        }
+    }
+
+    async function loadCompanyName() {
+        try {
+            const r = await fetch(`${API_BASE}/company-settings`);
+            const result = await r.json();
+            if (result.success && result.data) {
+                if (result.data.company_name) document.getElementById('companyNameLeft').textContent = result.data.company_name.toUpperCase();
+                if (result.data.logo_path) {
+                    const img = document.getElementById('companyLogoLeft');
+                    const def = document.getElementById('defaultLogoIcon');
+                    img.src = result.data.logo_path;
+                    img.style.display = 'block';
+                    def.style.display = 'none';
+                }
+            }
+        } catch(e) { console.error('Logo load error:', e); }
+    }
+
+    function showAlert(msg, type='error') {
+        const el = document.getElementById('alertMessage');
+        el.style.cssText = type === 'error'
+            ? 'display:block;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;'
+            : 'display:block;background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;';
+        el.textContent = msg;
+        setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('rememberMe').checked;
+
+        document.getElementById('emailError').classList.add('hidden');
+        document.getElementById('passwordError').classList.add('hidden');
+
+        const btn = document.getElementById('loginButton');
+        const btnText = document.getElementById('loginButtonText');
+        const btnLoader = document.getElementById('loginButtonLoader');
+        btn.disabled = true; btnText.classList.add('hidden'); btnLoader.classList.remove('hidden');
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password, remember_me: rememberMe})
+            });
+            const result = await res.json();
+            if (result.success) {
+                if (window.AuthHelper) window.AuthHelper.saveAuth(result.data.token, result.data.user, rememberMe);
+                else { sessionStorage.setItem('token', result.data.token); sessionStorage.setItem('user', JSON.stringify(result.data.user)); }
+                showAlert('Đăng nhập thành công!', 'success');
+                setTimeout(() => window.location.href = 'index.html', 1000);
+            } else {
+                showAlert(result.message || 'Email hoặc mật khẩu không đúng');
+                btn.disabled = false; btnText.classList.remove('hidden'); btnLoader.classList.add('hidden');
+            }
+        } catch(e) {
+            console.error(e); showAlert('Lỗi kết nối server. Vui lòng thử lại sau.');
+            btn.disabled = false; btnText.classList.remove('hidden'); btnLoader.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const ok = window.AuthHelper ? window.AuthHelper.isAuthenticated() : !!sessionStorage.getItem('token');
+        if (ok) window.location.href = 'index.html';
+        loadCompanyName();
+        if (localStorage.getItem('rememberMe') === 'true') document.getElementById('rememberMe').checked = true;
+    });
+</script>
+</body>
+</html>

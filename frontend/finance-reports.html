@@ -1,0 +1,553 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Tài chính - ViralWindow</title>
+    <script>
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="finance-date-range-picker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { width: 260px; background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%); min-height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; z-index: 1000; }
+        .main-content { margin-left: 260px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+        .header-gradient { background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); position: relative; z-index: 100; }
+        .filter-bar-modern { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+        .btn-modern { transition: all 0.3s ease; border-radius: 8px; font-weight: 500; }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+        .report-card { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .report-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .report-card.selected { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .branch-header { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 8px; }
+        .customer-row { background: #f0f7ff; border-left: 4px solid #3b82f6; }
+        .project-row:hover { background: #fafbfc; }
+        .grand-total-row { background: linear-gradient(135deg, #065f46 0%, #059669 100%); color: white; }
+        .kpi-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 1.25rem; transition: all 0.3s ease; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/finance-sidebar.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR (loaded from finance-sidebar.js) -->
+    <div id="sidebarContainer"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <div class="bg-white shadow p-5 flex justify-between items-center header-gradient backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Báo cáo Tài chính</h1>
+                    <p class="text-blue-100 text-sm">Các báo cáo tài chính chi tiết</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- REPORT TYPE CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                <div class="report-card p-5" onclick="selectReport('income-expense')" id="card-income-expense">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-900">Báo cáo Thu Chi</h3>
+                    <p class="text-xs text-gray-500 mt-1">Tổng hợp thu chi theo kỳ</p>
+                </div>
+                <div class="report-card p-5" onclick="selectReport('debt')" id="card-debt">
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-900">Báo cáo Công nợ</h3>
+                    <p class="text-xs text-gray-500 mt-1">Chi tiết công nợ phải thu/trả</p>
+                </div>
+                <div class="report-card p-5" onclick="selectReport('profit-loss')" id="card-profit-loss">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-900">Báo cáo Lãi Lỗ</h3>
+                    <p class="text-xs text-gray-500 mt-1">Lãi lỗ theo dự án</p>
+                </div>
+                <div class="report-card p-5" onclick="selectReport('material-cost')" id="card-material-cost">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-900">Chi phí Vật tư</h3>
+                    <p class="text-xs text-gray-500 mt-1">Chi phí vật tư theo dự án</p>
+                </div>
+                <div class="report-card p-5" onclick="selectReport('branch-project')" id="card-branch-project" style="border: 2px solid #0d9488;">
+                    <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-teal-800">Báo cáo Chi nhánh</h3>
+                    <p class="text-xs text-gray-500 mt-1">Tổng hợp công trình theo CN</p>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="filter-bar-modern p-5 mb-6 fade-in" id="reportFilters" style="display: none;">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian</label>
+                        <div id="dateRangePicker"></div>
+                    </div>
+                    <div id="projectFilterWrap">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dự án</label>
+                        <select id="reportProject" class="form-select w-full"><option value="">Tất cả</option></select>
+                    </div>
+                    <div id="agencyFilterWrap" style="display:none;">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Chi nhánh</label>
+                        <select id="reportAgency" class="form-select w-full"><option value="">Tất cả chi nhánh</option></select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="generateReport()" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all btn-modern">Tạo báo cáo</button>
+                        <button onclick="exportReportExcel()" class="px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all btn-modern" title="Xuất Excel">Excel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI SUMMARY (for branch report) -->
+            <div id="branchKpiCards" class="hidden grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="kpi-card"><div class="text-sm text-gray-500 mb-1">Tổng chi nhánh</div><div class="text-2xl font-bold text-blue-700" id="kpiAgencies">0</div></div>
+                <div class="kpi-card"><div class="text-sm text-gray-500 mb-1">Tổng khách hàng</div><div class="text-2xl font-bold text-purple-700" id="kpiCustomers">0</div></div>
+                <div class="kpi-card"><div class="text-sm text-gray-500 mb-1">Tổng công trình</div><div class="text-2xl font-bold text-teal-700" id="kpiProjects">0</div></div>
+                <div class="kpi-card"><div class="text-sm text-gray-500 mb-1">Tổng giá trị</div><div class="text-2xl font-bold text-green-700" id="kpiValue">0 ₫</div></div>
+            </div>
+
+            <!-- REPORT CONTENT -->
+            <div id="reportContent" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div id="reportTable" class="p-6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="finance-common.js"></script>
+    <script>
+        let currentReportType = null;
+        let dateRangePicker = null;
+
+        function selectReport(type) {
+            currentReportType = type;
+            // Update card selection
+            document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
+            const card = document.getElementById('card-' + type);
+            if (card) card.classList.add('selected');
+
+            // Show filters
+            document.getElementById('reportFilters').style.display = 'block';
+            document.getElementById('reportContent').classList.remove('hidden');
+
+            // Toggle agency/project filter
+            const isB = type === 'branch-project';
+            document.getElementById('agencyFilterWrap').style.display = isB ? 'block' : 'none';
+            document.getElementById('projectFilterWrap').style.display = isB ? 'none' : 'block';
+            document.getElementById('branchKpiCards').className = isB ? 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-6' : 'hidden';
+
+            // Init date picker
+            if (!dateRangePicker) {
+                dateRangePicker = new DateRangePicker('dateRangePicker', { defaultRange: 'year' });
+            }
+
+            generateReport();
+        }
+
+        async function generateReport() {
+            const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
+
+            if (currentReportType === 'branch-project') {
+                await generateBranchProjectReport(range.startDate, range.endDate);
+            } else if (currentReportType === 'income-expense') {
+                await generateIncomeExpenseReport(range.startDate, range.endDate);
+            } else if (currentReportType === 'debt') {
+                await generateDebtReport(range.startDate, range.endDate);
+            } else if (currentReportType === 'profit-loss') {
+                await generateProfitLossReport(range.startDate, range.endDate);
+            } else if (currentReportType === 'material-cost') {
+                await generateMaterialCostReport(range.startDate, range.endDate);
+            } else {
+                document.getElementById('reportTable').innerHTML = '<p class="text-gray-500 text-center py-8">Chức năng đang được phát triển...</p>';
+            }
+        }
+
+        async function generateBranchProjectReport(startDate, endDate) {
+            const table = document.getElementById('reportTable');
+            table.innerHTML = '<div class="flex justify-center py-8"><svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg></div>';
+
+            try {
+                const agencyId = document.getElementById('reportAgency').value;
+                const params = new URLSearchParams();
+                if (agencyId) params.append('agency_id', agencyId);
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+
+                const res = await fetch(API_BASE + '/financial/branch-report?' + params);
+                const data = await res.json();
+
+                if (!data.success) { table.innerHTML = '<p class="text-red-500 text-center py-8">Lỗi: ' + data.message + '</p>'; return; }
+
+                const { agencies, grand_total, all_agencies } = data.data;
+
+                // Populate agency dropdown
+                const sel = document.getElementById('reportAgency');
+                const curVal = sel.value;
+                sel.innerHTML = '<option value="">Tất cả chi nhánh</option>';
+                (all_agencies || []).forEach(a => { sel.innerHTML += '<option value="' + a.id + '"' + (curVal == a.id ? ' selected' : '') + '>' + a.name + '</option>'; });
+
+                // Update KPI cards
+                document.getElementById('kpiAgencies').textContent = grand_total.agencies;
+                document.getElementById('kpiCustomers').textContent = grand_total.customers;
+                document.getElementById('kpiProjects').textContent = grand_total.projects;
+                document.getElementById('kpiValue').textContent = formatCurrency(grand_total.value);
+
+                if (agencies.length === 0) { table.innerHTML = '<p class="text-gray-500 text-center py-8">Không có dữ liệu trong khoảng thời gian đã chọn</p>'; return; }
+
+                let html = '<h2 class="text-xl font-bold mb-4 text-gray-900">Báo cáo Tổng hợp Công trình theo Chi nhánh</h2>';
+
+                agencies.forEach((agency, ai) => {
+                    html += '<div class="mb-6">';
+                    html += '<div class="branch-header flex justify-between items-center"><div><span class="text-lg font-bold">' + agency.name + '</span>';
+                    if (agency.code !== 'N/A') html += ' <span class="text-blue-200 text-sm">(' + agency.code + ')</span>';
+                    if (agency.region) html += '<div class="text-blue-200 text-sm mt-1">' + agency.region + (agency.manager ? ' • QL: ' + agency.manager : '') + '</div>';
+                    html += '</div><div class="text-right"><div class="text-2xl font-bold">' + formatCurrency(agency.total_value) + '</div>';
+                    html += '<div class="text-blue-200 text-sm">' + agency.total_customers + ' KH • ' + agency.total_projects + ' DA</div></div></div>';
+
+                    html += '<table class="w-full border-collapse"><thead><tr class="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase"><th class="px-4 py-3">STT</th><th class="px-4 py-3">Mã DA</th><th class="px-4 py-3">Tên dự án</th><th class="px-4 py-3">Trạng thái</th><th class="px-4 py-3 text-right">Giá trị</th></tr></thead><tbody>';
+
+                    let projIdx = 0;
+                    agency.customers.forEach(cust => {
+                        html += '<tr class="customer-row"><td colspan="4" class="px-4 py-3 font-semibold text-blue-800">';
+                        html += '<span class="mr-2">👤</span>' + cust.name;
+                        html += ' <span class="text-gray-500 text-sm font-normal">(' + cust.total_projects + ' dự án)</span></td>';
+                        html += '<td class="px-4 py-3 text-right font-bold text-blue-700">' + formatCurrency(cust.total_value) + '</td></tr>';
+
+                        cust.projects.forEach(proj => {
+                            projIdx++;
+                            const statusMap = { new: 'Mới', quotation_pending: 'Chờ BG', designing: 'Thiết kế', bom_extraction: 'Bóc tách', in_production: 'Sản xuất', ready_for_installation: 'Chờ LĐ', installation: 'Lắp đặt', payment_pending: 'Chờ TT', handover: 'Bàn giao', completed: 'Hoàn thành', cancelled: 'Đã hủy', paused: 'Tạm dừng', production: 'Sản xuất' };
+                            const statusLabel = statusMap[proj.status] || proj.status || 'N/A';
+                            const statusColor = proj.status === 'completed' ? 'green' : proj.status === 'cancelled' ? 'red' : 'blue';
+                            html += '<tr class="project-row border-b border-gray-100"><td class="px-4 py-2.5 text-sm text-gray-500 pl-8">' + projIdx + '</td>';
+                            html += '<td class="px-4 py-2.5 text-sm font-mono text-gray-700">' + (proj.code || 'N/A') + '</td>';
+                            html += '<td class="px-4 py-2.5 text-sm text-gray-800">' + (proj.name || 'N/A') + '</td>';
+                            html += '<td class="px-4 py-2.5"><span class="px-2 py-1 text-xs font-medium rounded-full bg-' + statusColor + '-100 text-' + statusColor + '-700">' + statusLabel + '</span></td>';
+                            html += '<td class="px-4 py-2.5 text-sm text-right font-semibold text-gray-900">' + formatCurrency(proj.value) + '</td></tr>';
+                        });
+                    });
+
+                    html += '</tbody></table></div>';
+                });
+
+                // Grand total
+                html += '<div class="grand-total-row rounded-xl p-5 mt-4 flex justify-between items-center">';
+                html += '<div><div class="text-lg font-bold">TỔNG CỘNG</div><div class="text-green-200 text-sm">' + grand_total.agencies + ' chi nhánh • ' + grand_total.customers + ' khách hàng • ' + grand_total.projects + ' dự án</div></div>';
+                html += '<div class="text-3xl font-bold">' + formatCurrency(grand_total.value) + '</div></div>';
+
+                table.innerHTML = html;
+            } catch (err) {
+                console.error('Error:', err);
+                table.innerHTML = '<p class="text-red-500 text-center py-8">Lỗi khi tải báo cáo: ' + err.message + '</p>';
+            }
+        }
+
+        async function generateIncomeExpenseReport(startDate, endDate) {
+            const table = document.getElementById('reportTable');
+            const projectId = document.getElementById('reportProject').value;
+            table.innerHTML = '<div class="flex justify-center py-8"><svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg></div>';
+
+            try {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (projectId) params.append('projectId', projectId);
+
+                const res = await fetch(API_BASE + '/financial/advanced-cash-flow-report?' + params);
+                const data = await res.json();
+
+                if (!data.success) { table.innerHTML = '<p class="text-red-500 text-center py-4">Lỗi: ' + data.message + '</p>'; return; }
+
+                const { summary, categories, payment_methods, trend } = data.data;
+
+                // Update KPI Cards
+                document.getElementById('branchKpiCards').className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-6';
+                document.getElementById('kpiAgencies').parentElement.querySelector('.text-sm').textContent = 'Tổng thực thu';
+                document.getElementById('kpiAgencies').className = 'text-2xl font-bold text-emerald-600';
+                document.getElementById('kpiAgencies').textContent = formatCurrency(summary.total_revenue);
+                
+                document.getElementById('kpiCustomers').parentElement.querySelector('.text-sm').textContent = 'Tổng thực chi';
+                document.getElementById('kpiCustomers').className = 'text-2xl font-bold text-rose-600';
+                document.getElementById('kpiCustomers').textContent = formatCurrency(summary.total_expense);
+                
+                document.getElementById('kpiProjects').parentElement.querySelector('.text-sm').textContent = 'Dòng tiền thuần';
+                document.getElementById('kpiProjects').className = 'text-2xl font-bold ' + (summary.net_cash_flow >= 0 ? 'text-blue-600' : 'text-red-600');
+                document.getElementById('kpiProjects').textContent = formatCurrency(summary.net_cash_flow);
+                
+                document.getElementById('kpiValue').parentElement.querySelector('.text-sm').textContent = 'Tỷ lệ Chi/Thu';
+                document.getElementById('kpiValue').className = 'text-2xl font-bold text-indigo-600';
+                document.getElementById('kpiValue').textContent = summary.expense_ratio + '%';
+
+                // Build Dashboard HTML
+                let html = '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">';
+                
+                // Chart 1: Trend
+                html += '<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">';
+                html += '<h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg> Xu hướng Thu & Chi</h3>';
+                html += '<div style="height: 300px;"><canvas id="trendChart"></canvas></div></div>';
+                
+                // Chart 2: Expense Breakdown
+                html += '<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">';
+                html += '<h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg> Cơ cấu Chi phí</h3>';
+                html += '<div style="height: 300px;"><canvas id="expenseChart"></canvas></div></div>';
+                
+                html += '</div>';
+
+                // Table 1: Detailed Breakdown
+                html += '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">';
+                
+                // Revenue Table
+                html += '<div><h4 class="font-bold text-emerald-700 mb-3 text-sm uppercase tracking-wider">Phân bổ nguồn thu</h4><table class="w-full text-xs"><thead><tr class="bg-emerald-50 text-emerald-800"> <th class="px-3 py-2 text-left">Hạng mục</th> <th class="px-3 py-2 text-right">Số tiền</th> <th class="px-3 py-2 text-right">%</th> </tr></thead><tbody>';
+                categories.revenue.forEach(c => {
+                    const pct = ((c.total / summary.total_revenue) * 100).toFixed(1);
+                    html += `<tr class="border-b border-gray-50"><td class="px-3 py-2 font-medium">${c.category || 'Khác'}</td><td class="px-3 py-2 text-right">${formatCurrency(c.total)}</td><td class="px-3 py-2 text-right text-gray-500">${pct}%</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+                
+                html += '<div><h4 class="font-bold text-indigo-700 mb-3 text-sm uppercase tracking-wider">Phương thức thanh toán</h4><table class="w-full text-xs"><thead><tr class="bg-indigo-50 text-indigo-800"> <th class="px-3 py-2 text-left">Phương thức</th> <th class="px-3 py-2 text-center">Thu</th> <th class="px-3 py-2 text-center">Chi</th> </tr></thead><tbody>';
+                const methods = [...new Set(payment_methods.map(m => m.payment_method))];
+                methods.forEach(m => {
+                    const rowIn = payment_methods.find(pm => pm.payment_method === m && pm.transaction_type === 'revenue')?.total || 0;
+                    const rowOut = payment_methods.find(pm => pm.payment_method === m && pm.transaction_type === 'expense')?.total || 0;
+                    
+                    let methodName = m;
+                    if (m === 'cash') methodName = '💵 Tiền mặt';
+                    else if (m === 'bank' || m === 'bank_transfer') methodName = '🏦 Chuyển khoản';
+                    else if (m === 'credit_card') methodName = '💳 Thẻ tín dụng';
+                    else if (m === 'null' || !m) methodName = '❓ Chưa phân loại';
+                    
+                    html += `<tr class="border-b border-gray-50"><td class="px-3 py-2 font-medium">${methodName}</td><td class="px-3 py-2 text-center text-emerald-600 font-bold">${formatCurrency(rowIn)}</td><td class="px-3 py-2 text-center text-rose-600 font-bold">${formatCurrency(rowOut)}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+
+                html += '</div>';
+
+                table.innerHTML = html;
+
+                // Render Charts
+                setTimeout(() => {
+                    // Trend Chart
+                    new Chart(document.getElementById('trendChart'), {
+                        type: 'line',
+                        data: {
+                            labels: trend.map(t => formatDate(t.date)),
+                            datasets: [
+                                { label: 'Thu', data: trend.map(t => t.income), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
+                                { label: 'Chi', data: trend.map(t => t.expense), borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill: true, tension: 0.4 }
+                            ]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => (v / 1000000).toFixed(0) + 'M' } } } }
+                    });
+
+                    // Expense Donut
+                    const expMap = { material_cost: 'Mua vật tư', subcontractor_cost: 'Thầu phụ', salary_cost: 'Lương', overhead_cost: 'CP Chung', marketing_cost: 'Marketing', logistics_cost: 'Vận chuyển', other_cost: 'Khác', project_expense: 'CP Thi công' };
+                    new Chart(document.getElementById('expenseChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: categories.expense.map(e => expMap[e.expense_type] || e.expense_type || 'Khác'),
+                            datasets: [{
+                                data: categories.expense.map(e => e.total),
+                                backgroundColor: ['#f43f5e', '#fb923c', '#facc15', '#60a5fa', '#a78bfa', '#2dd4bf', '#94a3b8']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }
+                    });
+                }, 100);
+
+            } catch (err) { console.error(err); table.innerHTML = '<p class="text-red-500 py-4 text-center">Lỗi: ' + err.message + '</p>'; }
+        }
+
+        async function generateDebtReport(startDate, endDate) {
+            const projectId = document.getElementById('reportProject').value;
+            const params = new URLSearchParams();
+            if (projectId) params.append('projectId', projectId);
+            try {
+                const res = await fetch(API_BASE + '/debts?' + params);
+                const data = await res.json();
+                if (data.success) {
+                    let rows = data.data.map(d => '<tr class="border-b hover:bg-gray-50"><td class="px-4 py-2.5 text-sm">' + (d.debt_type === 'receivable' ? '<span class="text-blue-600">Phải thu</span>' : '<span class="text-orange-600">Phải trả</span>') + '</td><td class="px-4 py-2.5 text-sm">' + (d.customer_name || d.supplier || 'N/A') + '</td><td class="px-4 py-2.5 text-sm">' + (d.project_name || 'N/A') + '</td><td class="px-4 py-2.5 text-sm text-right font-semibold">' + formatCurrency(d.total_amount) + '</td><td class="px-4 py-2.5 text-sm text-right text-green-600">' + formatCurrency(d.paid_amount || 0) + '</td><td class="px-4 py-2.5 text-sm text-right text-red-600 font-semibold">' + formatCurrency(d.remaining_amount || 0) + '</td><td class="px-4 py-2.5 text-sm">' + (d.due_date ? formatDate(d.due_date) : 'N/A') + '</td></tr>').join('');
+                    document.getElementById('reportTable').innerHTML = '<h2 class="text-xl font-bold mb-4">Báo cáo Công nợ</h2><table class="w-full"><thead><tr class="bg-gray-100 text-xs font-semibold text-gray-600 uppercase"><th class="px-4 py-3 text-left">Loại</th><th class="px-4 py-3 text-left">KH/NCC</th><th class="px-4 py-3 text-left">Dự án</th><th class="px-4 py-3 text-right">Tổng tiền</th><th class="px-4 py-3 text-right">Đã trả</th><th class="px-4 py-3 text-right">Còn lại</th><th class="px-4 py-3 text-left">Hạn TT</th></tr></thead><tbody>' + rows + '</tbody></table>';
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function generateProfitLossReport(startDate, endDate) {
+            const table = document.getElementById('reportTable');
+            const projectId = document.getElementById('reportProject').value;
+            table.innerHTML = '<div class="flex justify-center py-8"><svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg></div>';
+
+            try {
+                const params = new URLSearchParams();
+                if (projectId) params.append('projectId', projectId);
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+
+                const res = await fetch(API_BASE + '/financial/profit-loss-report?' + params);
+                const data = await res.json();
+
+                if (!data.success) { table.innerHTML = '<p class="text-red-500 text-center py-8">Lỗi: ' + data.message + '</p>'; return; }
+
+                const { projects, summary } = data.data;
+
+                // Update KPI Summary
+                document.getElementById('branchKpiCards').className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-6';
+                document.getElementById('kpiAgencies').parentElement.querySelector('.text-sm').textContent = 'Tổng giá trị HĐ';
+                document.getElementById('kpiAgencies').textContent = formatCurrency(summary.total_contract);
+                document.getElementById('kpiCustomers').parentElement.querySelector('.text-sm').textContent = 'Tổng thực thu';
+                document.getElementById('kpiCustomers').textContent = formatCurrency(summary.total_revenue);
+                document.getElementById('kpiProjects').parentElement.querySelector('.text-sm').textContent = 'Tổng thực chi';
+                document.getElementById('kpiProjects').textContent = formatCurrency(summary.total_expense);
+                document.getElementById('kpiValue').parentElement.querySelector('.text-sm').textContent = 'Tổng lợi nhuận';
+                document.getElementById('kpiValue').className = 'text-2xl font-bold ' + (summary.total_profit >= 0 ? 'text-green-700' : 'text-red-700');
+                document.getElementById('kpiValue').textContent = formatCurrency(summary.total_profit);
+
+                if (projects.length === 0) { table.innerHTML = '<p class="text-gray-500 text-center py-8">Không có dữ liệu lãi lỗ</p>'; return; }
+
+                let html = '<h2 class="text-xl font-bold mb-4 text-gray-900">Chi tiết Báo cáo Lãi Lỗ theo Dự án</h2>';
+                html += '<table class="w-full border-collapse"><thead><tr class="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase"><th class="px-4 py-3">Mã DA</th><th class="px-4 py-3">Dự án / Khách hàng</th><th class="px-4 py-3 text-right">Giá trị HĐ</th><th class="px-4 py-3 text-right">Đã thu</th><th class="px-4 py-3 text-right">Đã chi</th><th class="px-4 py-3 text-right">Lãi/Lỗ</th><th class="px-4 py-3">Tỷ suất (%)</th></tr></thead><tbody>';
+
+                projects.forEach(p => {
+                    const profitColor = p.profit >= 0 ? 'text-green-700' : 'text-red-700';
+                    const margin = parseFloat(p.margin_percent);
+                    const marginColor = margin >= 20 ? 'bg-green-500' : margin >= 10 ? 'bg-blue-500' : margin > 0 ? 'bg-orange-500' : 'bg-red-500';
+
+                    html += '<tr class="border-b border-gray-100 hover:bg-gray-50">';
+                    html += '<td class="px-4 py-4 text-sm font-mono text-gray-600">' + (p.project_code || '---') + '</td>';
+                    html += '<td class="px-4 py-4"><div><div class="font-bold text-gray-900">' + (p.project_name || 'N/A') + '</div><div class="text-xs text-gray-500">' + (p.customer_name || 'KH lẻ') + '</div></div></td>';
+                    html += '<td class="px-4 py-4 text-sm text-right text-gray-700">' + formatCurrency(p.contract_value) + '</td>';
+                    html += '<td class="px-4 py-4 text-sm text-right text-green-700 font-medium">' + formatCurrency(p.total_revenue) + '</td>';
+                    html += '<td class="px-4 py-4 text-sm text-right text-red-600 font-medium">' + formatCurrency(p.total_expense) + '</td>';
+                    html += '<td class="px-4 py-4 text-sm text-right font-bold ' + profitColor + '">' + formatCurrency(p.profit) + '</td>';
+                    html += '<td class="px-4 py-4"><div class="flex items-center gap-2"><div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden min-w-[60px]"><div class="h-full ' + marginColor + '" style="width: ' + Math.min(100, Math.max(0, margin)) + '%"></div></div><span class="text-xs font-bold">' + p.margin_percent + '%</span></div></td></tr>';
+                });
+
+                html += '</tbody></table>';
+                table.innerHTML = html;
+            } catch (err) { console.error(err); table.innerHTML = '<p class="text-red-500 py-4 text-center">Lỗi: ' + err.message + '</p>'; }
+        }
+
+        async function generateMaterialCostReport(startDate, endDate) {
+            const table = document.getElementById('reportTable');
+            const projectId = document.getElementById('reportProject').value;
+            table.innerHTML = '<div class="flex justify-center py-8"><svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg></div>';
+
+            try {
+                const params = new URLSearchParams();
+                if (projectId) params.append('projectId', projectId);
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+
+                const res = await fetch(API_BASE + '/financial/material-cost-report?' + params);
+                const data = await res.json();
+
+                if (!data.success) { table.innerHTML = '<p class="text-red-500 text-center py-8">Lỗi: ' + data.message + '</p>'; return; }
+
+                const { projects, grand_total_cost } = data.data;
+
+                // Update KPI for Material
+                document.getElementById('branchKpiCards').className = 'grid grid-cols-1 md:grid-cols-4 gap-4 mb-6';
+                document.getElementById('kpiAgencies').parentElement.querySelector('.text-sm').textContent = 'Số dự án xuất kho';
+                document.getElementById('kpiAgencies').textContent = projects.length;
+                document.getElementById('kpiCustomers').parentElement.querySelector('.text-sm').textContent = 'Kỳ báo cáo';
+                document.getElementById('kpiCustomers').textContent = (startDate || 'Tất cả') + ' - ' + (endDate || 'nay');
+                document.getElementById('kpiProjects').parentElement.querySelector('.text-sm').textContent = 'Hạng mục vật tư';
+                document.getElementById('kpiProjects').textContent = projects.reduce((a,b) => a + b.items.length, 0);
+                document.getElementById('kpiValue').parentElement.querySelector('.text-sm').textContent = 'Tổng chi phí vật tư';
+                document.getElementById('kpiValue').className = 'text-2xl font-bold text-purple-700';
+                document.getElementById('kpiValue').textContent = formatCurrency(grand_total_cost);
+
+                if (projects.length === 0) { table.innerHTML = '<p class="text-gray-500 text-center py-8">Không có dữ liệu chi phí vật tư</p>'; return; }
+
+                let html = '<h2 class="text-xl font-bold mb-6 text-gray-900">Chi tiết Chi phí Vật tư theo Dự án</h2>';
+                
+                projects.forEach(p => {
+                    html += '<div class="mb-8 border border-gray-200 rounded-xl overflow-hidden shadow-sm">';
+                    html += '<div class="bg-gray-50 p-4 flex justify-between items-center border-b border-gray-200">';
+                    html += '<div><span class="text-sm font-mono text-blue-600 font-bold">[' + p.project_code + ']</span> <span class="text-lg font-bold text-gray-800 ml-2">' + p.project_name + '</span>';
+                    html += '<div class="text-xs text-gray-500 mt-1">Khách hàng: ' + (p.customer_name || 'N/A') + '</div></div>';
+                    html += '<div class="text-right"><div class="text-blue-700 font-bold text-xl">' + formatCurrency(p.total_material_cost) + '</div><div class="text-xs text-gray-500 uppercase font-semibold">Tổng chi phí dự án</div></div></div>';
+                    
+                    html += '<table class="w-full text-sm"><thead><tr class="bg-white text-gray-500 border-b border-gray-100"><th class="px-4 py-3 text-left font-semibold">Loại vật tư</th><th class="px-4 py-3 text-left font-semibold">Tên vật tư / Mã</th><th class="px-4 py-3 text-right font-semibold">Số lượng</th><th class="px-4 py-3 text-center font-semibold">ĐVT</th><th class="px-4 py-3 text-right font-semibold">Đơn giá</th><th class="px-4 py-3 text-right font-semibold">Thành tiền</th></tr></thead><tbody class="divide-y divide-gray-50">';
+                    
+                    p.items.forEach(item => {
+                        const typeLabel = { aluminum: 'Nhôm', glass: 'Kính', accessory: 'Phụ kiện', phukien: 'Phụ kiện', other: 'Khác' }[item.type] || item.type;
+                        const typeColor = { aluminum: 'blue', glass: 'cyan', accessory: 'orange', phukien: 'orange', other: 'gray' }[item.type] || 'gray';
+                        
+                        html += '<tr class="hover:bg-gray-50 transition-colors">';
+                        html += '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-' + typeColor + '-100 text-' + typeColor + '-700">' + typeLabel + '</span></td>';
+                        html += '<td class="px-4 py-3"><div><div class="font-medium text-gray-800">' + item.name + '</div><div class="text-xs text-gray-400 font-mono">' + (item.code || '') + '</div></div></td>';
+                        html += '<td class="px-4 py-3 text-right font-semibold">' + item.quantity + '</td>';
+                        html += '<td class="px-4 py-3 text-center text-gray-500">' + item.unit + '</td>';
+                        html += '<td class="px-4 py-3 text-right text-gray-600">' + formatCurrency(item.unit_price) + '</td>';
+                        html += '<td class="px-4 py-3 text-right font-bold text-gray-900">' + formatCurrency(item.total_cost) + '</td></tr>';
+                    });
+                    
+                    html += '</tbody></table></div>';
+                });
+
+                table.innerHTML = html;
+            } catch (err) { console.error(err); table.innerHTML = '<p class="text-red-500 py-4 text-center">Lỗi: ' + err.message + '</p>'; }
+        }
+
+        function exportReportExcel() {
+            const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
+            const projectId = document.getElementById('reportProject').value;
+            const agencyId = document.getElementById('reportAgency').value;
+            
+            let endpoint = '';
+            const params = new URLSearchParams();
+            
+            if (range.startDate) params.append('startDate', range.startDate);
+            if (range.endDate) params.append('endDate', range.endDate);
+            if (projectId) params.append('projectId', projectId);
+            if (agencyId) params.append('agencyId', agencyId);
+
+            if (currentReportType === 'income-expense') {
+                endpoint = '/financial/export-cash-flow';
+            } else if (currentReportType === 'debt') {
+                endpoint = '/financial/debt/export-excel?type=receivable'; // Default to receivable for this view
+            } else if (currentReportType === 'profit-loss') {
+                endpoint = '/financial/export-profit-loss';
+            } else if (currentReportType === 'material-cost') {
+                endpoint = '/financial/export-material-cost';
+            } else if (currentReportType === 'branch-project') {
+                endpoint = '/financial/export-branch-report';
+            } else {
+                showAlert('Không tìm thấy định dạng báo cáo để xuất!');
+                return;
+            }
+
+            window.location.href = API_BASE + endpoint + (endpoint.includes('?') ? '&' : '?') + params.toString();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initFinanceSidebar('finance-reports');
+            checkAuth();
+            loadProjects(document.getElementById('reportProject'));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2167 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo giá chờ duyệt - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/success-notification.css">
+    <script src="js/success-notification.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <style>
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .filter-btn {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        .quotation-card {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .quotation-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+        }
+
+        .quotation-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 4px 0 0 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .quotation-card:hover::before {
+            opacity: 1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .btn-action {
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-input {
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body class="bg-gray-50">
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <!-- User Menu Dropdown -->
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <div class="bg-white shadow-sm border-b">
+            <div class="px-6 py-5">
+                <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                        <h1 class="text-2xl font-bold text-gray-900">Báo giá chờ duyệt</h1>
+                        <p class="text-sm text-gray-500 mt-1">Theo dõi và quản lý báo giá đang chờ khách phản hồi</p>
+                    </div>
+                    <button onclick="refreshData()"
+                        class="text-gray-600 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-gray-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4">
+            <!-- SUMMARY CARDS -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <!-- Tổng báo giá chờ -->
+                <div class="stat-card bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Tổng báo giá chờ</p>
+                            <p class="text-3xl font-bold text-gray-900" id="totalPending">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-7 h-7 text-blue-600">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tổng giá trị -->
+                <div class="stat-card bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Tổng giá trị</p>
+                            <p class="text-3xl font-bold text-green-600" id="totalValue">0.0M</p>
+                        </div>
+                        <div class="w-14 h-14 bg-green-50 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-7 h-7 text-green-600">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chờ quá 7 ngày -->
+                <div class="stat-card bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Chờ quá 7 ngày</p>
+                            <p class="text-3xl font-bold text-red-600" id="overdue7Days">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-7 h-7 text-red-600">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yêu cầu sửa -->
+                <div class="stat-card bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Yêu cầu sửa</p>
+                            <p class="text-3xl font-bold text-yellow-600" id="correctionRequests">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-yellow-50 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-7 h-7 text-yellow-600">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTERS & SEARCH -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-100">
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <span class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            Lọc theo:
+                        </span>
+                        <button onclick="filterQuotations('all')" id="filter-all"
+                            class="filter-btn active px-5 py-2.5 bg-blue-500 text-white rounded-lg font-medium shadow-sm">
+                            Tất cả
+                        </button>
+                        <button onclick="filterQuotations('overdue7')" id="filter-overdue7"
+                            class="filter-btn px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-medium">
+                            Chờ > 7 ngày
+                        </button>
+                        <button onclick="filterQuotations('overdue14')" id="filter-overdue14"
+                            class="filter-btn px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-medium">
+                            Chờ > 14 ngày
+                        </button>
+                    </div>
+                    <div class="relative w-full md:w-auto">
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm mã, khách hàng, dự án..."
+                            onkeyup="handleSearch()"
+                            class="search-input w-full md:w-80 pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-5 h-5 text-gray-400 absolute left-3 top-3.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUOTATIONS LIST -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="p-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <!-- Tab Navigation -->
+                        <div class="flex gap-2">
+                            <button onclick="switchTab('pending')" id="tabPending"
+                                class="tab-btn active px-6 py-3 bg-blue-600 text-white rounded-lg font-medium shadow-sm flex items-center gap-2 transition-all">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Chờ chốt báo giá
+                                <span class="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs"
+                                    id="countPending">0</span>
+                            </button>
+                            <button onclick="switchTab('approved')" id="tabApproved"
+                                class="tab-btn px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-medium flex items-center gap-2 transition-all hover:bg-gray-50">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Chờ chốt hợp đồng
+                                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs"
+                                    id="countApproved">0</span>
+                            </button>
+                        </div>
+                        <select id="sortSelect" onchange="handleSort()"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="date-desc">Mới nhất</option>
+                            <option value="date-asc">Cũ nhất</option>
+                            <option value="amount-desc">Giá trị cao</option>
+                            <option value="amount-asc">Giá trị thấp</option>
+                            <option value="days-desc">Chờ lâu nhất</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="quotationsList" class="p-6">
+                    <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+                        <div class="relative">
+                            <div
+                                class="animate-spin rounded-full h-14 w-14 border-4 border-blue-100 border-t-blue-600 mb-4">
+                            </div>
+                        </div>
+                        <p class="text-lg font-medium">Đang tải dữ liệu...</p>
+                        <p class="text-sm text-gray-400 mt-2">Vui lòng đợi trong giây lát</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Chi tiết báo giá -->
+        <div id="quotationDetailModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-7xl max-h-[95vh] overflow-hidden">
+                <div
+                    class="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                    <div>
+                        <h2 class="text-2xl font-bold" id="detailModalTitle">Chi tiết báo giá</h2>
+                        <p class="text-sm mt-1 opacity-90" id="detailQuoteCode">VRBG001</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportQuotationDetailToExcel()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Xuất Excel
+                        </button>
+                        <button onclick="closeQuotationDetailModal()"
+                            class="text-white hover:bg-white/20 rounded-lg p-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6 overflow-y-auto max-h-[80vh]">
+                    <!-- Thông tin báo giá -->
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg mb-3">Thông tin dự án</h3>
+                            <div class="space-y-2 text-sm">
+                                <div><span class="text-gray-600">Mã - Tên dự án:</span> <span id="detailProjectCode"
+                                        class="font-medium text-blue-600"></span> - <span id="detailProjectName"
+                                        class="font-medium"></span></div>
+                                <div><span class="text-gray-600">Chi nhánh - Khách hàng:</span> <span
+                                        id="detailBranchName" class="font-medium"></span> - <span
+                                        id="detailCustomerName" class="font-medium"></span></div>
+                                <div><span class="text-gray-600">Địa chỉ dự án:</span> <span id="detailProjectAddress"
+                                        class="font-medium"></span></div>
+                                <div><span class="text-gray-600">Hiệu lực:</span> <span id="detailValidityDays"
+                                        class="font-medium"></span></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-lg mb-3">Trạng thái & Thời gian</h3>
+                            <div class="space-y-2 text-sm">
+                                <div><span class="text-gray-600">Trạng thái:</span> <span id="detailStatus"
+                                        class="font-medium"></span></div>
+                                <div><span class="text-gray-600">Số lần sửa:</span> <span id="detailRevisionCount"
+                                        class="font-medium text-orange-600"></span></div>
+                                <div><span class="text-gray-600">Ngày tạo:</span> <span id="detailCreatedAt"
+                                        class="font-medium"></span></div>
+                                <div><span class="text-gray-600">Người lập:</span> <span id="detailCreator"
+                                        class="font-medium"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bảng hạng mục -->
+                    <div class="mb-6">
+                        <h3 class="font-bold text-xl mb-4">Bảng hạng mục báo giá</h3>
+                        <div class="overflow-x-auto border rounded-lg">
+                            <table class="w-full border-collapse table-fixed">
+                                <thead class="bg-blue-50">
+                                    <tr>
+                                        <th rowspan="2"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100"
+                                            style="width: 40px;">STT</th>
+                                        <th rowspan="2"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100"
+                                            style="width: 80px;">Ký hiệu</th>
+                                        <th colspan="3"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100">Phương
+                                            án
+                                            thiết kế cửa nhôm Viralwindow</th>
+                                        <th colspan="2"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100">Kích
+                                            thước
+                                            (mm)</th>
+                                        <th rowspan="2"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100"
+                                            style="width: 90px;">Tổng diện tích (m²)</th>
+                                        <th rowspan="2"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100"
+                                            style="width: 60px;">Số bộ</th>
+                                        <th colspan="1"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100">Đơn Giá
+                                        </th>
+                                        <th colspan="1"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100">Phụ
+                                            kiện
+                                        </th>
+                                        <th colspan="1"
+                                            class="border px-2 py-3 text-xs font-bold text-gray-700 bg-blue-100">Thành
+                                            tiền
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 200px;">Quy cách</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 150px;">Kính</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 150px;">Phụ kiện</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 60px;">Rộng</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 60px;">Cao</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 100px;">vnđ/m²</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 100px;">vnđ/bộ</th>
+                                        <th class="border px-2 py-2 text-xs font-semibold text-gray-700 bg-blue-50"
+                                            style="width: 120px;">vnđ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailItemsTableBody">
+                                    <!-- Items will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tổng hợp tiền -->
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+                        <h3 class="font-bold text-xl mb-4">Tổng giá trị</h3>
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <div class="flex justify-between mb-2 text-gray-600 text-sm">
+                                <span>Tổng diện tích:</span>
+                                <span class="font-medium" id="detailTotalArea">0.00 m²</span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-gray-600 text-sm">
+                                <span>Tiền nhôm & kính:</span>
+                                <span class="font-medium" id="detailTotalMaterial">0 ₫</span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-gray-600 text-sm">
+                                <span>Tiền phụ kiện:</span>
+                                <span class="font-medium" id="detailTotalAccessories">0 ₫</span>
+                            </div>
+                            <div class="border-t my-2 border-gray-100"></div>
+                            <div class="flex justify-between mb-2 text-red-600 italic text-sm hidden"
+                                id="detailAccessoryDiscountRow">
+                                <span>Chiết khấu phụ kiện (<span id="detailAccessoryDiscountPercent">0</span>%):</span>
+                                <span class="font-bold">-<span id="detailAccessoryDiscountAmount">0 ₫</span></span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-red-600 italic text-sm hidden"
+                                id="detailGeneralDiscountRow">
+                                <span>Chiết khấu chung (<span id="detailGeneralDiscountPercent">0</span>%):</span>
+                                <span class="font-bold">-<span id="detailGeneralDiscountAmount">0 ₫</span></span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-blue-600 italic text-sm hidden"
+                                id="detailShippingFeeRow">
+                                <span>Phí vận chuyển:</span>
+                                <span class="font-bold">+<span id="detailShippingFeeAmount">0 ₫</span></span>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-white p-6 rounded-lg shadow-lg text-center">
+                            <p class="text-gray-700 font-semibold mb-2">Tổng giá trị báo giá</p>
+                            <p class="text-4xl font-bold text-blue-600" id="detailFinalTotal">0 ₫</p>
+                            <p class="text-sm text-gray-600 mt-2">Bằng chữ: <span id="detailTotalInWords">Không
+                                    đồng</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Ghi chú -->
+                    <div class="mt-6 bg-gray-50 p-4 rounded-lg" id="detailNotesSection">
+                        <h3 class="font-bold text-lg mb-2">Ghi chú</h3>
+                        <p class="text-sm text-gray-700" id="detailNotes">Không có ghi chú</p>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button onclick="closeQuotationDetailModal()"
+                            class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+
+        // Helper to get consistent authentication headers
+        function getAuthHeaders() {
+            const token = sessionStorage.getItem('token');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // ===================== SIDEBAR FUNCTIONS =====================
+        function toggleSidebarUserMenu() {
+            const dropdown = document.getElementById('sidebarUserMenuDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        async function loadSidebarInfo() {
+            try {
+                // Load            try {
+                const settingsRes = await fetch(`${API_BASE}/settings`, {
+                    headers: getAuthHeaders()
+                });
+                const settingsData = await settingsRes.json();
+                console.log('Settings API response:', settingsData);
+
+                // API trả về { success: true, data: {...} }
+                if (settingsData.success && settingsData.data) {
+                    const settings = settingsData.data;
+                    if (settings.company_name) {
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl) companyNameEl.textContent = settings.company_name;
+                    }
+                    // DB column là logo_path, không phải company_logo
+                    if (settings.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg) {
+                            logoImg.src = settings.logo_path;
+                            logoImg.classList.remove('hidden');
+                        }
+                        if (logoIcon) logoIcon.classList.add('hidden');
+                    }
+                }
+
+                // Load user info from localStorage
+                const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+                if (user.full_name) {
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    const userInitialEl = document.getElementById('sidebarUserAvatarInitial');
+                    if (userNameEl) userNameEl.textContent = user.full_name;
+                    if (userInitialEl) userInitialEl.textContent = user.full_name.charAt(0).toUpperCase();
+                }
+                // Fix: Sử dụng avatar_url thay vì avatar (đồng bộ với các trang khác)
+                if (user.avatar_url || user.avatar) {
+                    const avatarImg = document.getElementById('sidebarUserAvatarImage');
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    if (avatarImg) {
+                        avatarImg.src = user.avatar_url || user.avatar;
+                        avatarImg.classList.remove('hidden');
+                    }
+                    if (avatarInitial) avatarInitial.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading sidebar info:', error);
+            }
+        }
+        // ===================== END SIDEBAR FUNCTIONS =====================
+
+        let currentFilter = 'all';
+        let currentSort = 'date-desc';
+        let searchTerm = '';
+        let allQuotations = [];
+        let stats = {
+            totalPending: 0,
+            totalValue: 0,
+            overdue7Days: 0,
+            correctionRequests: 0
+        };
+
+        // Current tab: 'pending' or 'approved'
+        let currentTab = 'pending';
+
+        // Switch tab
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab UI
+            const pendingBtn = document.getElementById('tabPending');
+            const approvedBtn = document.getElementById('tabApproved');
+
+            if (tab === 'pending') {
+                pendingBtn.classList.remove('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+                pendingBtn.classList.add('bg-blue-600', 'text-white');
+                approvedBtn.classList.remove('bg-blue-600', 'text-white');
+                approvedBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+            } else {
+                approvedBtn.classList.remove('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+                approvedBtn.classList.add('bg-green-600', 'text-white');
+                pendingBtn.classList.remove('bg-blue-600', 'text-white');
+                pendingBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+            }
+
+            applyFiltersAndDisplay();
+        }
+
+        async function loadPendingQuotations() {
+            try {
+                const response = await fetch(`${API_BASE}/quotations/pending`, {
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    allQuotations = result.data || [];
+                    stats = result.stats || stats;
+
+                    updateStats();
+                    applyFiltersAndDisplay();
+                } else {
+                    showError('Không thể tải dữ liệu');
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                showError('Lỗi khi tải dữ liệu. Vui lòng thử lại.');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalPending').textContent = stats.totalPending || 0;
+            document.getElementById('totalValue').textContent = formatValue(stats.totalValue || 0);
+            document.getElementById('overdue7Days').textContent = stats.overdue7Days || 0;
+            document.getElementById('correctionRequests').textContent = stats.correctionRequests || 0;
+        }
+
+        function formatValue(value) {
+            if (value >= 1000000000) {
+                return (value / 1000000000).toFixed(1) + 'B';
+            } else if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'K';
+            }
+            return value.toFixed(0);
+        }
+
+        function getDaysSince(dateString) {
+            if (!dateString) return 0;
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function filterQuotations(filter) {
+            currentFilter = filter;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-500', 'text-white');
+                btn.classList.add('bg-white', 'border', 'border-gray-300', 'text-gray-700');
+            });
+
+            const activeBtn = document.getElementById('filter-' + filter);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'border', 'border-gray-300', 'text-gray-700');
+                activeBtn.classList.add('active', 'bg-blue-500', 'text-white');
+            }
+
+            applyFiltersAndDisplay();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            applyFiltersAndDisplay();
+        }
+
+        function handleSort() {
+            currentSort = document.getElementById('sortSelect').value;
+            applyFiltersAndDisplay();
+        }
+
+        function applyFiltersAndDisplay() {
+            let filtered = [...allQuotations];
+
+            // Count for both tabs
+            const pendingQuotations = allQuotations.filter(q => q.status !== 'approved' && q.status !== 'contract_signed');
+            const approvedQuotations = allQuotations.filter(q => q.status === 'approved');
+
+            // Update tab counts
+            document.getElementById('countPending').textContent = pendingQuotations.length;
+            document.getElementById('countApproved').textContent = approvedQuotations.length;
+
+            // Filter by current tab
+            if (currentTab === 'pending') {
+                filtered = pendingQuotations;
+            } else {
+                filtered = approvedQuotations;
+            }
+
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(q => {
+                    const code = (q.quotation_code || '').toLowerCase();
+                    const customer = (q.customer_name || '').toLowerCase();
+                    const project = (q.project_name || '').toLowerCase();
+                    return code.includes(searchTerm) || customer.includes(searchTerm) || project.includes(searchTerm);
+                });
+            }
+
+            // Apply status filter
+            if (currentFilter === 'overdue7') {
+                filtered = filtered.filter(q => {
+                    const days = q.days_pending || getDaysSince(q.quotation_date);
+                    return days > 7;
+                });
+            } else if (currentFilter === 'overdue14') {
+                filtered = filtered.filter(q => {
+                    const days = q.days_pending || getDaysSince(q.quotation_date);
+                    return days > 14;
+                });
+            }
+
+            // Apply sorting
+            filtered.sort((a, b) => {
+                switch (currentSort) {
+                    case 'date-desc':
+                        return new Date(b.quotation_date) - new Date(a.quotation_date);
+                    case 'date-asc':
+                        return new Date(a.quotation_date) - new Date(b.quotation_date);
+                    case 'amount-desc':
+                        return (parseFloat(b.total_amount) || 0) - (parseFloat(a.total_amount) || 0);
+                    case 'amount-asc':
+                        return (parseFloat(a.total_amount) || 0) - (parseFloat(b.total_amount) || 0);
+                    case 'days-desc':
+                        return (b.days_pending || getDaysSince(b.quotation_date)) - (a.days_pending || getDaysSince(a.quotation_date));
+                    default:
+                        return 0;
+                }
+            });
+
+            displayQuotations(filtered);
+        }
+
+        function displayQuotations(quotations) {
+            const container = document.getElementById('quotationsList');
+            const countEl = document.getElementById('quotationCount');
+
+            if (countEl) {
+                countEl.textContent = `(${quotations.length})`;
+            }
+
+            if (!container) return;
+
+            if (quotations.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-gray-400 fade-in">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-20 h-20 mb-4 text-gray-300">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p class="text-lg font-medium text-gray-500">Không có báo giá chờ duyệt</p>
+                        <p class="text-sm text-gray-400 mt-2">Tất cả báo giá đã được xử lý</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="space-y-4">';
+
+            quotations.forEach((quotation, index) => {
+                const days = quotation.days_pending || getDaysSince(quotation.quotation_date);
+                const isOverdue = days > 7;
+                const isOverdue14 = days > 14;
+
+                let overdueBadge = '';
+                if (isOverdue14) {
+                    overdueBadge = `<span class="badge bg-red-100 text-red-700">Quá hạn ${days} ngày</span>`;
+                } else if (isOverdue) {
+                    overdueBadge = `<span class="badge bg-orange-100 text-orange-700">Quá hạn ${days} ngày</span>`;
+                }
+
+                const code = escapeHtml(quotation.quotation_code || 'N/A');
+                const customer = escapeHtml(quotation.customer_name || 'N/A');
+                const branch = escapeHtml(quotation.branch_name || quotation.agency_name || '');
+                const branchCustomer = branch ? `${branch} - ${customer}` : customer;
+                const project = escapeHtml(quotation.project_name || 'N/A');
+                const date = formatDate(quotation.quotation_date);
+                const amount = formatCurrency(quotation.total_amount || quotation.subtotal);
+                const finalTotal = parseFloat(quotation.total_amount) || parseFloat(quotation.subtotal) || 0;
+                const qId = parseInt(quotation.id) || 0;
+                const status = getStatusText(quotation.status);
+                const statusColor = getStatusColor(quotation.status);
+
+                html += `
+                    <div class="quotation-card border border-gray-200 rounded-lg p-3 bg-white fade-in" style="animation-delay: ${index * 0.03}s">
+                        <div class="flex flex-col lg:flex-row justify-between items-start gap-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                    <h3 class="font-bold text-lg text-gray-900">${code}</h3>
+                                    ${overdueBadge}
+                                    <span class="badge ${statusColor}">${status}</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                                    <div class="flex items-start gap-2">
+                                        <div class="w-8 h-8 bg-blue-50 rounded flex items-center justify-center flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Chi nhánh - Khách hàng</p>
+                                            <p class="text-sm text-gray-900 font-medium">${branchCustomer}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <div class="w-8 h-8 bg-purple-50 rounded flex items-center justify-center flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-purple-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Dự án</p>
+                                            <p class="text-sm text-gray-900 font-medium">${project}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <div class="w-8 h-8 bg-green-50 rounded flex items-center justify-center flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-green-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Ngày tạo</p>
+                                            <p class="text-sm text-gray-900 font-medium">${date} <span class="text-gray-400 font-normal text-xs">(${days} ngày)</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lg:text-right flex flex-col justify-between lg:items-end gap-4 w-full lg:w-auto">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Tổng giá trị</p>
+                                    <p class="text-3xl font-bold text-green-600">${amount}</p>
+                                    ${currentTab === 'approved' ? `
+                                        <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                            ${quotation.deposit_paid ? `
+                                                <p class="text-xs text-green-700 mb-1">✓ Tiền đặt cọc đã thanh toán</p>
+                                                <p class="text-xl font-bold text-green-600">${formatCurrency(quotation.deposit_amount || (parseFloat(quotation.subtotal) || 0) * 0.4)}</p>
+                                            ` : `
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="text-xs text-yellow-700">Tiền đặt cọc</span>
+                                                    <input type="number" 
+                                                            id="depositPercent-${qId}" 
+                                                         value="40" 
+                                                         min="1" max="100"
+                                                         onchange="updateDepositFromPercent(${qId}, ${finalTotal})"
+                                                        class="w-12 px-1 py-0.5 border border-yellow-300 rounded text-center text-xs font-medium">
+                                                    <span class="text-xs text-yellow-700">%</span>
+                                                    <span class="text-xs text-gray-400">hoặc</span>
+                                                    <input type="text" 
+                                                        id="depositAmountInput-${qId}" 
+                                                         value="${Math.round(finalTotal * 0.4).toLocaleString('vi-VN')}"
+                                                         onchange="updateDepositFromAmount(${qId}, ${finalTotal})"
+                                                        class="w-28 px-2 py-0.5 border border-yellow-300 rounded text-right text-xs font-medium">
+                                                    <span class="text-xs text-yellow-700">₫</span>
+                                                </div>
+                                            `}
+                                        </div>
+                                         <div class="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-2">
+                                             <p class="text-xs text-blue-700 mb-1">Số tiền còn lại</p>
+                                             <p class="text-lg font-bold text-blue-600" id="remainingAmount-${qId}">${formatCurrency(finalTotal - (parseFloat(quotation.deposit_amount) || finalTotal * 0.4))}</p>
+                                         </div>
+                                    ` : ''}
+                                </div>
+                                ${currentTab === 'approved' ? `
+                                    <div class="w-full">
+                                        <label class="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all ${quotation.deposit_paid ? 'bg-green-50 border-green-300' : ''}">
+                                            <input type="checkbox" 
+                                                id="deposit-${qId}" 
+                                                ${quotation.deposit_paid ? 'checked disabled' : ''}
+                                                onchange="confirmDepositPayment(${qId}, this)"
+                                                class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500">
+                                            <span class="text-sm ${quotation.deposit_paid ? 'text-green-700 font-medium' : 'text-gray-700'}">
+                                                ${quotation.deposit_paid ? '✓ Đã xác nhận thanh toán đặt cọc' : 'Xác nhận KH đã thanh toán đặt cọc'}
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex gap-2 flex-wrap lg:justify-end">
+                                        <button onclick="viewQuotationDetail(${qId})" class="btn-action px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Xem BG
+                                        </button>
+                                        <button onclick="openQuotation(${qId})" class="btn-action px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                            Mở BG
+                                        </button>
+                                        <button onclick="signContractForQuotation(${qId})" 
+                                            id="signBtn-${qId}"
+                                            ${quotation.deposit_paid ? '' : 'disabled'}
+                                            class="btn-action px-4 py-2 ${quotation.deposit_paid ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-400 cursor-not-allowed'} text-white rounded-lg text-sm font-medium shadow-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Chốt hợp đồng
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="flex gap-2 flex-wrap lg:justify-end">
+                                        <button onclick="viewQuotationDetail(${qId})" class="btn-action px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Xem BG
+                                        </button>
+                                        <button onclick="openQuotation(${qId})" class="btn-action px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                            Mở BG
+                                        </button>
+                                        <button onclick="approveQuotationFromCard(${qId})" class="btn-action px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Chốt báo giá
+                                        </button>
+                                        <button onclick="deleteQuotation(${qId}, '${code}', '${quotation.status}')" class="btn-action px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-sm flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Hủy BG
+                                        </button>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            if (typeof text !== 'string') text = String(text);
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null) return '0 ₫';
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'draft': 'Chờ chốt từ khách hàng',
+                'sent': 'Đã gửi',
+                'pending': 'Đang chờ duyệt',
+                'approved': 'Đã chốt',
+                'rejected': 'Từ chối',
+                'expired': 'Hết hạn',
+                'revision_requested': 'Yêu cầu sửa',
+                'contract_signed': 'Đã ký hợp đồng',
+                'cancelled': 'Đã hủy'
+            };
+            return statusMap[status] || status || 'N/A';
+        }
+
+        function getStatusColor(status) {
+            const colorMap = {
+                'draft': 'bg-gray-100 text-gray-700',
+                'sent': 'bg-blue-100 text-blue-700',
+                'pending': 'bg-yellow-100 text-yellow-700',
+                'approved': 'bg-green-100 text-green-700',
+                'rejected': 'bg-red-100 text-red-700',
+                'expired': 'bg-gray-100 text-gray-700',
+                'revision_requested': 'bg-orange-100 text-orange-700',
+                'contract_signed': 'bg-indigo-100 text-indigo-800',
+                'cancelled': 'bg-red-100 text-red-800'
+            };
+            return colorMap[status] || 'bg-gray-100 text-gray-700';
+        }
+
+        // Vietnamese Number to Words
+        function numberToWords(num) {
+            if (!num || num === 0) return 'Không đồng';
+            num = Math.floor(num);
+            const ones = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const tens = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+            const hundreds = ['', 'một trăm', 'hai trăm', 'ba trăm', 'bốn trăm', 'năm trăm', 'sáu trăm', 'bảy trăm', 'tám trăm', 'chín trăm'];
+
+            function readThreeDigits(n) {
+                if (n === 0) return '';
+                let result = '';
+                const hundred = Math.floor(n / 100);
+                const remainder = n % 100;
+                const ten = Math.floor(remainder / 10);
+                const one = remainder % 10;
+                if (hundred > 0) result += hundreds[hundred] + ' ';
+                if (remainder === 0) return result.trim();
+                if (ten === 0) {
+                    if (one === 5) result += 'lẻ năm';
+                    else if (one > 0) result += 'lẻ ' + ones[one];
+                } else if (ten === 1) {
+                    if (one === 0) result += 'mười';
+                    else if (one === 5) result += 'mười lăm';
+                    else result += 'mười ' + ones[one];
+                } else {
+                    result += tens[ten];
+                    if (one === 1) result += ' mốt';
+                    else if (one === 5) result += ' lăm';
+                    else if (one > 0) result += ' ' + ones[one];
+                }
+                return result.trim();
+            }
+
+            if (num < 1000) return readThreeDigits(num).charAt(0).toUpperCase() + readThreeDigits(num).slice(1) + ' đồng';
+            const billions = Math.floor(num / 1000000000);
+            const millions = Math.floor((num % 1000000000) / 1000000);
+            const thousands = Math.floor((num % 1000000) / 1000);
+            const units = num % 1000;
+            let result = '';
+            if (billions > 0) result += readThreeDigits(billions) + ' tỷ ';
+            if (millions > 0) result += readThreeDigits(millions) + ' triệu ';
+            if (thousands > 0) result += readThreeDigits(thousands) + ' nghìn ';
+            if (units > 0) result += readThreeDigits(units);
+            result = result.trim();
+            if (result === '') return 'Không đồng';
+            return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('quotationsList');
+            if (container) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-red-400 fade-in">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-20 h-20 mb-4 text-red-300">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-lg font-medium text-red-600">${escapeHtml(message)}</p>
+                        <p class="text-sm text-red-400 mt-2">Vui lòng thử lại sau</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Current quotation ID for modal actions
+        let currentDetailQuotationId = null;
+
+        // Xem chi tiết báo giá - hiển thị modal inline
+        async function viewQuotationDetail(id) {
+            currentDetailQuotationId = id;
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}`, {
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    VWModal.error('Không thể tải chi tiết báo giá');
+                    return;
+                }
+
+                const q = result.data;
+                const items = q.items || [];
+
+                // Load project info if available
+                let projectName = q.project_name || '';
+                let projectCode = q.project_code || q.quotation_code || '';
+                let branchName = q.branch_name || q.agency_name || '';
+                let customerName = q.customer_name || '';
+                let projectAddress = '';
+
+                if (q.project_id) {
+                    try {
+                        const projectResponse = await fetch(`${API_BASE}/projects/${q.project_id}`, {
+                            headers: getAuthHeaders()
+                        });
+                        const projectResult = await projectResponse.json();
+                        if (projectResult.success && projectResult.data) {
+                            const project = projectResult.data;
+                            projectName = project.project_name || projectName;
+                            projectCode = project.project_code || projectCode;
+                            branchName = project.agency_name || project.branch_name || branchName;
+                            customerName = project.customer_name || customerName;
+                            let addressParts = [];
+                            if (project.construction_address) addressParts.push(project.construction_address);
+                            if (project.construction_district) addressParts.push(project.construction_district);
+                            if (project.construction_province) addressParts.push(project.construction_province);
+                            projectAddress = addressParts.join(', ') || 'Chưa có địa chỉ';
+                        }
+                    } catch (e) {
+                        console.error('Error loading project:', e);
+                    }
+                }
+
+                // Fill modal header
+                document.getElementById('detailModalTitle').textContent = projectName ? `Chi tiết báo giá - ${projectName}` : 'Chi tiết báo giá';
+                document.getElementById('detailQuoteCode').textContent = q.quotation_code || 'N/A';
+
+                // Fill project info
+                document.getElementById('detailProjectCode').textContent = projectCode || 'N/A';
+                document.getElementById('detailProjectName').textContent = projectName || 'N/A';
+                document.getElementById('detailBranchName').textContent = branchName || 'Chưa có';
+                document.getElementById('detailCustomerName').textContent = customerName || 'N/A';
+                document.getElementById('detailProjectAddress').textContent = projectAddress || 'Chưa có địa chỉ';
+                document.getElementById('detailValidityDays').textContent = (q.validity_days || 15) + ' ngày';
+
+                // Fill status info
+                document.getElementById('detailStatus').textContent = getStatusText(q.status);
+                document.getElementById('detailRevisionCount').textContent = (q.revision_count || 0) + ' lần';
+                let createdDateTime = 'N/A';
+                if (q.created_at) {
+                    const d = new Date(q.created_at);
+                    createdDateTime = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                }
+                document.getElementById('detailCreatedAt').textContent = createdDateTime;
+                document.getElementById('detailCreator').textContent = q.creator_name || 'N/A';
+
+                // Render items table
+                const tbody = document.getElementById('detailItemsTableBody');
+                let totalArea = 0, totalMaterial = 0, totalAccessories = 0, subtotal = 0;
+
+                if (items.length > 0) {
+                    tbody.innerHTML = items.map((item, idx) => {
+                        const width = parseFloat(item.width) || 0;
+                        const height = parseFloat(item.height) || 0;
+                        const qty = parseInt(item.quantity) || 1;
+                        const unitPrice = parseFloat(item.unit_price) || 0;
+                        const accessoryPrice = parseFloat(item.accessory_price) || 0;
+
+                        // Diện tích 1 bộ sản phẩm (m²)
+                        const areaPerUnit = (width * height) / 1000000;
+                        // Tổng diện tích = Diện tích 1 bộ × Số bộ (chỉ để hiển thị)
+                        const totalItemArea = areaPerUnit * qty;
+
+                        // ✅ FIX: Công thức đúng giống quotation-new.html
+                        // Giá vật tư 1 bộ = Diện tích 1 bộ × Đơn giá/m²
+                        const materialCostPerUnit = areaPerUnit * unitPrice;
+                        // Tổng tiền = (Giá vật tư 1 bộ + Phụ kiện 1 bộ) × Số bộ
+                        // Ưu tiên dùng total_price từ DB nếu có
+                        const itemTotal = parseFloat(item.total_price) || Math.round((materialCostPerUnit + accessoryPrice) * qty);
+
+                        // Tính lại chi tiết để hiển thị đúng
+                        const materialCost = materialCostPerUnit * qty;
+                        const accessoryCost = accessoryPrice * qty;
+
+                        totalArea += totalItemArea;
+                        totalMaterial += materialCost;
+                        totalAccessories += accessoryCost;
+                        subtotal += itemTotal;
+
+                        return `<tr class="hover:bg-gray-50">
+                            <td class="border px-2 py-2 text-center text-xs">${idx + 1}</td>
+                            <td class="border px-2 py-2 text-xs font-medium">${escapeHtml(item.code || '')}</td>
+                            <td class="border px-2 py-2 text-xs">${escapeHtml(item.item_name || item.spec || '')}</td>
+                            <td class="border px-2 py-2 text-xs">${escapeHtml(item.glass || '')}</td>
+                            <td class="border px-2 py-2 text-xs">${escapeHtml(item.accessories || '')}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${width}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${height}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${areaPerUnit.toFixed(2)}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${qty}</td>
+                            <td class="border px-2 py-2 text-right text-xs">${formatCurrency(unitPrice).replace(' ₫', '')}</td>
+                            <td class="border px-2 py-2 text-right text-xs">${formatCurrency(accessoryPrice).replace(' ₫', '')}</td>
+                            <td class="border px-2 py-2 text-right text-xs font-medium">${formatCurrency(itemTotal)}</td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="12" class="text-center py-8 text-gray-400">Không có hạng mục</td></tr>';
+                }
+
+                // Chiết khấu phụ kiện
+                const accDiscountPct = parseFloat(q.accessory_discount_percent) || 0;
+                const accDiscountAmt = parseFloat(q.accessory_discount_amount) || (totalAccessories * accDiscountPct / 100);
+
+                // Chiết khấu chung
+                const generalDiscountPct = parseFloat(q.discount_percent) || 0;
+                const generalDiscountAmt = (subtotal * generalDiscountPct) / 100;
+
+                // VAT & Shipping - VAT đã bị loại bỏ khỏi hệ thống (mặc định 0%)
+                const vatPct = 0;
+                const shippingFee = parseFloat(q.shipping_fee) || 0;
+
+                // Tính tổng cuối cùng đồng nhất với Backend và quotation-new.html
+                const taxableAmount = subtotal - generalDiscountAmt - accDiscountAmt;
+                const vatAmount = 0;
+                const finalTotal = taxableAmount + vatAmount + shippingFee;
+
+                // Fill tổng hợp
+                document.getElementById('detailTotalArea').textContent = totalArea.toFixed(2) + ' m²';
+                document.getElementById('detailTotalMaterial').textContent = formatCurrency(totalMaterial);
+                document.getElementById('detailTotalAccessories').textContent = formatCurrency(totalAccessories);
+                document.getElementById('detailFinalTotal').textContent = formatCurrency(finalTotal);
+                document.getElementById('detailTotalInWords').textContent = numberToWords(finalTotal);
+
+                // Hiển thị dòng chiết khấu phụ kiện
+                const detailAccDiscountRow = document.getElementById('detailAccessoryDiscountRow');
+                if (accDiscountAmt > 0 && detailAccDiscountRow) {
+                    detailAccDiscountRow.classList.remove('hidden');
+                    document.getElementById('detailAccessoryDiscountPercent').textContent = accDiscountPct;
+                    document.getElementById('detailAccessoryDiscountAmount').textContent = formatCurrency(accDiscountAmt);
+                } else if (detailAccDiscountRow) {
+                    detailAccDiscountRow.classList.add('hidden');
+                }
+
+                // Hiển thị dòng chiết khấu chung
+                const detailGenDiscountRow = document.getElementById('detailGeneralDiscountRow');
+                if (generalDiscountAmt > 0 && detailGenDiscountRow) {
+                    detailGenDiscountRow.classList.remove('hidden');
+                    document.getElementById('detailGeneralDiscountPercent').textContent = generalDiscountPct;
+                    document.getElementById('detailGeneralDiscountAmount').textContent = formatCurrency(generalDiscountAmt);
+                } else if (detailGenDiscountRow) {
+                    detailGenDiscountRow.classList.add('hidden');
+                }
+
+                // Hiển thị dòng phí vận chuyển
+                const detailShippingRow = document.getElementById('detailShippingFeeRow');
+                if (shippingFee > 0 && detailShippingRow) {
+                    detailShippingRow.classList.remove('hidden');
+                    document.getElementById('detailShippingFeeAmount').textContent = formatCurrency(shippingFee);
+                } else if (detailShippingRow) {
+                    detailShippingRow.classList.add('hidden');
+                }
+
+                // Fill ghi chú
+                const notesSection = document.getElementById('detailNotesSection');
+                const notesEl = document.getElementById('detailNotes');
+                if (q.notes && notesSection && notesEl) {
+                    notesEl.textContent = q.notes;
+                    notesSection.style.display = 'block';
+                } else if (notesSection) {
+                    notesSection.style.display = 'none';
+                }
+
+                // Show modal
+                document.getElementById('quotationDetailModal').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading quotation detail:', error);
+                VWModal.error('Lỗi khi tải chi tiết báo giá');
+            }
+        }
+
+        function closeQuotationDetailModal() {
+            document.getElementById('quotationDetailModal').classList.add('hidden');
+            currentDetailQuotationId = null;
+        }
+
+        // Chốt báo giá từ modal
+        async function approveQuotationFromModal() {
+            if (!currentDetailQuotationId) return;
+
+            const confirmed = await VWModal.confirm('Xác nhận chốt báo giá', 'Bạn có chắc muốn chốt báo giá này?');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${currentDetailQuotationId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã chốt báo giá thành công!');
+                    document.getElementById('detailStatus').textContent = 'Đã chốt';
+                    document.getElementById('approveFromModalBtn').classList.add('hidden');
+                    document.getElementById('signContractFromModalBtn').classList.remove('hidden');
+                    loadPendingQuotations();
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt báo giá');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt báo giá');
+            }
+        }
+
+        // Chốt hợp đồng từ modal
+        async function signContractFromModal() {
+            if (!currentDetailQuotationId) return;
+
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt hợp đồng',
+                'Sau khi chốt, dự án sẽ chuyển sang giai đoạn thiết kế.<br><br>Bạn có chắc muốn tiếp tục?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${currentDetailQuotationId}/sign-contract`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã chốt hợp đồng thành công!', `Mã dự án: ${result.data.new_project_code}`);
+                    closeQuotationDetailModal();
+                    loadPendingQuotations();
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt hợp đồng');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt hợp đồng');
+            }
+        }
+
+        function exportQuotationDetailToExcel() {
+            if (!currentDetailQuotationId) return;
+            window.open(`${API_BASE}/quotations/${currentDetailQuotationId}/export-excel`, '_blank');
+        }
+
+        // Cập nhật số tiền đặt cọc khi thay đổi %
+        function updateDepositFromPercent(quotationId, totalAmount) {
+            const percentInput = document.getElementById(`depositPercent-${quotationId}`);
+            const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
+            const remainingAmountEl = document.getElementById(`remainingAmount-${quotationId}`);
+
+            if (percentInput && depositAmountInput && remainingAmountEl) {
+                const percent = parseFloat(percentInput.value) || 40;
+                const depositAmount = totalAmount * (percent / 100);
+                const remainingAmount = totalAmount - depositAmount;
+
+                depositAmountInput.value = Math.round(depositAmount).toLocaleString('vi-VN');
+                remainingAmountEl.textContent = formatCurrency(remainingAmount);
+            }
+        }
+
+        // Cập nhật % khi thay đổi số tiền đặt cọc
+        function updateDepositFromAmount(quotationId, totalAmount) {
+            const percentInput = document.getElementById(`depositPercent-${quotationId}`);
+            const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
+            const remainingAmountEl = document.getElementById(`remainingAmount-${quotationId}`);
+
+            if (percentInput && depositAmountInput && remainingAmountEl) {
+                // Parse số từ input (loại bỏ dấu phân cách)
+                const depositAmount = parseFloat(depositAmountInput.value.replace(/[.,\s]/g, '')) || 0;
+                const percent = totalAmount > 0 ? Math.round((depositAmount / totalAmount) * 100) : 0;
+                const remainingAmount = totalAmount - depositAmount;
+
+                percentInput.value = percent;
+                remainingAmountEl.textContent = formatCurrency(remainingAmount);
+            }
+        }
+
+        // Chốt báo giá từ card (Tab 1) - chuyển sang Tab 2 (Chờ chốt hợp đồng)
+        async function approveQuotationFromCard(quotationId) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt báo giá',
+                'Sau khi chốt, báo giá sẽ chuyển sang trạng thái "Chờ chốt hợp đồng".<br><br>Bạn có chắc chắn?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}/status`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã chốt báo giá thành công!', 'Báo giá đã chuyển sang tab "Chờ chốt hợp đồng"');
+                    loadPendingQuotations();
+                    // Auto switch to Tab 2
+                    switchTab('approved');
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt báo giá');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt báo giá');
+            }
+        }
+
+        // Xác nhận khách hàng đã thanh toán tiền đặt cọc
+        async function confirmDepositPayment(quotationId, checkbox) {
+            const quotation = allQuotations.find(q => q.id == quotationId);
+
+            // ============================================================
+            // KIỂM TRA PHIẾU THU ĐÃ GHI SỔ CHƯA TRƯỚC KHI XÁC NHẬN
+            // ============================================================
+            try {
+                // Tìm phiếu thu đặt cọc theo:
+                // 1. reference_number = DEPOSIT-{quotationId}
+                // 2. hoặc description chứa mã báo giá
+                const refNumber = `DEPOSIT-${quotationId}`;
+                const quotationCode = quotation?.quotation_code || '';
+
+                // Bước 1: Thử tìm theo reference_number trước
+                let checkResponse = await fetch(`${API_BASE}/financial/transactions?referenceNumber=${refNumber}`, {
+                    headers: getAuthHeaders()
+                });
+                let checkResult = await checkResponse.json();
+                let receipts = (checkResult.success && Array.isArray(checkResult.data)) ? checkResult.data : [];
+
+                // Bước 2: Nếu không tìm thấy, tìm theo description chứa mã báo giá
+                if (receipts.length === 0 && quotationCode) {
+                    checkResponse = await fetch(`${API_BASE}/financial/transactions?type=revenue`, {
+                        headers: getAuthHeaders()
+                    });
+                    checkResult = await checkResponse.json();
+
+                    if (checkResult.success && Array.isArray(checkResult.data)) {
+                        // Lọc phiếu thu có description chứa mã báo giá
+                        // KHÔNG filter theo category vì có thể là "Tiền đặt cọc", "Tiền cọc báo giá", "Sản phẩm", v.v.
+                        receipts = checkResult.data.filter(t =>
+                            t.description &&
+                            t.description.includes(quotationCode)
+                        );
+
+                        console.log('🔍 Found receipts by description:', receipts.map(f => ({
+                            code: f.transaction_code,
+                            category: f.category,
+                            status: f.status
+                        })));
+                    }
+                }
+
+                console.log('🔍 Checking deposit receipt:', {
+                    quotationId,
+                    quotationCode,
+                    found: receipts.length,
+                    receipts: receipts.map(r => ({ code: r.transaction_code, status: r.status, ref: r.reference_number }))
+                });
+
+                // Bước 3: Kiểm tra kết quả sau tất cả các bước tìm kiếm
+                if (receipts.length === 0) {
+                    checkbox.checked = false;
+                    await VWModal.error(
+                        `Không tìm thấy phiếu thu đặt cọc cho báo giá <b>${quotationCode}</b>.<br><br>` +
+                        'Vui lòng tạo phiếu thu đặt cọc trước khi xác nhận thanh toán.<br><br>' +
+                        '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu</a>',
+                        { title: 'Chưa có phiếu thu đặt cọc!' }
+                    );
+                    return;
+                }
+
+                // Bước 4: Ưu tiên phiếu đã ghi sổ (posted), fallback sang phiếu đầu tiên
+                const postedReceipt = receipts.find(r => r.status === 'posted');
+                const depositReceipt = postedReceipt || receipts[0];
+
+                // ✅ FIX: Luôn kiểm tra depositReceipt tồn tại trước khi truy cập .status
+                if (!depositReceipt || depositReceipt.status !== 'posted') {
+                    checkbox.checked = false;
+                    const receiptCode = depositReceipt?.transaction_code || 'không xác định';
+                    const receiptStatus = depositReceipt?.status === 'draft' ? 'Nháp' : (depositReceipt?.status || 'Không rõ');
+                    await VWModal.error(
+                        `Phiếu thu <b>${receiptCode}</b> đang ở trạng thái "<b>${receiptStatus}</b>".<br><br>` +
+                        'Vui lòng ghi sổ phiếu thu trước khi xác nhận thanh toán đặt cọc.<br><br>' +
+                        '<a href="finance-receipts.html" class="text-blue-600 underline">Đi đến Phiếu thu để ghi sổ</a>',
+                        { title: 'Phiếu thu chưa được ghi sổ!' }
+                    );
+                    return;
+                }
+
+                console.log('✅ Deposit receipt found and posted:', depositReceipt.transaction_code);
+            } catch (checkError) {
+                console.error('Error checking deposit receipt:', checkError);
+                // Tiếp tục nếu không kiểm tra được (để không block workflow)
+            }
+
+            // Lấy số tiền đặt cọc từ input số tiền (ưu tiên) hoặc tính từ %
+            const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
+            const percentInput = document.getElementById(`depositPercent-${quotationId}`);
+            // ✅ FIX: Dùng subtotal (chưa VAT) để tính % đặt cọc
+            const baseAmount = parseFloat(quotation?.subtotal) || parseFloat(quotation?.total_amount) || 0;
+
+            let depositAmount;
+            if (depositAmountInput) {
+                depositAmount = parseFloat(depositAmountInput.value.replace(/[.,\s]/g, '')) || 0;
+            } else {
+                const percent = parseFloat(percentInput?.value) || 40;
+                depositAmount = baseAmount * (percent / 100);
+            }
+            const percent = baseAmount > 0 ? Math.round((depositAmount / baseAmount) * 100) : 0;
+
+            const confirmed = await VWModal.confirm(
+                'Xác nhận thanh toán đặt cọc',
+                `Xác nhận khách hàng đã thanh toán tiền đặt cọc <strong>${percent}%</strong> = <strong>${formatCurrency(depositAmount)}</strong>?<br><br><em>Sau khi xác nhận sẽ không thể hoàn tác.</em>`
+            );
+            if (!confirmed) {
+                checkbox.checked = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}/confirm-deposit`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ deposit_amount: depositAmount })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã xác nhận thanh toán tiền đặt cọc!');
+
+                    // Reload để refresh UI - ẩn input fields vì deposit_paid = true
+                    loadPendingQuotations();
+                } else {
+                    checkbox.checked = false;
+                    VWModal.error(result.message || 'Không thể xác nhận đặt cọc');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                checkbox.checked = false;
+                VWModal.error('Lỗi khi xác nhận đặt cọc');
+            }
+        }
+
+        // Chốt hợp đồng (chỉ sau khi đã xác nhận đặt cọc)
+        async function signContractForQuotation(quotationId) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt hợp đồng',
+                'Sau khi chốt, mã dự án sẽ đổi từ <strong>VRBG</strong> thành <strong>VR</strong> và dự án chuyển sang giai đoạn thiết kế.<br><br>Bạn có chắc muốn tiếp tục?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}/sign-contract`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã chốt hợp đồng thành công!', `Mã dự án mới: ${result.data.new_project_code}`);
+                    loadPendingQuotations(); // Reload data
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt hợp đồng');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt hợp đồng');
+            }
+        }
+
+        async function viewQuotation(id) {
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}`, {
+                    headers: getAuthHeaders()
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showQuotationModal(result.data);
+                } else {
+                    VWModal.error('Không thể tải chi tiết báo giá');
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                VWModal.error('Không thể tải chi tiết báo giá');
+            }
+        }
+
+        function showQuotationModal(quotation) {
+            const qId = parseInt(quotation.id) || 0;
+            const code = escapeHtml(quotation.quotation_code || 'N/A');
+            const customer = escapeHtml(quotation.customer_name || 'N/A');
+            const project = escapeHtml(quotation.project_name || 'N/A');
+            const date = formatDate(quotation.quotation_date);
+            const status = getStatusText(quotation.status);
+            const statusColor = getStatusColor(quotation.status);
+            const amount = formatCurrency(quotation.subtotal || quotation.total_amount);
+            const notes = escapeHtml(quotation.notes || '');
+            const items = quotation.items || [];
+
+            const modal = document.createElement('div');
+            modal.id = 'quotationModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            modal.onclick = function (e) {
+                if (e.target === modal) closeQuotationModal();
+            };
+
+            let itemsHtml = '';
+            if (items.length > 0) {
+                itemsHtml = '<div class="mt-4"><h4 class="font-semibold mb-2">Chi tiết sản phẩm:</h4><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left">Tên</th><th class="px-4 py-2 text-right">SL</th><th class="px-4 py-2 text-right">Đơn giá</th><th class="px-4 py-2 text-right">Thành tiền</th></tr></thead><tbody>';
+                items.forEach(item => {
+                    itemsHtml += `<tr class="border-t"><td class="px-4 py-2">${escapeHtml(item.item_name || '')}</td><td class="px-4 py-2 text-right">${item.quantity || 0} ${escapeHtml(item.unit || '')}</td><td class="px-4 py-2 text-right">${formatCurrency(item.unit_price)}</td><td class="px-4 py-2 text-right font-medium">${formatCurrency(item.total_price)}</td></tr>`;
+                });
+                itemsHtml += '</tbody></table></div></div>';
+            }
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Chi tiết báo giá</h2>
+                        <button onclick="closeQuotationModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">${code}</h3>
+                            <span class="badge ${statusColor}">${status}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-sm text-gray-600">Khách hàng</label><p class="font-medium">${customer}</p></div>
+                            <div><label class="text-sm text-gray-600">Dự án</label><p class="font-medium">${project}</p></div>
+                            <div><label class="text-sm text-gray-600">Ngày tạo</label><p class="font-medium">${date}</p></div>
+                            <div><label class="text-sm text-gray-600">Trạng thái</label><p class="font-medium"><span class="badge ${statusColor}">${status}</span></p></div>
+                        </div>
+                        ${itemsHtml}
+                        ${notes ? `<div><label class="text-sm text-gray-600">Ghi chú</label><p class="font-medium mt-1">${notes}</p></div>` : ''}
+                        <div class="border-t pt-4">
+                            <label class="text-sm text-gray-600">Tổng giá bán</label>
+                            <p class="text-3xl font-bold text-green-600">${amount}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button onclick="printQuotation(${qId})" class="px-6 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700">In báo giá</button>
+                        <button onclick="exportQuotationPDF(${qId})" class="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">Xuất PDF</button>
+                        <button onclick="closeQuotationModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">Đóng</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        function closeQuotationModal() {
+            const modal = document.getElementById('quotationModal');
+            if (modal) modal.remove();
+        }
+
+        function printQuotation(id) {
+            window.open(`${API_BASE}/quotations/${id}/pdf-data`, '_blank');
+        }
+
+        function exportQuotationPDF(id) {
+            window.open(`${API_BASE}/quotations/${id}/pdf-data`, '_blank');
+        }
+
+        async function sendReminder(id) {
+            const confirmed = await VWModal.confirm(
+                'Gửi nhắc nhở',
+                'Gửi email nhắc nhở khách hàng về báo giá này?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}/remind`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã gửi email nhắc nhở thành công!');
+                } else {
+                    VWModal.error(result.message || 'Không thể gửi email');
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                VWModal.error('Lỗi khi gửi email nhắc nhở');
+            }
+        }
+
+        // Mở báo giá để sửa
+        function editQuotation(id) {
+            // Redirect to quotation-new.html with quotation ID to load and edit
+            window.location.href = `quotation-new.html?quotation_id=${id}`;
+        }
+
+        // Mở báo giá (nút Mở BG) - redirect trực tiếp với id param
+        // quotation-new.html sẽ tự load từ API với ?id=
+        function openQuotation(id) {
+            window.location.href = `quotation-new.html?id=${id}`;
+        }
+
+        // Hủy báo giá (xóa khỏi hệ thống)
+        async function deleteQuotation(quotationId, quotationCode, status) {
+            // Kiểm tra status trước khi xóa - chỉ cho phép xóa báo giá ở trạng thái chờ duyệt
+            const allowedStatuses = ['draft', 'sent', 'revised'];
+            if (status && !allowedStatuses.includes(status)) {
+                await VWModal.error('Không thể hủy báo giá đã được chốt hoặc đã ký hợp đồng!');
+                return;
+            }
+
+            // Xác nhận trước khi xóa
+            const confirmed = await VWModal.confirm(
+                'Xác nhận hủy báo giá',
+                `Bạn có chắc chắn muốn xóa báo giá <b>${quotationCode}</b>?<br><br>
+                    <span class="text-red-600">⚠️ Hành động này không thể hoàn tác!</span>`
+            );
+
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await VWModal.success(`Báo giá "${quotationCode}" đã được xóa khỏi hệ thống.`, { title: 'Thành công' });
+                    // Reload danh sách báo giá
+                    loadPendingQuotations();
+                } else {
+                    await VWModal.error(`Lỗi: ${result.message || 'Không thể xóa báo giá'}`, { title: 'Lỗi xóa báo giá' });
+                }
+            } catch (error) {
+                console.error('Error deleting quotation:', error);
+                await VWModal.error('Lỗi kết nối server: ' + error.message);
+            }
+        }
+
+        // Chốt báo giá (approve)
+        async function approveQuotation(id) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt báo giá',
+                'Sau khi chốt, báo giá sẽ không hiển thị trong danh sách chờ duyệt nữa.<br><br>Bạn có chắc muốn tiếp tục?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}/status`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ status: 'approved' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã chốt báo giá thành công!');
+                    // Reload data to remove approved quotation from list
+                    loadPendingQuotations();
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt báo giá');
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                VWModal.error('Lỗi khi chốt báo giá. Vui lòng thử lại.');
+            }
+        }
+
+        function refreshData() {
+            loadPendingQuotations();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            loadSidebarInfo();
+            loadPendingQuotations();
+        });
+    </script>
+    <script src="js/sidebar-enterprise.js"></script>
+    </div> <!-- End main-content -->
+
+    <!-- Realtime Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['quotations'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadPendingQuotations === 'function') {
+                        loadPendingQuotations();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

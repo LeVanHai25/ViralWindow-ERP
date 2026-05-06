@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo & Thống kê - Hệ thống quản lý cửa nhôm kính</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+    <!-- HEADER -->
+    <div class="bg-white shadow p-5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước" class="icon-square bg-blue-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold">Báo cáo & Tổng quan hoạt động kinh doanh và sản xuất</h1>
+                <p class="text-gray-500 text-sm">Theo dõi và phân tích hiệu quả kinh doanh</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <select id="timeFilter" onchange="loadDashboard()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="this_month">Tháng này</option>
+                <option value="last_month">Tháng trước</option>
+                <option value="this_quarter">Quý này</option>
+                <option value="this_year">Năm nay</option>
+            </select>
+            <button onclick="exportReport()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Xuất báo cáo
+            </button>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- Dashboard Summary -->
+        <div class="grid grid-cols-4 gap-6 mb-6">
+            <div class="stat-card bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Tổng doanh thu</p>
+                        <p class="text-3xl font-bold text-green-600" id="totalRevenue">0 ₫</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-green-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Lợi nhuận</p>
+                        <p class="text-3xl font-bold text-blue-600" id="totalProfit">0 ₫</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-blue-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Báo giá đã chốt</p>
+                        <p class="text-3xl font-bold text-purple-600" id="approvedQuotations">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-purple-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Dự án đang chạy</p>
+                        <p class="text-3xl font-bold text-orange-600" id="runningProjects">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-orange-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <!-- Doanh thu theo tháng -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Doanh thu theo tháng</h3>
+                <canvas id="revenueChart" height="200"></canvas>
+            </div>
+
+            <!-- Tỷ lệ chốt báo giá -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Tỷ lệ chốt báo giá</h3>
+                <div class="flex items-center justify-center mb-4">
+                    <div class="relative w-32 h-32">
+                        <canvas id="conversionChart" width="128" height="128"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600" id="conversionRateText">0%</div>
+                                <div class="text-xs text-gray-600">Tỷ lệ chốt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-green-600" id="approvedCount">0</div>
+                        <div class="text-sm text-gray-600">Đã chốt</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-600" id="pendingCount">0</div>
+                        <div class="text-sm text-gray-600">Chưa chốt</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Stats Row -->
+        <div class="grid grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-blue-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="runningProjectsBottom">0</div>
+                        <div class="text-sm text-gray-600">Dự án đang chạy</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-red-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-red-600" id="inventoryWarnings">0</div>
+                        <div class="text-sm text-gray-600">Cảnh báo tồn kho</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-purple-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="totalEmployees">3</div>
+                        <div class="text-sm text-gray-600">Nhân viên</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Reports -->
+        <div class="grid grid-cols-2 gap-6">
+            <!-- Báo cáo Kinh doanh -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Báo cáo Kinh doanh</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                        <span class="text-gray-700">Tổng số báo giá</span>
+                        <span class="font-bold" id="reportTotalQuotations">0</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                        <span class="text-gray-700">Đã chốt</span>
+                        <span class="font-bold text-green-600" id="reportApproved">0</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-yellow-50 rounded-lg">
+                        <span class="text-gray-700">Chờ duyệt</span>
+                        <span class="font-bold text-yellow-600" id="reportPending">0</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-red-50 rounded-lg">
+                        <span class="text-gray-700">Từ chối</span>
+                        <span class="font-bold text-red-600" id="reportRejected">0</span>
+                    </div>
+                    <div class="pt-4 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-semibold">Tỷ lệ chốt</span>
+                            <span class="text-2xl font-bold text-blue-600" id="reportConversionRate">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Báo cáo Sản xuất -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Báo cáo Sản xuất</h3>
+                <div class="space-y-4" id="productionReport">
+                    <!-- Production stats will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let revenueChart, conversionChart;
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+            try {
+                // Load summary
+                const summaryResponse = await fetch(`${API_BASE}/reports/dashboard`);
+                const summaryResult = await summaryResponse.json();
+                
+                if (summaryResult.success) {
+                    const data = summaryResult.data;
+                    document.getElementById('totalRevenue').textContent = formatCurrency(data.total_revenue || 0);
+                    document.getElementById('totalProfit').textContent = formatCurrency(data.total_profit || 0);
+                    document.getElementById('approvedQuotations').textContent = data.approved_quotations || 0;
+                    document.getElementById('runningProjects').textContent = data.running_projects || 0;
+                }
+
+                // Load revenue by month
+                const revenueResponse = await fetch(`${API_BASE}/reports/revenue-month`);
+                const revenueResult = await revenueResponse.json();
+                
+                if (revenueResult.success) {
+                    drawRevenueChart(revenueResult.data);
+                }
+
+                // Load conversion rate
+                const conversionResponse = await fetch(`${API_BASE}/reports/conversion-rate`);
+                const conversionResult = await conversionResponse.json();
+                
+                if (conversionResult.success) {
+                    drawConversionChart(conversionResult.data);
+                    updateConversionStats(conversionResult.data);
+                }
+
+                // Load production report
+                const productionResponse = await fetch(`${API_BASE}/reports/production`);
+                const productionResult = await productionResponse.json();
+                
+                if (productionResult.success) {
+                    displayProductionReport(productionResult.data);
+                }
+
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+
+        function drawRevenueChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+            const revenueData = new Array(12).fill(0);
+            const profitData = new Array(12).fill(0);
+
+            data.forEach(item => {
+                revenueData[item.month - 1] = item.revenue || 0;
+                profitData[item.month - 1] = item.profit || 0;
+            });
+
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+
+            revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Doanh thu',
+                            data: revenueData,
+                            backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Lợi nhuận',
+                            data: profitData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000000).toFixed(0) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawConversionChart(data) {
+            const ctx = document.getElementById('conversionChart').getContext('2d');
+            
+            if (conversionChart) {
+                conversionChart.destroy();
+            }
+
+            const approved = data.approved || 0;
+            const pending = data.pending || 0;
+            const total = data.total || 1;
+            const rate = total > 0 ? (approved / total) * 100 : 0;
+
+            document.getElementById('conversionRateText').textContent = rate.toFixed(1) + '%';
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('pendingCount').textContent = pending;
+
+            conversionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Đã chốt', 'Chưa chốt'],
+                    datasets: [{
+                        data: [approved, pending],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(156, 163, 175, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateConversionStats(data) {
+            document.getElementById('reportTotalQuotations').textContent = data.total || 0;
+            document.getElementById('reportApproved').textContent = data.approved || 0;
+            document.getElementById('reportPending').textContent = data.pending || 0;
+            document.getElementById('reportRejected').textContent = data.rejected || 0;
+            document.getElementById('reportConversionRate').textContent = (data.conversion_rate || 0).toFixed(1) + '%';
+        }
+
+        async function loadAdditionalStats() {
+            try {
+                // Load running projects
+                const projectsResponse = await fetch(`${API_BASE}/projects`);
+                const projectsResult = await projectsResponse.json();
+                if (projectsResult.success) {
+                    const running = projectsResult.data.filter(p => 
+                        p.status && !['completed', 'cancelled'].includes(p.status)
+                    ).length;
+                    document.getElementById('runningProjectsBottom').textContent = running;
+                }
+
+                // Load inventory warnings
+                const inventoryResponse = await fetch(`${API_BASE}/inventory/stats`);
+                const inventoryResult = await inventoryResponse.json();
+                if (inventoryResult.success) {
+                    document.getElementById('inventoryWarnings').textContent = inventoryResult.data.low_stock || 0;
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+
+        function exportReport() {
+            // Get time filter
+            const timeFilter = document.getElementById('timeFilter').value;
+            const filterText = document.getElementById('timeFilter').options[document.getElementById('timeFilter').selectedIndex].text;
+            
+            // Create export data
+            const exportData = {
+                title: 'Báo cáo & Tổng quan hoạt động kinh doanh và sản xuất',
+                period: filterText,
+                export_date: new Date().toLocaleString('vi-VN'),
+                summary: {
+                    total_revenue: document.getElementById('totalRevenue').textContent,
+                    total_profit: document.getElementById('totalProfit').textContent,
+                    approved_quotations: document.getElementById('approvedQuotations').textContent,
+                    running_projects: document.getElementById('runningProjects').textContent,
+                    inventory_warnings: document.getElementById('inventoryWarnings').textContent,
+                    total_employees: document.getElementById('totalEmployees').textContent
+                },
+                charts: {
+                    revenue_by_month: 'Xem biểu đồ doanh thu theo tháng',
+                    conversion_rate: 'Xem tỷ lệ chốt báo giá'
+                }
+            };
+
+            // Create HTML report
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/user-settings.js"></script>
+                    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+                    <title>Báo cáo ${filterText}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #2563eb; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+</head>
+                <body>
+                    <h1>${exportData.title}</h1>
+                    <p><strong>Kỳ báo cáo:</strong> ${exportData.period}</p>
+                    <p><strong>Ngày xuất:</strong> ${exportData.export_date}</p>
+                    <h2>Tổng quan</h2>
+                    <table>
+                        <tr><th>Chỉ tiêu</th><th>Giá trị</th></tr>
+                        <tr><td>Tổng doanh thu</td><td>${exportData.summary.total_revenue}</td></tr>
+                        <tr><td>Lợi nhuận</td><td>${exportData.summary.total_profit}</td></tr>
+                        <tr><td>Báo giá đã chốt</td><td>${exportData.summary.approved_quotations}</td></tr>
+                        <tr><td>Dự án đang chạy</td><td>${exportData.summary.running_projects}</td></tr>
+                        <tr><td>Cảnh báo tồn kho</td><td>${exportData.summary.inventory_warnings}</td></tr>
+                        <tr><td>Tổng nhân viên</td><td>${exportData.summary.total_employees}</td></tr>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            // Create download link
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `bao-cao-${filterText.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.html`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            alert('Đã xuất báo cáo thành công!');
+        }
+
+        function displayProductionReport(data) {
+            const container = document.getElementById('productionReport');
+            container.innerHTML = '';
+
+            const statusLabels = {
+                'pending': 'Chờ sản xuất',
+                'cutting': 'Cắt nhôm',
+                'welding': 'Ép góc',
+                'gluing': 'Bắn keo',
+                'accessories': 'Lắp phụ kiện',
+                'finishing': 'Hoàn thiện',
+                'packaging': 'Đóng gói',
+                'completed': 'Hoàn thành'
+            };
+
+            data.forEach(item => {
+                const div = `
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                        <span class="text-gray-700">${statusLabels[item.status] || item.status}</span>
+                        <span class="font-bold">${item.count || 0}</span>
+                    </div>
+                `;
+                container.innerHTML += div;
+            });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount || 0);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            loadAdditionalStats();
+        });
+    </script>
+
+    <style>
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+</body>
+</html>
+
+

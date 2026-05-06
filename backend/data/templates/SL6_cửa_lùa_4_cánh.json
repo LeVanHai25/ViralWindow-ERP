@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "template_code": "SL6",
+    "template_name": "Cửa lùa 4 cánh",
+    "category": "sliding",
+    "sub_type": "sliding",
+    "aluminum_system": "XINGFA_93",
+    "width_mm": 3200,
+    "height_mm": 2300,
+    "khoang_ho_mm": 10,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/SL6.png"
+  },
+  "panel_tree": {
+    "type": "container",
+    "direction": "horizontal",
+    "children": [
+      {
+        "id": "p1",
+        "type": "panel",
+        "panelType": "sliding",
+        "widthRatio": 1,
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "p2",
+        "type": "panel",
+        "panelType": "sliding",
+        "widthRatio": 1,
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "p3",
+        "type": "panel",
+        "panelType": "sliding",
+        "widthRatio": 1,
+        "glassType": "6mm_clear"
+      },
+      {
+        "id": "p4",
+        "type": "panel",
+        "panelType": "sliding",
+        "widthRatio": 1,
+        "glassType": "6mm_clear"
+      }
+    ]
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

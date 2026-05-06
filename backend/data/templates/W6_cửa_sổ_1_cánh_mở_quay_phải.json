@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "template_code": "W6",
+    "template_name": "Cửa sổ 1 cánh mở quay phải",
+    "category": "window",
+    "sub_type": "turn",
+    "aluminum_system": "XINGFA_55",
+    "width_mm": 750,
+    "height_mm": 1100,
+    "khoang_ho_mm": 5,
+    "loai_kinh": "Kính trắng 6ly",
+    "so_bo_mac_dinh": 1,
+    "preview_image": "/templates/W6.png"
+  },
+  "panel_tree": {
+    "id": "leaf",
+    "type": "panel",
+    "panelType": "window-leaf",
+    "openDirection": "right",
+    "glassType": "6mm_clear"
+  },
+  "settings": {
+    "default_stock_length_mm": 6000,
+    "default_kerf_mm": 3,
+    "allow_resize": true,
+    "scale_on_canvas": 0.15
+  }
+}

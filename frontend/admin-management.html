@@ -1,0 +1,846 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Hệ Thống - ViralWindow</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f3f4f6;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .tab-button {
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            border-bottom-color: #3B82F6;
+            color: #3B82F6;
+            font-weight: 600;
+            background: white;
+        }
+
+        .tab-button:hover {
+            background: #f1f5f9;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .permission-checkbox:checked+label {
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            color: white;
+        }
+
+        .permission-group {
+            border-left: 3px solid #8B5CF6;
+        }
+
+        .table-row:hover {
+            background: #f8fafc;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .status-inactive {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3 p-4">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="companyName">ViralWindow</span>
+            </div>
+        </a>
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Admin</div>
+                    <div class="text-xs text-blue-200">Quản trị viên</div>
+                </div>
+            </div>
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-50 border">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg class="w-4 h-4 arrow-icon rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="admin-management.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Quản Lý Hệ Thống</h1>
+                    <p class="text-gray-500 text-sm">Quản lý chức vụ và phân quyền người dùng</p>
+                </div>
+                <div class="flex gap-3">
+                    <button id="btnAddRole" onclick="openRoleModal()"
+                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm Chức Vụ
+                    </button>
+                    <button id="btnAddUser" onclick="openUserModal()"
+                        class="hidden px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm Người Dùng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-gray-100 px-6 pt-4">
+            <div class="flex gap-1 bg-white rounded-t-xl overflow-hidden border border-b-0 border-gray-200">
+                <button class="tab-button active px-6 py-3 flex items-center gap-2 text-gray-600"
+                    onclick="switchTab('roles')">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Chức Vụ
+                </button>
+                <button class="tab-button px-6 py-3 flex items-center gap-2 text-gray-600" onclick="switchTab('users')">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    Người Dùng
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content: Roles -->
+        <div id="tab-roles"
+            class="tab-content active bg-white mx-6 mb-6 rounded-b-xl border border-t-0 border-gray-200 p-6">
+            <div id="rolesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="rolesEmpty" class="hidden text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-gray-500 text-lg">Chưa có chức vụ nào</p>
+            </div>
+        </div>
+
+        <!-- Tab Content: Users -->
+        <div id="tab-users" class="tab-content bg-white mx-6 mb-6 rounded-b-xl border border-t-0 border-gray-200">
+            <!-- Filters -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <input type="text" id="searchInput" placeholder="🔍︎ Tìm theo tên, email, SĐT..."
+                        class="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        onkeyup="debounceSearch()">
+                    <select id="roleFilter" onchange="loadUsers()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">Tất cả chức vụ</option>
+                    </select>
+                    <select id="statusFilter" onchange="loadUsers()"
+                        class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="1">Hoạt động</option>
+                        <option value="0">Vô hiệu hóa</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Table -->
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Người dùng</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Liên hệ</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Chức vụ</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold">Trạng thái</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Đăng nhập gần nhất</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+            <div id="usersEmpty" class="hidden text-center py-12">
+                <p class="text-gray-500">Chưa có người dùng nào</p>
+            </div>
+            <div id="pagination" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div id="paginationInfo" class="text-sm text-gray-600"></div>
+                <div id="paginationButtons" class="flex gap-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Modal -->
+    <div id="roleModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl m-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="p-6 border-b bg-gradient-to-r from-purple-600 to-blue-600">
+                <div class="flex justify-between items-center">
+                    <h2 id="roleModalTitle" class="text-xl font-bold text-white">Thêm Chức Vụ</h2>
+                    <button onclick="closeRoleModal()" class="text-white hover:text-gray-200">✕</button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <input type="hidden" id="roleId">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div><label class="block text-sm font-semibold mb-2">Tên chức vụ *</label><input type="text"
+                            id="roleName" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div><label class="block text-sm font-semibold mb-2">Mô tả</label><input type="text"
+                            id="roleDescription" class="w-full px-4 py-3 border rounded-xl"></div>
+                </div>
+                <h3 class="text-lg font-bold mb-4">Phân Quyền</h3>
+                <div class="flex gap-2 mb-4">
+                    <button type="button" onclick="selectAllPermissions()"
+                        class="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg">Chọn tất cả</button>
+                    <button type="button" onclick="deselectAllPermissions()"
+                        class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg">Bỏ chọn</button>
+                </div>
+                <div id="permissionsContainer" class="space-y-4"></div>
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
+                <button onclick="closeRoleModal()" class="px-6 py-2 border rounded-xl">Hủy</button>
+                <button onclick="saveRole()"
+                    class="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg m-4">
+            <div class="p-6 border-b bg-gradient-to-r from-blue-600 to-cyan-600 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h2 id="userModalTitle" class="text-xl font-bold text-white">Thêm Người Dùng</h2>
+                    <button onclick="closeUserModal()" class="text-white">✕</button>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="userId">
+                <div><label class="block text-sm font-semibold mb-2">Họ và tên *</label><input type="text"
+                        id="userFullName" class="w-full px-4 py-3 border rounded-xl"></div>
+                <div><label class="block text-sm font-semibold mb-2">Email *</label><input type="email" id="userEmail"
+                        class="w-full px-4 py-3 border rounded-xl"></div>
+                <div><label class="block text-sm font-semibold mb-2">Số điện thoại</label><input type="tel"
+                        id="userPhone" class="w-full px-4 py-3 border rounded-xl"></div>
+                <div id="passwordField"><label class="block text-sm font-semibold mb-2">Mật khẩu *</label><input
+                        type="password" id="userPassword" class="w-full px-4 py-3 border rounded-xl"
+                        placeholder="Tối thiểu 6 ký tự"></div>
+                <div><label class="block text-sm font-semibold mb-2">Chức vụ</label><select id="userRole"
+                        class="w-full px-4 py-3 border rounded-xl">
+                        <option value="">-- Chọn --</option>
+                    </select></div>
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="closeUserModal()" class="px-6 py-2 border rounded-xl">Hủy</button>
+                <button onclick="saveUser()"
+                    class="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="resetPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md m-4">
+            <div class="p-6 border-b bg-gradient-to-r from-yellow-500 to-orange-500 rounded-t-2xl">
+                <h2 class="text-xl font-bold text-white">Đặt Lại Mật Khẩu</h2>
+            </div>
+            <div class="p-6">
+                <input type="hidden" id="resetUserId">
+                <p id="resetUserName" class="text-gray-600 mb-4"></p>
+                <label class="block text-sm font-semibold mb-2">Mật khẩu mới *</label>
+                <input type="password" id="newPassword" class="w-full px-4 py-3 border rounded-xl"
+                    placeholder="Tối thiểu 6 ký tự">
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="closeResetPasswordModal()" class="px-6 py-2 border rounded-xl">Hủy</button>
+                <button onclick="submitResetPassword()"
+                    class="px-6 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-semibold">Đặt
+                    Lại</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar-enterprise.js"></script>
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+        let allRoles = [], allPermissions = [], currentRoleId = null, currentUserId = null, currentPage = 1, searchTimeout = null;
+
+        function getAuthToken() { const t = sessionStorage.getItem('token'); if (!t) { window.location.href = 'login.html'; } return t; }
+        async function fetchWithAuth(url, opt = {}) {
+            const t = getAuthToken(); if (!t) return null;
+            opt.headers = { ...opt.headers, 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' };
+            const r = await fetch(url, opt);
+            if (r.status === 401 || r.status === 403) { alert('Không có quyền'); window.location.href = 'login.html'; return null; }
+            return r;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach((b, i) => b.classList.toggle('active', i === (tab === 'roles' ? 0 : 1)));
+            document.getElementById('tab-roles').classList.toggle('active', tab === 'roles');
+            document.getElementById('tab-users').classList.toggle('active', tab === 'users');
+            document.getElementById('btnAddRole').classList.toggle('hidden', tab !== 'roles');
+            document.getElementById('btnAddUser').classList.toggle('hidden', tab !== 'users');
+            if (tab === 'users') loadUsers();
+        }
+
+        // ROLES
+        async function loadRoles() {
+            const r = await fetchWithAuth(`${API_BASE}/roles`);
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { allRoles = d.data; renderRoles(d.data); populateRoleFilter(); }
+        }
+        function renderRoles(roles) {
+            const c = document.getElementById('rolesContainer'), e = document.getElementById('rolesEmpty');
+            if (!roles?.length) { c.innerHTML = ''; e.classList.remove('hidden'); return; }
+            e.classList.add('hidden');
+            c.innerHTML = roles.map(r => `<div class="bg-white rounded-2xl shadow-lg p-6 card-hover border transition-all"><div class="flex justify-between items-start mb-4"><div><div class="flex items-center gap-2"><h3 class="text-lg font-bold">${r.name}</h3>${r.is_system ? '<span class="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">Hệ thống</span>' : ''}</div><p class="text-gray-500 text-sm mt-1">${r.description || 'Không có mô tả'}</p></div><div class="flex gap-2"><button onclick="editRole(${r.id})" class="px-3 py-1 text-sm border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">Sửa</button>${!r.is_system ? `<button onclick="deleteRole(${r.id}, '${r.name}')" class="px-3 py-1 text-sm border border-red-500 text-red-600 rounded-lg hover:bg-red-50">Xóa</button>` : ''}</div></div><div class="flex gap-4 text-sm text-gray-600"><span>${r.permission_count || 0} quyền</span><span>${r.user_count || 0} người dùng</span></div></div>`).join('');
+        }
+        async function loadPermissions() {
+            const r = await fetchWithAuth(`${API_BASE}/permissions/grouped`);
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { allPermissions = []; renderPermissions(d.data); }
+        }
+        function renderPermissions(grouped) {
+            const c = document.getElementById('permissionsContainer'); c.innerHTML = '';
+            for (const [mod, perms] of Object.entries(grouped)) {
+                allPermissions.push(...perms);
+                c.innerHTML += `<div class="permission-group bg-gray-50 rounded-xl p-4 pl-6"><h4 class="font-semibold mb-3">${mod}</h4><div class="flex flex-wrap gap-2">${perms.map(p => `<div><input type="checkbox" id="perm_${p.id}" value="${p.id}" class="permission-checkbox hidden" data-module="${mod}"><label for="perm_${p.id}" class="inline-block px-3 py-1.5 bg-white border rounded-lg text-sm cursor-pointer hover:border-purple-400 transition-all">${p.name}</label></div>`).join('')}</div></div>`;
+            }
+        }
+        function selectAllPermissions() { document.querySelectorAll('.permission-checkbox').forEach(c => c.checked = true); }
+        function deselectAllPermissions() { document.querySelectorAll('.permission-checkbox').forEach(c => c.checked = false); }
+        function openRoleModal() { currentRoleId = null; document.getElementById('roleModalTitle').textContent = 'Thêm Chức Vụ'; document.getElementById('roleId').value = ''; document.getElementById('roleName').value = ''; document.getElementById('roleDescription').value = ''; deselectAllPermissions(); document.getElementById('roleModal').classList.remove('hidden'); document.getElementById('roleModal').classList.add('flex'); }
+        function closeRoleModal() { document.getElementById('roleModal').classList.add('hidden'); document.getElementById('roleModal').classList.remove('flex'); }
+        async function editRole(id) {
+            const r = await fetchWithAuth(`${API_BASE}/roles/${id}`);
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) {
+                const role = d.data; currentRoleId = role.id;
+                document.getElementById('roleModalTitle').textContent = 'Chỉnh Sửa Chức Vụ';
+                document.getElementById('roleId').value = role.id;
+                document.getElementById('roleName').value = role.name;
+                document.getElementById('roleDescription').value = role.description || '';
+                deselectAllPermissions();
+                role.permissions?.forEach(p => { const cb = document.getElementById(`perm_${p.id}`); if (cb) cb.checked = true; });
+                document.getElementById('roleModal').classList.remove('hidden');
+                document.getElementById('roleModal').classList.add('flex');
+            }
+        }
+        async function saveRole() {
+            const name = document.getElementById('roleName').value.trim(), desc = document.getElementById('roleDescription').value.trim();
+            const perms = Array.from(document.querySelectorAll('.permission-checkbox:checked')).map(c => parseInt(c.value));
+            if (!name) { alert('Nhập tên chức vụ'); return; }
+            const url = currentRoleId ? `${API_BASE}/roles/${currentRoleId}` : `${API_BASE}/roles`;
+            const r = await fetchWithAuth(url, { method: currentRoleId ? 'PUT' : 'POST', body: JSON.stringify({ name, description: desc, permissions: perms }) });
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { closeRoleModal(); loadRoles(); alert(currentRoleId ? 'Cập nhật thành công!' : 'Tạo thành công!'); } else { alert('Lỗi: ' + d.message); }
+        }
+        async function deleteRole(id, name) {
+            if (!(await confirm(`Xóa chức vụ "${name}"?`))) return;
+            const r = await fetchWithAuth(`${API_BASE}/roles/${id}`, { method: 'DELETE' });
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { loadRoles(); alert('Xóa thành công!'); } else { alert('Lỗi: ' + d.message); }
+        }
+
+        // USERS
+        function debounceSearch() { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => loadUsers(), 300); }
+        function populateRoleFilter() {
+            const s = document.getElementById('roleFilter'), u = document.getElementById('userRole');
+            s.innerHTML = '<option value="">Tất cả chức vụ</option>';
+            u.innerHTML = '<option value="">-- Chọn --</option>';
+            allRoles.forEach(r => { s.innerHTML += `<option value="${r.id}">${r.name}</option>`; u.innerHTML += `<option value="${r.id}">${r.name}</option>`; });
+        }
+        async function loadUsers() {
+            const search = document.getElementById('searchInput').value, roleId = document.getElementById('roleFilter').value, status = document.getElementById('statusFilter').value;
+            let url = `${API_BASE}/user-management?page=${currentPage}&limit=20`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (roleId) url += `&role_id=${roleId}`;
+            if (status !== '') url += `&is_active=${status}`;
+            const r = await fetchWithAuth(url);
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { renderUsers(d.data); renderPagination(d.pagination); }
+        }
+        function renderUsers(users) {
+            const t = document.getElementById('usersTableBody'), e = document.getElementById('usersEmpty');
+            if (!users?.length) { t.innerHTML = ''; e.classList.remove('hidden'); return; }
+            e.classList.add('hidden');
+            t.innerHTML = users.map(u => `<tr class="table-row border-b"><td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">${u.full_name.charAt(0).toUpperCase()}</div><div><p class="font-semibold">${u.full_name}</p>${u.user_type === 'admin' ? '<span class="text-xs text-purple-600">Admin</span>' : ''}</div></div></td><td class="px-6 py-4"><p class="text-gray-600">${u.email}</p><p class="text-gray-400 text-sm">${u.phone || '-'}</p></td><td class="px-6 py-4"><span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">${u.role_name || 'Chưa phân quyền'}</span></td><td class="px-6 py-4 text-center"><span class="px-3 py-1 ${u.is_active ? 'status-active' : 'status-inactive'} text-white rounded-full text-xs font-medium">${u.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}</span></td><td class="px-6 py-4 text-gray-500 text-sm">${u.last_login ? formatDate(u.last_login) : 'Chưa đăng nhập'}</td><td class="px-6 py-4"><div class="flex justify-center gap-2"><button onclick="editUser(${u.id})" class="px-3 py-1 text-xs border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">Sửa</button><button onclick="openResetPasswordModal(${u.id}, '${u.full_name}')" class="px-3 py-1 text-xs border border-yellow-500 text-yellow-600 rounded-lg hover:bg-yellow-50">Đổi MK</button>${u.user_type !== 'admin' ? `<button onclick="toggleUserStatus(${u.id})" class="px-3 py-1 text-xs border ${u.is_active ? 'border-red-500 text-red-600 hover:bg-red-50' : 'border-green-500 text-green-600 hover:bg-green-50'} rounded-lg">${u.is_active ? 'Tắt' : 'Bật'}</button><button onclick="deleteUser(${u.id}, '${u.full_name.replace(/'/g, "\\'")}')"
+                    class="px-3 py-1 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700">Xóa</button>` : ''}</div></td></tr>`).join('');
+        }
+        function renderPagination(p) {
+            if (!p || p.total === 0) { document.getElementById('paginationInfo').textContent = ''; document.getElementById('paginationButtons').innerHTML = ''; return; }
+            const start = (p.page - 1) * p.limit + 1, end = Math.min(p.page * p.limit, p.total);
+            document.getElementById('paginationInfo').textContent = `Hiển thị ${start} - ${end} / ${p.total}`;
+            let btns = '';
+            if (p.page > 1) btns += `<button onclick="goToPage(${p.page - 1})" class="px-3 py-1 border rounded-lg hover:bg-gray-100">Trước</button>`;
+            if (p.page < p.totalPages) btns += `<button onclick="goToPage(${p.page + 1})" class="px-3 py-1 border rounded-lg hover:bg-gray-100">Sau</button>`;
+            document.getElementById('paginationButtons').innerHTML = btns;
+        }
+        function goToPage(page) { currentPage = page; loadUsers(); }
+        function formatDate(d) { return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+        function openUserModal() { currentUserId = null; document.getElementById('userModalTitle').textContent = 'Thêm Người Dùng'; document.getElementById('userId').value = ''; document.getElementById('userFullName').value = ''; document.getElementById('userEmail').value = ''; document.getElementById('userEmail').disabled = false; document.getElementById('userPhone').value = ''; document.getElementById('userPassword').value = ''; document.getElementById('userRole').value = ''; document.getElementById('passwordField').classList.remove('hidden'); document.getElementById('userModal').classList.remove('hidden'); document.getElementById('userModal').classList.add('flex'); }
+        function closeUserModal() { document.getElementById('userModal').classList.add('hidden'); document.getElementById('userModal').classList.remove('flex'); }
+        async function editUser(id) {
+            const r = await fetchWithAuth(`${API_BASE}/user-management/${id}`);
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) {
+                const u = d.data; currentUserId = u.id;
+                document.getElementById('userModalTitle').textContent = 'Chỉnh Sửa';
+                document.getElementById('userId').value = u.id;
+                document.getElementById('userFullName').value = u.full_name;
+                document.getElementById('userEmail').value = u.email;
+                document.getElementById('userEmail').disabled = false; // Allow email editing
+                document.getElementById('userPhone').value = u.phone || '';
+                document.getElementById('userRole').value = u.role_id || '';
+                document.getElementById('passwordField').classList.add('hidden');
+                document.getElementById('userModal').classList.remove('hidden');
+                document.getElementById('userModal').classList.add('flex');
+            }
+        }
+        async function saveUser() {
+            const name = document.getElementById('userFullName').value.trim(), email = document.getElementById('userEmail').value.trim(), phone = document.getElementById('userPhone').value.trim(), password = document.getElementById('userPassword').value, roleId = document.getElementById('userRole').value;
+            if (!name || !email) { alert('Nhập họ tên và email'); return; }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) { alert('Email không đúng định dạng. Ví dụ: user@gmail.com'); return; }
+            if (!currentUserId && password.length < 6) { alert('Mật khẩu tối thiểu 6 ký tự'); return; }
+            const body = { full_name: name, email, phone: phone || null, role_id: roleId || null };
+            if (!currentUserId) body.password = password;
+            const url = currentUserId ? `${API_BASE}/user-management/${currentUserId}` : `${API_BASE}/user-management`;
+            const r = await fetchWithAuth(url, { method: currentUserId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { closeUserModal(); loadUsers(); alert(currentUserId ? 'Cập nhật thành công!' : 'Tạo thành công!'); } else { alert('Lỗi: ' + d.message); }
+        }
+        async function toggleUserStatus(id) {
+            if (!await confirm('Thay đổi trạng thái?')) return;
+            const r = await fetchWithAuth(`${API_BASE}/user-management/${id}/toggle-status`, { method: 'PATCH' });
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) loadUsers(); else alert('Lỗi: ' + d.message);
+        }
+        async function deleteUser(id, name) {
+            if (!await confirm(`⚠️ Bạn có chắc muốn XÓA tài khoản "${name}"?\n\nHành động này không thể hoàn tác!`)) return;
+            if (!await confirm(`Xác nhận lần 2: Xóa vĩnh viễn tài khoản "${name}"?`)) return;
+            const r = await fetchWithAuth(`${API_BASE}/user-management/${id}`, { method: 'DELETE' });
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { loadUsers(); alert('Đã xóa tài khoản thành công!'); } else { alert('Lỗi: ' + d.message); }
+        }
+        function openResetPasswordModal(id, name) { document.getElementById('resetUserId').value = id; document.getElementById('resetUserName').textContent = `Đặt lại mật khẩu cho: ${name}`; document.getElementById('newPassword').value = ''; document.getElementById('resetPasswordModal').classList.remove('hidden'); document.getElementById('resetPasswordModal').classList.add('flex'); }
+        function closeResetPasswordModal() { document.getElementById('resetPasswordModal').classList.add('hidden'); document.getElementById('resetPasswordModal').classList.remove('flex'); }
+        async function submitResetPassword() {
+            const id = document.getElementById('resetUserId').value, pw = document.getElementById('newPassword').value;
+            if (pw.length < 6) { alert('Mật khẩu tối thiểu 6 ký tự'); return; }
+            const r = await fetchWithAuth(`${API_BASE}/user-management/${id}/reset-password`, { method: 'POST', body: JSON.stringify({ new_password: pw }) });
+            if (!r) return;
+            const d = await r.json();
+            if (d.success) { closeResetPasswordModal(); alert('Đặt lại mật khẩu thành công!'); } else { alert('Lỗi: ' + d.message); }
+        }
+        function toggleSidebarUserMenu() { document.getElementById('sidebarUserMenuDropdown').classList.toggle('hidden'); }
+        function handleLogout() { sessionStorage.removeItem('token'); window.location.href = 'login.html'; }
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) return;
+                const response = await fetch(`${API_BASE}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await response.json();
+                if (result.success) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) userNameEl.textContent = user.full_name || 'User';
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+                    if (avatarInitial && avatarImage) {
+                        if (user.avatar_url) {
+                            avatarImage.src = user.avatar_url;
+                            avatarImage.classList.remove('hidden');
+                            avatarInitial.classList.add('hidden');
+                        } else {
+                            avatarInitial.textContent = (user.full_name || 'U').charAt(0).toUpperCase();
+                            avatarInitial.classList.remove('hidden');
+                            avatarImage.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (e) { console.error('Error loading user info:', e); }
+        }
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    if (result.data.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg && logoIcon) {
+                            logoImg.src = result.data.logo_path;
+                            logoImg.classList.remove('hidden');
+                            logoIcon.classList.add('hidden');
+                        }
+                    }
+                    const companyNameEl = document.getElementById('companyName');
+                    if (companyNameEl && result.data.company_name) {
+                        companyNameEl.textContent = result.data.company_name;
+                    }
+                }
+            } catch (e) { console.error('Error loading company info:', e); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { loadRoles(); loadPermissions(); loadSidebarUserInfo(); loadCompanyLogo(); });
+    </script>
+</body>
+
+</html>

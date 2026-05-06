@@ -1,0 +1,444 @@
+﻿
+>         let products = typeof PRODUCTS_DATA !== 'undefined' ? 
+PRODUCTS_DATA : [];
+  
+          // ĐẦY ĐỦ BẢNG KÍNH từ Excel
+          let glasses = [
+              // Kính dán an toàn 2 lớp
+              { id: 1, name: 'Kính dán an toàn 2 lớp 6.38mm', 
+structure: '3+3', price: 0 },
+              { id: 2, name: 'Kính dán an toàn 2 lớp 8.38mm', 
+structure: '4+4', price: 54000 },
+              { id: 3, name: 'Kính dán an toàn 2 lớp 10.38mm', 
+structure: '5+5', price: 101000 },
+              { id: 4, name: 'Kính dán an toàn 2 lớp 12.38mm', 
+structure: '6+6', price: 165000 },
+              { id: 5, name: 'Kính dán an toàn 2 lớp 13.38mm', 
+structure: '5+8', price: 191000 },
+              { id: 6, name: 'Kính dán an toàn 2 lớp 16.38mm', 
+structure: '8+8', price: 275000 },
+              { id: 7, name: 'Kính dán an toàn 2 lớp 20.76mm', 
+structure: '10+10 (Khổ < 1.5 m2)', price: 443000 },
+              { id: 8, name: 'Kính dán an toàn 2 lớp 24.76mm', 
+structure: '12+12 (Khổ < 1.5 m2)', price: 537000 },
+              // Kính dán phim màu trắng sữa
+              { id: 9, name: 'Kính dán an toàn 2 lớp 6.38mm 
+phim màu trắng sữa', structure: '3+3', price: 9000 },
+              { id: 10, name: 'Kính dán an toàn 2 lớp 8.38mm 
+phim màu trắng sữa', structure: '4+4', price: 62000 },
+              { id: 11, name: 'Kính dán an toàn 2 lớp 10.38mm 
+phim màu trắng sữa', structure: '5+5', price: 110000 },
+              { id: 12, name: 'Kính dán an toàn 2 lớp 12.38mm 
+phim màu trắng sữa', structure: '6+6', price: 174000 },
+              // Kính dán phim màu HL
+              { id: 13, name: 'Kính dán an toàn 2 lớp 6.38mm 
+phim màu HL (HL01-HL10)', structure: '3+3', price: 9000 },
+              { id: 14, name: 'Kính dán an toàn 2 lớp 8.38mm 
+phim màu HL (HL01-HL10)', structure: '4+4', price: 62000 },
+              { id: 15, name: 'Kính dán an toàn 2 lớp 10.38mm 
+phim màu HL (HL01-HL10)', structure: '5+5', price: 110000 },
+              { id: 16, name: 'Kính dán an toàn 2 lớp 12.38mm 
+phim màu HL (HL01-HL10)', structure: '6+6', price: 174000 },
+              // Kính dán phun cát
+              { id: 17, name: 'Kính dán an toàn 2 lớp 6.38mm 
+phun cát', structure: '3+3', price: 27000 },
+              { id: 18, name: 'Kính dán an toàn 2 lớp 8.38mm 
+phun cát', structure: '4+4', price: 80000 },
+              { id: 19, name: 'Kính dán an toàn 2 lớp 10.38mm 
+phun cát', structure: '5+5', price: 128000 },
+              { id: 20, name: 'Kính dán an toàn 2 lớp 12.38mm 
+phun cát', structure: '6+6', price: 192000 },
+              // Kính dán xanh đen
+              { id: 21, name: 'Kính dán 8.38mm xanh đen (4+4)', 
+structure: '4+4', price: 195000 },
+              { id: 22, name: 'Kính dán 8.38mm xanh đen (5+3)', 
+structure: '5+3', price: 230000 },
+              { id: 23, name: 'Kính dán 10.38mm xanh đen', 
+structure: '5+5', price: 298000 },
+              { id: 24, name: 'Kính dán 16.38mm xanh đen', 
+structure: '8+8', price: 642000 },
+              { id: 25, name: 'Kính dán 20.76mm xanh đen', 
+structure: '10+10', price: 830000 },
+              { id: 26, name: 'Kính dán 24.76mm xanh đen', 
+structure: '12+12', price: 1010000 },
+              // Kính dán xanh lá
+              { id: 27, name: 'Kính dán 8.38mm xanh lá', 
+structure: '4+4', price: 189000 },
+              { id: 28, name: 'Kính dán 8.38mm xanh lá', 
+structure: '5+3', price: 189000 },
+              { id: 29, name: 'Kính dán 10.38mm xanh lá', 
+structure: '5+5', price: 264000 },
+              { id: 30, name: 'Kính dán 12.38mm xanh lá', 
+structure: '6+6', price: 358000 },
+              { id: 31, name: 'Kính dán 16.38mm xanh lá', 
+structure: '8+8', price: 613000 },
+              { id: 32, name: 'Kính dán 20.76mm xanh lá', 
+structure: '10+10', price: 880000 },
+              { id: 33, name: 'Kính dán 24.76mm xanh lá', 
+structure: '12+12', price: 1071000 },
+              // Kính dán euro grey
+              { id: 34, name: 'Kính dán 6.38mm film màu grey', 
+structure: '3+3', price: 0 },
+              { id: 35, name: 'Kính dán 8.38mm film màu grey', 
+structure: '4+4', price: 211000 },
+              { id: 36, name: 'Kính dán 10.38mm euro grey', 
+structure: '5+5', price: 277000 },
+              { id: 37, name: 'Kính dán 12.38mm euro grey', 
+structure: '6+6', price: 371000 },
+              { id: 38, name: 'Kính dán 16.38mm euro grey', 
+structure: '8+8', price: 558000 },
+              { id: 39, name: 'Kính dán 20.76mm euro grey', 
+structure: '10+10', price: 793000 },
+              // Kính dán Solar control
+              { id: 40, name: 'Kính dán 6,38mm Solar control', 
+structure: '3+3', price: 0 },
+              { id: 41, name: 'Kính dán 8,38mm Solar control', 
+structure: '5+3', price: 336000 },
+              { id: 42, name: 'Kính dán 10,38mm Solar control', 
+structure: '5+5', price: 402000 },
+              { id: 43, name: 'Kính dán 12,38mm Solar control', 
+structure: '6+6', price: 485000 },
+              { id: 44, name: 'Kính dán 16,38mm Solar control', 
+structure: '8+8', price: 716000 },
+              { id: 45, name: 'Kính dán 20,76mm Solar control', 
+structure: '10+10 (Khổ < 1.5 m2)', price: 952000 },
+              { id: 46, name: 'Kính dán 24,76mm Solar control', 
+structure: '12+12 (Khổ < 1.5 m2)', price: 1129000 },
+              // Kính dán PQ
+              { id: 47, name: 'Kính dán 8,38mm PQ (M1)', 
+structure: '5+3', price: 303000 },
+              { id: 48, name: 'Kính dán 8,38mm PQ (M2)', 
+structure: '5+3', price: 342000 },
+              { id: 49, name: 'Kính dán 8,38mm PQ (M4)', 
+structure: '5+3', price: 349000 },
+              { id: 50, name: 'Kính dán 8,38mm PQ (M6)', 
+structure: '5+3', price: 333000 },
+              { id: 51, name: 'Kính dán 8,38mm PQ (M10)', 
+structure: '5+3', price: 320000 },
+              { id: 52, name: 'Kính dán 10,38mm PQ (M1)', 
+structure: '5+5', price: 370000 },
+              { id: 53, name: 'Kính dán 10,38mm PQ (M4)', 
+structure: '5+5', price: 414000 },
+              { id: 54, name: 'Kính dán 10,38mm PQ (M6)', 
+structure: '5+5', price: 398000 },
+              { id: 55, name: 'Kính dán 10,38mm PQ (M10)', 
+structure: '5+5', price: 385000 },
+              { id: 56, name: 'Kính dán 10,38mm PQ (M3)', 
+structure: '6+4', price: 392000 },
+              { id: 57, name: 'Kính dán 12,38mm PQ (M1)', 
+structure: '6+6', price: 511000 },
+              { id: 58, name: 'Kính dán 12,38mm PQ (M4)', 
+structure: '6+6', price: 530000 },
+              { id: 59, name: 'Kính dán 12,38mm PQ (M6)', 
+structure: '6+6', price: 539000 },
+              { id: 60, name: 'Kính dán 12,38mm PQ (M9)', 
+structure: '6+6', price: 524000 },
+              { id: 61, name: 'Kính dán 12,38mm PQ (M3)', 
+structure: '6+6', price: 0 },
+              { id: 62, name: 'Kính dán 16,38mm PQ (M1)', 
+structure: '8+8', price: 755000 },
+              { id: 63, name: 'Kính dán 16,38mm PQ (M6)', 
+structure: '8+8', price: 792000 },
+              // Kính dán cản nhiệt
+              { id: 64, name: 'Kính dán 8,38mm cản nhiệt 
+(N01)', structure: '4+4', price: 0 },
+              { id: 65, name: 'Kính dán 8,38mm cản nhiệt (N01, 
+N04)', structure: '5+3', price: 407000 },
+              { id: 66, name: 'Kính dán 10,38mm cản nhiệt (N01, 
+N04)', structure: '5+5', price: 476000 },
+              { id: 67, name: 'Kính dán 10,38mm cản nhiệt (N05, 
+N07)', structure: '6+4', price: 638000 },
+              { id: 68, name: 'Kính dán 10,38mm cản nhiệt (N06, 
+N08)', structure: '6+4', price: 651000 },
+              { id: 69, name: 'Kính dán 12,38mm cản nhiệt (N01, 
+N04)', structure: '6+6', price: 616000 },
+              { id: 70, name: 'Kính dán 12,38mm cản nhiệt (N05, 
+N07)', structure: '6+6', price: 707000 },
+              { id: 71, name: 'Kính dán 12,38mm cản nhiệt (N06, 
+N08)', structure: '6+6', price: 720000 },
+              { id: 72, name: 'Kính dán 12,38mm cản nhiệt 
+(N03)', structure: '6+6', price: 0 },
+              { id: 73, name: 'Kính dán 16,38mm cản nhiệt 
+(N01)', structure: '8+8', price: 923000 },
+              { id: 74, name: 'Kính dán 16,38mm cản nhiệt 
+(N05)', structure: '8+8', price: 1026000 },
+              // Kính cường lực trắng
+              { id: 75, name: 'Kính cường lực 4mm', structure: 
+'4', price: 0 },
+              { id: 76, name: 'Kính cường lực 5mm', structure: 
+'5', price: 10000 },
+              { id: 77, name: 'Kính cường lực 6mm', structure: 
+'6', price: 41000 },
+              { id: 78, name: 'Kính cường lực 8mm', structure: 
+'8', price: 67000 },
+              { id: 79, name: 'Kính cường lực 10mm', structure: 
+'10', price: 113000 },
+              { id: 80, name: 'Kính cường lực 12mm < 
+2438x3658', structure: '12', price: 161000 },
+              { id: 81, name: '2438x3658 < CL 12mm < 
+2700x4876', structure: '12', price: 249000 },
+              { id: 82, name: '2700x4876 < CL 12mm < 
+5600x3300', structure: '12', price: 576000 },
+              { id: 83, name: 'Kính cường lực 15mm < 
+2438x3658', structure: '15', price: 625000 },
+              { id: 84, name: '2438x3658 < CL 15mm < 
+3300x7000', structure: '15', price: 890000 },
+              { id: 85, name: 'Kính cường lực 19mm', structure: 
+'19', price: 1497000 },
+              // Kính cường lực Solar Control
+              { id: 86, name: 'Kính cường lực 4mm Solar 
+Control', structure: '4', price: 165000 },
+              { id: 87, name: 'Kính cường lực 5mm Solar 
+Control', structure: '5', price: 213000 },
+              { id: 88, name: 'Kính cường lực 6mm Solar 
+Control', structure: '6', price: 251000 },
+              { id: 89, name: 'Kính cường lực 8mm Solar 
+Control', structure: '8', price: 390000 },
+              { id: 90, name: 'Kính cường lực 10mm Solar 
+Control', structure: '10', price: 490000 },
+              { id: 91, name: 'Kính cường lực 12mm Solar 
+Control', structure: '12', price: 595000 },
+              // Kính cường lực xanh đen
+              { id: 92, name: 'Kính cường lực 4mm Xanh đen', 
+structure: '4', price: 101000 },
+              { id: 93, name: 'Kính cường lực 5mm Xanh đen', 
+structure: '5', price: 152000 },
+              { id: 94, name: 'Kính cường lực 8mm Xanh đen (KT≤ 
+3658mm x 2438mm)', structure: '8', price: 381000 },
+              { id: 95, name: 'Kính cường lực 10mm Xanh đen (KT 
+≤ 3658mm x 2438mm)', structure: '10', price: 566000 },
+              { id: 96, name: 'Kính cường lực 12mm Xanh đen (KT 
+≤ 3658mm x 2438mm)', structure: '12', price: 0 },
+              // Kính cường lực xanh lá
+              { id: 97, name: 'Kính cường lực 4mm xanh lá', 
+structure: '4', price: 59000 },
+              { id: 98, name: 'Kính cường lực 5mm xanh lá', 
+structure: '5', price: 94000 },
+              { id: 99, name: 'Kính cường lực 6mm xanh lá', 
+structure: '6', price: 138000 },
+              { id: 100, name: 'Kính cường lực 8mm xanh lá (KT≤ 
+3658mm x 2438mm)', structure: '8', price: 267000 },
+              { id: 101, name: 'Kính cường lực 10mm xanh lá (KT 
+≤ 3658mm x 2438mm)', structure: '10', price: 389000 },
+              { id: 102, name: 'Kính cường lực 12mm xanh lá (KT 
+≤ 3658mm x 2438mm)', structure: '12', price: 482000 },
+              { id: 103, name: 'Kính cường lực 12mm xanh lá (KT 
+≤ 5600mm x 3210mm)', structure: '12', price: 699000 },
+              // Kính cường lực euro grey
+              { id: 104, name: 'Kính cường lực 5mm euro grey', 
+structure: '5', price: 125000 },
+              { id: 105, name: 'Kính cường lực 6mm euro grey', 
+structure: '6', price: 181000 },
+              { id: 106, name: 'Kính cường lực 8mm euro grey', 
+structure: '8', price: 352000 },
+              { id: 107, name: 'Kính cường lực 10mm euro grey', 
+structure: '10', price: 471000 },
+              // Cường lực dán
+              { id: 108, name: 'Cường lực dán 9,14mm', 
+structure: 'CL 4mm trắng + 1,14mm PVB trắng + CL 4mm trắng', 
+price: 359000 },
+              { id: 109, name: 'Cường lực dán 11,14mm', 
+structure: 'CL 5mm trắng + 1,14mm PVB trắng + CL 5mm trắng', 
+price: 395000 },
+              { id: 110, name: 'Cường lực dán 11,52mm', 
+structure: 'CL 5mm trắng + 1,52mm PVB trắng + CL 5mm trắng', 
+price: 446000 },
+              { id: 111, name: 'Cường lực dán 13,14mm', 
+structure: 'CL 6mm trắng + 1,14mm PVB trắng + CL 6mm trắng', 
+price: 444000 },
+              { id: 112, name: 'Cường lực dán 15,52mm', 
+structure: 'CL 6mm trắng + 1,52mm PVB trắng + CL 8mm trắng', 
+price: 554000 },
+              { id: 113, name: 'Cường lực dán 17,52mm', 
+structure: 'CL 8mm trắng + 1,52mm PVB trắng + CL 8mm trắng', 
+price: 632000 },
+              { id: 114, name: 'Cường lực dán 19,52mm', 
+structure: 'CL 8mm trắng + 1,52mm PVB trắng + CL 10mm trắng', 
+price: 706000 },
+              { id: 115, name: 'Cường lực dán 21,52mm', 
+structure: 'CL 10mm trắng + 1,52mm PVB trắng + CL 10mm trắng', 
+price: 757000 },
+              { id: 116, name: 'Cường lực dán 23,52mm', 
+structure: 'CL 10mm trắng + 1,52mm PVB trắng + CL 12mm trắng', 
+price: 824000 },
+              { id: 117, name: 'Cường lực dán 25,52mm', 
+structure: 'CL 12mm trắng + 1,52mm PVB trắng + CL 12mm trắng', 
+price: 883000 },
+              // Kính hộp Temper trắng trong
+              { id: 118, name: 'Kính hộp 14mm Temper trắng 
+trong', structure: '4mm trắng CL + 6CK + 4mm trắng CL', price: 
+272000 },
+              { id: 119, name: 'Kính hộp 17mm Temper trắng 
+trong', structure: '4mm trắng CL + 9CK + 4mm trắng CL', price: 
+286000 },
+              { id: 120, name: 'Kính hộp 20mm Temper trắng 
+trong', structure: '4mm trắng CL + 12CK + 4mm trắng CL', price: 
+310000 },
+              { id: 121, name: 'Kính hộp 23mm Temper trắng 
+trong', structure: '4mm trắng CL + 15CK + 4mm trắng CL', price: 
+361000 },
+              { id: 122, name: 'Kính hộp 16mm Temper trắng 
+trong', structure: '5mm trắng CL + 6CK + 5mm trắng CL', price: 
+314000 },
+              { id: 123, name: 'Kính hộp 19mm Temper trắng 
+trong', structure: '5mm trắng CL + 9CK + 5mm trắng CL', price: 
+328000 },
+              { id: 124, name: 'Kính hộp 22mm Temper trắng 
+trong', structure: '5mm trắng CL + 12CK + 5mm trắng CL', price: 
+352000 },
+              { id: 125, name: 'Kính hộp 25mm Temper trắng 
+trong', structure: '5mm trắng CL + 15CK + 5mm trắng CL', price: 
+403000 },
+              { id: 126, name: 'Kính hộp 18mm Temper trắng 
+trong', structure: '6mm trắng CL + 6CK + 6mm trắng CL', price: 
+356000 },
+              { id: 127, name: 'Kính hộp 21mm Temper trắng 
+trong', structure: '6mm trắng CL + 9CK + 6mm trắng CL', price: 
+371000 },
+              { id: 128, name: 'Kính hộp 24mm Temper trắng 
+trong', structure: '6mm trắng CL + 12CK + 6mm trắng CL', price: 
+394000 },
+              { id: 129, name: 'Kính hộp 27mm Temper trắng 
+trong', structure: '6mm trắng CL + 15CK + 6mm trắng CL', price: 
+445000 },
+              { id: 130, name: 'Kính hộp 22mm Temper trắng 
+trong', structure: '8mm trắng CL + 6CK + 8mm trắng CL', price: 
+474000 },
+              { id: 131, name: 'Kính hộp 25mm Temper trắng 
+trong', structure: '8mm trắng CL + 9CK + 8mm trắng CL', price: 
+487000 },
+              { id: 132, name: 'Kính hộp 28mm Temper trắng 
+trong', structure: '8mm trắng CL + 12CK + 8mm trắng CL', price: 
+510000 },
+              { id: 133, name: 'Kính hộp 31mm Temper trắng 
+trong', structure: '8mm trắng CL + 15CK + 8mm trắng CL', price: 
+563000 },
+              // Kính hộp Temper + dán trắng
+              { id: 134, name: 'Kính hộp 17.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 6CK + 6.38mm trắng', price: 
+379000 },
+              { id: 135, name: 'Kính hộp 20.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 9CK + 6.38mm trắng', price: 
+394000 },
+              { id: 136, name: 'Kính hộp 23.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 12CK + 6.38mm trắng', price: 
+417000 },
+              { id: 137, name: 'Kính hộp 26.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 15CK + 6.38mm trắng', price: 
+468000 },
+              { id: 138, name: 'Kính hộp 19.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 6CK + 8.38mm trắng', price: 
+415000 },
+              { id: 139, name: 'Kính hộp 22.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 9CK + 8.38mm trắng', price: 
+429000 },
+              { id: 140, name: 'Kính hộp 25.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 12CK + 8.38mm trắng', price: 
+453000 },
+              { id: 141, name: 'Kính hộp 28.38mm Temper trắng 
+trong', structure: '5mm trắng CL + 15CK + 8.38mm trắng', price: 
+504000 },
+              { id: 142, name: 'Kính hộp 18.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 6CK + 6.38mm trắng', price: 
+399000 },
+              { id: 143, name: 'Kính hộp 21.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 9CK + 6.38mm trắng', price: 
+414000 },
+              { id: 144, name: 'Kính hộp 24.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 12CK + 6.38mm trắng', price: 
+437000 },
+              { id: 145, name: 'Kính hộp 27.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 15CK + 6.38mm trắng', price: 
+488000 },
+              { id: 146, name: 'Kính hộp 20.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 6CK + 8.38mm trắng', price: 
+445000 },
+              { id: 147, name: 'Kính hộp 23.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 9CK + 8.38mm trắng', price: 
+459000 },
+              { id: 148, name: 'Kính hộp 26.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 12CK + 8.38mm trắng', price: 
+483000 },
+              { id: 149, name: 'Kính hộp 29.38mm Temper trắng 
+trong', structure: '6mm trắng CL + 15CK + 8.38mm trắng', price: 
+534000 },
+              // Kính hộp dán + dán trắng
+              { id: 150, name: 'Kính hộp 18.76mm trắng trong', 
+structure: '6.38mm trắng + 6CK + 6.38mm trắng', price: 448000 },
+              { id: 151, name: 'Kính hộp 21.76mm trắng trong', 
+structure: '6.38mm trắng + 9CK + 6.38mm trắng', price: 462000 },
+              { id: 152, name: 'Kính hộp 24.76mm trắng trong', 
+structure: '6.38mm trắng + 12CK + 6.38mm trắng', price: 485000 
+},
+              { id: 153, name: 'Kính hộp 27.76mm trắng trong', 
+structure: '6.38mm trắng + 15CK + 6.38mm trắng', price: 537000 
+},
+              { id: 154, name: 'Kính hộp 20.76mm trắng trong', 
+structure: '6.38mm trắng + 6CK + 8.38mm trắng', price: 483000 },
+              { id: 155, name: 'Kính hộp 23.76mm trắng trong', 
+structure: '6.38mm trắng + 9CK + 8.38mm trắng', price: 497000 },
+              { id: 156, name: 'Kính hộp 26.76mm trắng trong', 
+structure: '6.38mm trắng + 12CK + 8.38mm trắng', price: 520000 
+},
+              { id: 157, name: 'Kính hộp 29.76mm trắng trong', 
+structure: '6.38mm trắng + 15CK + 8.38mm trắng', price: 571000 
+},
+              { id: 158, name: 'Kính hộp 22.76mm trắng trong', 
+structure: '8.38mm trắng + 6CK + 8.38mm trắng', price: 520000 },
+              { id: 159, name: 'Kính hộp 25.76mm trắng trong', 
+structure: '8.38mm trắng + 9CK + 8.38mm trắng', price: 534000 },
+              { id: 160, name: 'Kính hộp 28.76mm trắng trong', 
+structure: '8.38mm trắng + 12CK + 8.38mm trắng', price: 558000 
+},
+              { id: 161, name: 'Kính hộp 31.76mm trắng trong', 
+structure: '8.38mm trắng + 15CK + 8.38mm trắng', price: 609000 
+},
+              // Kính hộp phản quang M1
+              { id: 162, name: 'Kính hộp 17.38mm Phản quang M1 
+Temper', structure: '5mm CLPQ1 + 6CK + 6.38mm trắng', price: 
+628000 },
+              { id: 163, name: 'Kính hộp 20.38mm Phản quang M1 
+Temper', structure: '5mm CLPQ1 + 9CK + 6.38mm trắng', price: 
+642000 },
+              { id: 164, name: 'Kính hộp 23.38mm Phản quang M1 
+Temper', structure: '5mm CLPQ1 + 12CK + 6.38mm trắng', price: 
+666000 },
+              { id: 165, name: 'Kính hộp 26.38mm Phản quang M1 
+Temper', structure: '5mm CLPQ1 + 15CK + 6.38mm trắng', price: 
+717000 },
+              { id: 166, name: 'Kính hộp 19.38mm Phản quang 
+M1', structure: '5mm CL trắng + 6CK + 8.38mm Phản quang M1', 
+price: 680000 },
+              { id: 167, name: 'Kính hộp 22.38mm Phản quang 
+M1', structure: '5mm CL trắng + 9CK + 8.38mm Phản quang M1', 
+price: 694000 },
+              { id: 168, name: 'Kính hộp 25.38mm Phản quang 
+M1', structure: '5mm CL trắng + 12CK + 8.38mm Phản quang M1', 
+price: 718000 },
+              { id: 169, name: 'Kính hộp 28.38mm Phản quang 
+M1', structure: '5mm CL trắng + 15CK + 8.38mm Phản quang M1', 
+price: 770000 },
+              { id: 170, name: 'Kính hộp 16mm Temper Phản quang 
+M1', structure: '5mm CL trắng + 6CK + 5mm CL phản quang M1', 
+price: 579000 },
+              { id: 171, name: 'Kính hộp 19mm Temper Phản quang 
+M1', structure: '5mm CL trắng + 9CK + 5mm CL phản quang M1', 
+price: 592000 },
+              { id: 172, name: 'Kính hộp 22mm Temper Phản quang 
+M1', structure: '5mm CL trắng + 12CK + 5mm CL phản quang M1', 
+price: 615000 },
+              { id: 173, name: 'Kính hộp 25mm Temper Phản quang 
+M1', structure: '5mm CL trắng + 15CK + 5mm CL phản quang M1', 
+price: 667000 },
+              // Kính hộp phản quang M2
+              { id: 174, name: 'Kính hộp 17.38mm Phản quang M2 
+Temper', structure: '5mm CLPQM2 + 6CK + 6.38mm trắng', price: 
+675000 },
+              { id: 175, name: 'Kính hộp 20.38mm Phản quang M2 
+Temper', structure: '5mm CLPQM2 + 9CK + 6.38mm trắng', price: 
+689000 },
+              { id: 176, name: 'Kính hộp 23.38mm Phản quang M2 
+Temper', structure: '5mm CLPQM2 + 12CK + 6.38mm trắng', price: 
+712000 },
+
+

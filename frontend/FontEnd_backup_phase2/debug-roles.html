@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Roles - Senior Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        h1 {
+            color: #4fc3f7;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #4fc3f7;
+            color: #1a1a2e;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        pre {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 500px;
+        }
+
+        .log {
+            color: #8bc34a;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+        }
+    </style>
+    <script src="js/config.js"></script>
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <script src="js/vw-modal.js"></script>
+</head>
+
+<body>
+    <h1>🔧 Debug Roles - Senior Fix Tool</h1>
+
+    <div class="section">
+        <h2>Step 1: Xem Data Hiện Tại</h2>
+        <button class="btn btn-primary" onclick="viewRoles()">📊 Xem Roles & Users</button>
+        <button class="btn btn-primary" onclick="testAuthMe()">🔍 Test /auth/me API</button>
+    </div>
+
+    <div class="section">
+        <h2>Step 2: Fix Data (Cẩn thận!)</h2>
+        <button class="btn btn-danger" onclick="fixRoles()">⚠️ Reset & Fix Roles</button>
+    </div>
+
+    <div class="section">
+        <h2>Step 3: Verify</h2>
+        <button class="btn btn-success" onclick="verifyFix()">✅ Verify Fix</button>
+        <button class="btn btn-success" onclick="location.href='profile.html'">🔄 Mở Profile.html</button>
+    </div>
+
+    <div id="log" class="log"></div>
+    <pre id="result">Click button để bắt đầu...</pre>
+
+    <script>
+        const API_BASE = window.API_BASE || '/api';
+
+        function log(msg, type = 'info') {
+            const logEl = document.getElementById('log');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            logEl.innerHTML = `<div class="${className}">[${new Date().toLocaleTimeString()}] ${msg}</div>` + logEl.innerHTML;
+        }
+
+        function showResult(data) {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function viewRoles() {
+            log('Đang load roles và users...');
+            try {
+                const res = await fetch(`${API_BASE}/debug/roles`);
+                const data = await res.json();
+                showResult(data);
+
+                if (data.success) {
+                    log(`✅ Tìm thấy ${data.data.roles_count} roles, ${data.data.users_count} users`, 'success');
+
+                    // Check nếu có user không có role
+                    const usersNoRole = data.data.users.filter(u => !u.role_name);
+                    if (usersNoRole.length > 0) {
+                        log(`⚠️ Có ${usersNoRole.length} users không có role_name!`, 'error');
+                    }
+                }
+            } catch (e) {
+                log('❌ Error: ' + e.message, 'error');
+                showResult({ error: e.message });
+            }
+        }
+
+        async function testAuthMe() {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                log('❌ Chưa có token! Hãy đăng nhập trước.', 'error');
+                return;
+            }
+
+            log('Đang test /auth/me với token...');
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                showResult(data);
+
+                if (data.success && data.data) {
+                    const user = data.data;
+                    log(`📋 User: ${user.full_name}`, 'success');
+                    log(`📋 Email: ${user.email}`);
+                    log(`📋 role_id: ${user.role_id}`);
+                    log(`📋 role_name: ${user.role_name || '⚠️ NULL/UNDEFINED'}`, user.role_name ? 'success' : 'error');
+                }
+            } catch (e) {
+                log('❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function fixRoles() {
+            if (!confirm('⚠️ Điều này sẽ RESET bảng roles và cập nhật tất cả users. Bạn chắc chắn?')) {
+                return;
+            }
+
+            log('🔧 Đang reset và fix roles...', 'info');
+            try {
+                const res = await fetch(`${API_BASE}/debug/fix-roles`, { method: 'POST' });
+                const data = await res.json();
+                showResult(data);
+
+                if (data.success) {
+                    log(`✅ Đã reset ${data.data.roles_reset} roles`, 'success');
+                    log(`✅ Đã cập nhật ${data.data.users_updated_default} users (default role)`, 'success');
+                    log(`✅ Đã cập nhật ${data.data.users_updated_admin} users (admin role)`, 'success');
+                    log('🎉 Fix hoàn tất! Hãy refresh trang profile.html', 'success');
+                }
+            } catch (e) {
+                log('❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function verifyFix() {
+            log('🔍 Đang verify...', 'info');
+
+            // 1. Check roles
+            const res1 = await fetch(`${API_BASE}/debug/roles`);
+            const roles = await res1.json();
+
+            if (roles.success) {
+                const expectedRoles = ['Super Admin', 'Quản lý', 'Kế toán', 'Thiết kế', 'Sản xuất', 'Kho', 'Lắp đặt', 'Kinh doanh'];
+                const actualRoles = roles.data.roles.map(r => r.name);
+
+                let allCorrect = true;
+                expectedRoles.forEach(r => {
+                    if (!actualRoles.includes(r)) {
+                        log(`❌ Thiếu role: ${r}`, 'error');
+                        allCorrect = false;
+                    }
+                });
+
+                if (allCorrect) {
+                    log('✅ Tất cả roles đã đúng!', 'success');
+                }
+
+                // Check users
+                const usersWithoutRole = roles.data.users.filter(u => !u.role_name);
+                if (usersWithoutRole.length === 0) {
+                    log('✅ Tất cả users đều có role_name!', 'success');
+                } else {
+                    log(`❌ Còn ${usersWithoutRole.length} users chưa có role`, 'error');
+                }
+
+                showResult(roles);
+            }
+        }
+    </script>
+</body>
+
+</html>

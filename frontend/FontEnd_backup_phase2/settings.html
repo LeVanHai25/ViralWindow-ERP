@@ -1,0 +1,1765 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiết Lập Doanh Nghiệp - Hệ thống quản lý cửa nhôm kính</title>
+    <script>
+        // Suppress TailwindCSS CDN production warning
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f3f4f6;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .settings-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-card:hover {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #logoPreview {
+            transition: all 0.3s ease;
+        }
+
+        #logoPreview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3 p-4">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold" id="sidebarCompanyName">ViralWindow</span>
+            </div>
+        </a>
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
+                    <div id="sidebarUserAvatarInitial">U</div>
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Admin</div>
+                    <div class="text-xs text-blue-200">Quản trị viên</div>
+                </div>
+            </div>
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-50 border">
+                <div class="p-2">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
+                    <hr class="my-2">
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg><span>TỔNG QUAN</span></a>
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg><span>THEO DÕI DỰ ÁN</span></a>
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg><span>KINH DOANH</span></div><svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu"><a href="sales.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg><span>Khách hàng</span></a><a href="projects-new.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg><span>Dự án</span></a><a href="production.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg><span>Quy trình dự án</span></a><a href="product-catalog-v2.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg><span>Sản phẩm</span></a><a href="quotation-new.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg><span>Báo giá</span></a></div>
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg><span>KỸ THUẬT</span></div><svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu"><a href="design-new.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg><span>Thiết kế & Bóc tách</span></a><a href="material-requests.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg><span>Yêu cầu vật tư</span></a><a href="purchase-request.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg><span>Tạo phiếu yêu cầu VT</span></a></div>
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg><span>KHO & VẬT TƯ</span></div><svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu"><a href="inventory.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg><span>Kho vật tư</span></a><a href="exported-materials.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg><span>Xuất vật tư</span></a></div>
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg><span>THI CÔNG & NGHIỆM THU</span></div><svg class="w-4 h-4 arrow-icon" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu"><a href="product-manufacturing.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg><span>Sản xuất sản phẩm</span></a><a href="installation.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg><span>Lắp đặt</span></a><a href="handover.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg><span>Bàn giao</span></a></div>
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg><span>TÀI CHÍNH</span></div><svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg><span>Tổng quan</span></a>
+                <a href="finance-receipts.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg><span>Phiếu thu</span></a>
+                <a href="finance-payments.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg><span>Phiếu chi</span></a>
+                <a href="finance-debt.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg><span>Công nợ</span></a>
+            </div>
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg><span>QUẢN TRỊ</span></div><svg class="w-4 h-4 arrow-icon rotate-180" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded"><a href="admin-management.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg><span>Phân quyền</span></a><a href="settings.html" class="submenu-item active"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg><span>Cài đặt hệ thống</span></a><a href="agencies.html" class="submenu-item"><svg
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg><span>Chi nhánh</span></a></div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Thiết Lập Doanh Nghiệp</h1>
+                    <p class="text-gray-500 text-sm">Cấu hình thông tin công ty và thiết lập báo giá</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Settings Tabs -->
+            <div class="bg-white rounded-2xl shadow-lg settings-card mb-6 fade-in">
+                <div class="border-b border-gray-200 px-6 bg-gradient-to-r from-gray-50 to-white">
+                    <div class="flex gap-8">
+                        <button class="settings-tab px-4 py-4 flex items-center gap-2 text-gray-600 hover:text-blue-600"
+                            onclick="switchSettingsTab('general', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Chung
+                        </button>
+                        <button
+                            class="settings-tab px-4 py-4 flex items-center gap-2 text-gray-600 hover:text-blue-600 active border-b-2 border-blue-600 text-blue-600"
+                            onclick="switchSettingsTab('company', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Doanh nghiệp
+                        </button>
+                        <button class="settings-tab px-4 py-4 flex items-center gap-2 text-gray-600 hover:text-blue-600"
+                            onclick="switchSettingsTab('security', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Bảo mật
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab: General -->
+                <div id="tab-general" class="settings-tab-content hidden p-6">
+                    <h3 class="text-lg font-bold mb-6">Cài đặt chung</h3>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Ngôn ngữ
+                            </label>
+                            <select id="languageSelect"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Múi giờ
+                            </label>
+                            <select id="timezoneSelect"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Asia/Ho_Chi_Minh">GMT+7 (Việt Nam)</option>
+                                <option value="Asia/Bangkok">GMT+7 (Bangkok)</option>
+                                <option value="Asia/Singapore">GMT+8 (Singapore)</option>
+                                <option value="Asia/Tokyo">GMT+9 (Tokyo)</option>
+                                <option value="UTC">GMT+0 (UTC)</option>
+                                <option value="America/New_York">GMT-5 (New York)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Định dạng ngày tháng
+                            </label>
+                            <select id="dateFormatSelect"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Ghi nhớ đăng nhập</h4>
+                                <p class="text-sm text-gray-600">Tự động đăng nhập khi quay lại</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="rememberMeToggle" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Save Button for General Settings -->
+                        <div class="flex justify-end pt-4">
+                            <button type="button" onclick="saveGeneralSettings()"
+                                class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Lưu cài đặt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Notifications -->
+                <div id="tab-notifications" class="settings-tab-content hidden p-6">
+                    <h3 class="text-lg font-bold mb-6">Cài đặt thông báo</h3>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Thông báo email</h4>
+                                <p class="text-sm text-gray-600">Nhận thông báo qua email</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Thông báo báo giá mới</h4>
+                                <p class="text-sm text-gray-600">Nhận thông báo khi có báo giá mới</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Thông báo dự án</h4>
+                                <p class="text-sm text-gray-600">Nhận thông báo về tiến độ dự án</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Company Settings -->
+                <div id="tab-company" class="settings-tab-content p-6">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Thiết Lập Doanh Nghiệp</h3>
+                        <p class="text-gray-600">Cấu hình thông tin công ty và thiết lập báo giá</p>
+                    </div>
+
+                    <form id="companySettingsForm" class="space-y-6">
+                        <!-- Logo Section với Preview -->
+                        <div
+                            class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 border border-blue-100 shadow-lg">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <!-- Upload Logo -->
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" class="w-6 h-6 text-blue-600">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Logo công ty
+                                    </h4>
+                                    <p class="text-sm text-gray-600 mb-6">Tải lên logo của công ty để sử dụng trong báo
+                                        giá
+                                        và tài liệu</p>
+
+                                    <div class="flex flex-col gap-4">
+                                        <label class="relative cursor-pointer">
+                                            <input type="file" id="logoInput" accept="image/png,image/jpeg,image/jpg"
+                                                class="hidden" onchange="handleLogoUpload(event)">
+                                            <span
+                                                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl btn-primary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                </svg>
+                                                Tải lên logo
+                                            </span>
+                                        </label>
+                                        <p class="text-xs text-gray-500 flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            PNG, JPG tối đa 2MB. Khuyến nghị 500x500px
+                                        </p>
+                                        <button type="button" id="removeLogoBtn" onclick="removeLogo()"
+                                            class="text-sm text-red-600 hover:text-red-700 font-medium hidden flex items-center gap-1 w-fit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Xóa logo
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Logo Preview -->
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Xem trước</h4>
+                                    <div class="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100">
+                                        <div id="logoPreview"
+                                            class="w-full max-w-xs mx-auto bg-white rounded-xl shadow-md flex items-center justify-center overflow-hidden border-2 border-gray-200"
+                                            style="aspect-ratio: 1;">
+                                            <img id="logoImage" src="" alt="Logo"
+                                                class="w-full h-full object-contain hidden">
+                                            <div id="logoPlaceholder" class="text-blue-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" class="w-16 h-16">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-center text-gray-500 mt-4">Logo sẽ hiển thị trên báo giá
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 1: Thông tin cơ bản -->
+                        <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="white" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800">Thông tin cơ bản</h4>
+                                    <p class="text-sm text-gray-600">Thông tin pháp lý và nhận diện doanh nghiệp</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                            Tên công ty <span class="text-red-500">*</span>
+                                        </span>
+                                    </label>
+                                    <input type="text" id="companyName" name="company_name" required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="Công ty cổ phần Viralwindow">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Mã số thuế
+                                        </span>
+                                    </label>
+                                    <input type="text" id="taxCode" name="tax_code"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="0123456789">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                            </svg>
+                                            Website
+                                        </span>
+                                    </label>
+                                    <input type="url" id="website" name="website"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="https://www.company.com">
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Địa chỉ trụ sở
+                                        </span>
+                                    </label>
+                                    <input type="text" id="address" name="address"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="123 Đường ABC, Phường XYZ, Quận 1, TP.HCM">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Thông tin liên hệ -->
+                        <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="white" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800">Thông tin liên hệ</h4>
+                                    <p class="text-sm text-gray-600">Thông tin để khách hàng liên hệ với doanh nghiệp
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                            Số điện thoại
+                                        </span>
+                                    </label>
+                                    <input type="tel" id="phone" name="phone"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="0123456789">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                            Email
+                                        </span>
+                                    </label>
+                                    <input type="email" id="email" name="email"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="contact@company.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Cài đặt báo giá - REMOVED BY USER REQUEST -->
+
+                        <!-- Section 4: Chữ ký & Điều khoản -->
+                        <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="white" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800">Chữ ký & Điều khoản</h4>
+                                    <p class="text-sm text-gray-600">Thông tin người ký và điều khoản trên báo giá</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            Tên người ký
+                                        </span>
+                                    </label>
+                                    <input type="text" id="signerName" name="signer_name"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="Nguyễn Văn A">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Chức danh / Chữ ký footer
+                                        </span>
+                                    </label>
+                                    <input type="text" id="signatureFooter" name="signature_footer"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="Giám đốc / Trưởng phòng Kinh doanh">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Điều khoản & Ghi chú
+                                        </span>
+                                    </label>
+                                    <textarea id="termsConditions" name="terms_conditions" rows="4"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white resize-none"
+                                        placeholder="Nhập các điều khoản, điều kiện thanh toán, giao hàng..."></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">Nội dung này sẽ hiển thị ở cuối báo giá</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 5: Cài đặt Chấm Công & Vị Trí -->
+                        <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                                <div class="w-10 h-10 bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800">Cài đặt Chấm Công & Vị Trí</h4>
+                                    <p class="text-sm text-gray-600">Thiết lập tọa độ văn phòng và danh sách IP được phép chấm công</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <!-- Info Banner -->
+                                <div class="flex gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <b>Hệ thống định vị 3 tầng:</b> GPS trình duyệt → IP mạng → Địa chỉ mặc định. 
+                                        Nếu cài tọa độ văn phòng, check-in bằng GPS sẽ bị kiểm tra khoảng cách. Nhân viên không có GPS vẫn có thể chấm công qua IP/Default.
+                                    </div>
+                                </div>
+
+                                <!-- Tọa độ văn phòng -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-violet-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4" />
+                                            </svg>
+                                            Tọa độ văn phòng (GPS Geofencing)
+                                        </span>
+                                    </label>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Vĩ độ (Latitude)</label>
+                                            <input type="number" id="officeLat" name="office_lat" step="0.000001" min="-90" max="90"
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all bg-white font-mono text-sm"
+                                                placeholder="10.762622">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Kinh độ (Longitude)</label>
+                                            <input type="number" id="officeLng" name="office_lng" step="0.000001" min="-180" max="180"
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all bg-white font-mono text-sm"
+                                                placeholder="106.660172">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Bán kính cho phép (mét)</label>
+                                            <input type="number" id="officeRadius" name="office_radius" min="50" max="5000"
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all bg-white"
+                                                placeholder="200" value="200">
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center gap-3">
+                                        <button type="button" onclick="captureCurrentLocation()" id="btnCaptureLocation"
+                                            class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 transition-all font-medium shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Lấy vị trí hiện tại làm mặc định
+                                        </button>
+                                        <span id="captureLocationStatus" class="text-sm text-gray-500"></span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Để trống nếu không muốn kiểm tra khoảng cách GPS</p>
+                                </div>
+
+                                <!-- Địa chỉ văn phòng mặc định -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-violet-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                            Địa chỉ văn phòng (hiển thị khi dùng vị trí mặc định)
+                                        </span>
+                                    </label>
+                                    <input type="text" id="officeAddress" name="office_address"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all bg-white"
+                                        placeholder="123 Nguyễn Huệ, Quận 1, TP.HCM">
+                                    <p class="text-xs text-gray-400 mt-1">Địa chỉ này sẽ hiển thị trên màn hình chấm công khi không tìm được GPS/IP</p>
+                                </div>
+
+                                <!-- IP Whitelist -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span class="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-violet-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                            Danh sách IP Wifi được phép chấm công
+                                        </span>
+                                    </label>
+                                    <textarea id="allowedIps" name="allowed_ips" rows="3"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all bg-white resize-none font-mono text-sm"
+                                        placeholder="192.168.1.100, 192.168.1.101, 10.0.0.1"></textarea>
+                                    <div class="flex justify-between items-start mt-1">
+                                        <p class="text-xs text-gray-400">Nhập các địa chỉ IP, phân cách bằng dấu phẩy. Để trống nếu không giới hạn mạng.</p>
+                                        <button type="button" onclick="detectMyIp()" class="text-xs text-violet-600 hover:underline whitespace-nowrap ml-4">Lấy IP hiện tại</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-8">
+                            <button type="button" onclick="resetForm()"
+                                class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all">
+                                Hủy
+                            </button>
+                            <button type="submit"
+                                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tab: Security -->
+                <div id="tab-security" class="settings-tab-content hidden p-6">
+                    <h3 class="text-lg font-bold mb-6">Bảo mật</h3>
+
+                    <div class="space-y-6">
+                        <!-- Password Change Section -->
+                        <div class="bg-white border rounded-lg p-4">
+                            <h4 class="font-medium mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                                Đổi mật khẩu
+                            </h4>
+                            <div class="space-y-3 max-w-md">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Mật khẩu hiện tại</label>
+                                    <input type="password" id="currentPassword"
+                                        class="w-full border rounded-lg px-3 py-2" placeholder="Nhập mật khẩu hiện tại">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Mật khẩu mới</label>
+                                    <input type="password" id="newPassword" class="w-full border rounded-lg px-3 py-2"
+                                        placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Xác nhận mật khẩu mới</label>
+                                    <input type="password" id="confirmPassword"
+                                        class="w-full border rounded-lg px-3 py-2" placeholder="Nhập lại mật khẩu mới">
+                                </div>
+                                <button onclick="changePassword()"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                    Đổi mật khẩu
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Sessions -->
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-medium flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    Phiên đăng nhập đang hoạt động
+                                </h4>
+                                <button onclick="terminateAllSessions()"
+                                    class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                    Đăng xuất tất cả thiết bị khác
+                                </button>
+                            </div>
+                            <div id="activeSessionsList" class="space-y-2">
+                                <div class="text-gray-500 text-center py-4">Đang tải...</div>
+                            </div>
+                        </div>
+
+                        <!-- Login History -->
+                        <div>
+                            <h4 class="font-medium mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Hoạt động gần đây
+                            </h4>
+                            <div id="loginHistoryList" class="space-y-2">
+                                <div class="text-gray-500 text-center py-4">Đang tải...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const API_BASE = window.API_BASE || '/api';
+
+            // Load company settings
+            async function loadCompanySettings() {
+                try {
+                    const response = await fetch(`${API_BASE}/company-settings`);
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        const data = result.data;
+
+                        // Update form fields
+                        if (data.company_name) document.getElementById('companyName').value = data.company_name;
+                        if (data.tax_code) document.getElementById('taxCode').value = data.tax_code;
+                        if (data.address) document.getElementById('address').value = data.address;
+                        if (data.phone) document.getElementById('phone').value = data.phone;
+                        if (data.email) document.getElementById('email').value = data.email;
+                        if (data.website) document.getElementById('website').value = data.website;
+
+                        if (data.signer_name) document.getElementById('signerName').value = data.signer_name;
+                        if (data.signature_footer) document.getElementById('signatureFooter').value = data.signature_footer;
+                        if (data.terms_conditions) document.getElementById('termsConditions').value = data.terms_conditions;
+
+                        // === GEOFENCING FIELDS ===
+                        if (data.office_lat) document.getElementById('officeLat').value = data.office_lat;
+                        if (data.office_lng) document.getElementById('officeLng').value = data.office_lng;
+                        if (data.office_radius) document.getElementById('officeRadius').value = data.office_radius;
+                        if (data.allowed_ips) document.getElementById('allowedIps').value = data.allowed_ips;
+                        if (data.office_address) document.getElementById('officeAddress').value = data.office_address;
+
+                        // Update logo preview in form
+                        if (data.logo_path) {
+                            document.getElementById('logoImage').src = data.logo_path;
+                            document.getElementById('logoImage').classList.remove('hidden');
+                            document.getElementById('logoPlaceholder').classList.add('hidden');
+                            document.getElementById('removeLogoBtn').classList.remove('hidden');
+                        }
+
+                        // Update sidebar company name
+                        const sidebarCompanyName = document.getElementById('sidebarCompanyName');
+                        if (sidebarCompanyName && data.company_name) {
+                            sidebarCompanyName.textContent = data.company_name;
+                        }
+
+                        // Update sidebar logo
+                        if (data.logo_path) {
+                            const companyLogo = document.getElementById('companyLogo');
+                            const companyLogoIcon = document.getElementById('companyLogoIcon');
+                            if (companyLogo && companyLogoIcon) {
+                                companyLogo.src = data.logo_path;
+                                companyLogo.classList.remove('hidden');
+                                companyLogoIcon.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading settings:', error);
+                }
+            }
+
+            // ==========================================
+            // GEOFENCING HELPER FUNCTIONS
+            // ==========================================
+
+            /**
+             * Lấy vị trí hiện tại của Quản lý để điền sẵn vào form
+             */
+            function captureCurrentLocation() {
+                const btn = document.getElementById('btnCaptureLocation');
+                const status = document.getElementById('captureLocationStatus');
+                btn.disabled = true;
+                btn.textContent = 'Đang lấy vị trí...';
+                status.textContent = '';
+
+                if (!('geolocation' in navigator)) {
+                    status.textContent = 'Trình duyệt không hỗ trợ GPS';
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Lấy vị trí hiện tại làm mặc định`;
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude.toFixed(6);
+                        const lng = pos.coords.longitude.toFixed(6);
+                        document.getElementById('officeLat').value = lat;
+                        document.getElementById('officeLng').value = lng;
+                        status.innerHTML = `<span class="text-green-600 font-medium">✓ Đã điền tọa độ: ${lat}, ${lng}</span>`;
+                        btn.disabled = false;
+                        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Lấy vị trí hiện tại làm mặc định`;
+                    },
+                    (err) => {
+                        status.innerHTML = `<span class="text-red-500">Không lấy được GPS: ${err.message}</span>`;
+                        btn.disabled = false;
+                        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Lấy vị trí hiện tại làm mặc định`;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            }
+
+            /**
+             * Phát hiện IP hiện tại qua ip-api.com và thêm vào danh sách whitelist
+             */
+            async function detectMyIp() {
+                try {
+                    const r = await fetch('http://ip-api.com/json/?fields=query');
+                    const d = await r.json();
+                    if (d.query) {
+                        const ipField = document.getElementById('allowedIps');
+                        const existing = ipField.value.trim();
+                        if (existing && !existing.includes(d.query)) {
+                            ipField.value = existing + ', ' + d.query;
+                        } else if (!existing) {
+                            ipField.value = d.query;
+                        }
+                    }
+                } catch(e) {
+                    alert('Không lấy được IP hiện tại');
+                }
+            }
+
+
+            // ==========================================
+            // GENERAL SETTINGS FUNCTIONS
+            // ==========================================
+
+            // Load general settings from user data
+            function loadGeneralSettings(user) {
+                // Language
+                const languageSelect = document.getElementById('languageSelect');
+                if (languageSelect && user.language) {
+                    languageSelect.value = user.language;
+                }
+
+                // Timezone
+                const timezoneSelect = document.getElementById('timezoneSelect');
+                if (timezoneSelect && user.timezone) {
+                    timezoneSelect.value = user.timezone;
+                }
+
+                // Date Format
+                const dateFormatSelect = document.getElementById('dateFormatSelect');
+                if (dateFormatSelect && user.date_format) {
+                    dateFormatSelect.value = user.date_format;
+                }
+
+                // Remember Me Toggle
+                const rememberMeToggle = document.getElementById('rememberMeToggle');
+                if (rememberMeToggle) {
+                    // Check localStorage preference first, fallback to user setting
+                    const localRememberMe = localStorage.getItem('rememberMe');
+                    rememberMeToggle.checked = localRememberMe === 'true' || !!user.remember_me;
+                }
+
+                // Save to localStorage for other pages to use
+                localStorage.setItem('userSettings', JSON.stringify({
+                    language: user.language || 'vi',
+                    timezone: user.timezone || 'Asia/Ho_Chi_Minh',
+                    date_format: user.date_format || 'DD/MM/YYYY'
+                }));
+            }
+
+            // Save general settings to backend
+            async function saveGeneralSettings() {
+                const token = window.AuthHelper?.getToken() ||
+                    window.PermissionGuard?.getToken() ||
+                    sessionStorage.getItem('token');
+
+                if (!token) {
+                    showToast('Vui lòng đăng nhập lại', 'error');
+                    return;
+                }
+
+                const language = document.getElementById('languageSelect')?.value || 'vi';
+                const timezone = document.getElementById('timezoneSelect')?.value || 'Asia/Ho_Chi_Minh';
+                const date_format = document.getElementById('dateFormatSelect')?.value || 'DD/MM/YYYY';
+                const remember_me = document.getElementById('rememberMeToggle')?.checked || false;
+
+                try {
+                    const response = await fetch(`${API_BASE}/auth/update-profile`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ language, timezone, date_format, remember_me })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Update localStorage for date preferences
+                        localStorage.setItem('userSettings', JSON.stringify({
+                            language, timezone, date_format
+                        }));
+
+                        // Handle remember_me storage switching using AuthHelper
+                        if (window.AuthHelper) {
+                            if (remember_me) {
+                                window.AuthHelper.enableRememberMe();
+                            } else {
+                                window.AuthHelper.disableRememberMe();
+                            }
+                        } else {
+                            // Fallback logic
+                            localStorage.setItem('rememberMe', remember_me ? 'true' : 'false');
+                            if (remember_me) {
+                                const sessionToken = sessionStorage.getItem('token');
+                                if (sessionToken && !localStorage.getItem('token')) {
+                                    localStorage.setItem('token', sessionToken);
+                                    localStorage.setItem('user', sessionStorage.getItem('user'));
+                                }
+                            } else {
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('user');
+                            }
+                        }
+
+                        showToast('Đã lưu cài đặt thành công! Trang sẽ tải lại để áp dụng...', 'success');
+
+                        // Reload page after 1.5s to apply new settings
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showToast(result.message || 'Không thể lưu cài đặt', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving settings:', error);
+                    showToast('Lỗi kết nối server', 'error');
+                }
+            }
+
+            // ==========================================
+            // USER INFO FUNCTIONS
+            // ==========================================
+
+            // Load user info for sidebar
+            async function loadUserInfo() {
+                try {
+                    // Use shared getToken helper if available
+                    const token = (window.PermissionGuard && window.PermissionGuard.getToken)
+                        ? window.PermissionGuard.getToken()
+                        : (sessionStorage.getItem('token') || localStorage.getItem('token'));
+                    if (!token) return;
+
+                    const response = await fetch(`${API_BASE}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const user = result.data;
+
+                        // Populate general settings
+                        loadGeneralSettings(user);
+
+                        // Update sidebar user name
+                        const sidebarUserName = document.getElementById('sidebarUserName');
+                        if (sidebarUserName) {
+                            sidebarUserName.textContent = user.full_name || 'Người dùng';
+                        }
+
+                        // Update sidebar avatar
+                        const sidebarAvatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                        const sidebarAvatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                        if (user.avatar_url && sidebarAvatarImage && sidebarAvatarInitial) {
+                            sidebarAvatarImage.src = user.avatar_url;
+                            sidebarAvatarImage.classList.remove('hidden');
+                            sidebarAvatarInitial.classList.add('hidden');
+                        } else if (sidebarAvatarInitial) {
+                            const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                            sidebarAvatarInitial.textContent = initial;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading user info:', error);
+                }
+            }
+
+            // Toggle sidebar user menu
+            function toggleSidebarUserMenu() {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                }
+            }
+
+            // Handle logout
+            async function handleLogout() {
+                if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                    // Use AuthHelper to clear both sessionStorage and localStorage
+                    if (window.AuthHelper) {
+                        window.AuthHelper.clearAuth();
+                    } else {
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('rememberMe');
+                    }
+                    window.location.href = 'login.html';
+                }
+            }
+
+            // ==========================================
+            // SECURITY FUNCTIONS
+            // ==========================================
+
+            // Change password
+            async function changePassword() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showToast('Vui lòng nhập đầy đủ thông tin', 'error');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showToast('Mật khẩu mới không khớp', 'error');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    showToast('Mật khẩu mới phải có ít nhất 6 ký tự', 'error');
+                    return;
+                }
+
+                const token = window.AuthHelper?.getToken() || sessionStorage.getItem('token');
+
+                try {
+                    const response = await fetch(`${API_BASE}/security/change-password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            current_password: currentPassword,
+                            new_password: newPassword,
+                            confirm_password: confirmPassword
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast('Đổi mật khẩu thành công!', 'success');
+                        document.getElementById('currentPassword').value = '';
+                        document.getElementById('newPassword').value = '';
+                        document.getElementById('confirmPassword').value = '';
+                    } else {
+                        showToast(result.message || 'Không thể đổi mật khẩu', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error changing password:', error);
+                    showToast('Lỗi kết nối server', 'error');
+                }
+            }
+
+            // Load active sessions
+            async function loadActiveSessions() {
+                const token = window.AuthHelper?.getToken() || sessionStorage.getItem('token');
+                const container = document.getElementById('activeSessionsList');
+
+                try {
+                    const response = await fetch(`${API_BASE}/security/sessions`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success && result.data.length > 0) {
+                        container.innerHTML = result.data.map(session => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg ${session.is_current ? 'border-2 border-green-500' : ''}">
+                                <div>
+                                    <p class="font-medium">${session.os || 'Unknown'} - ${session.browser || 'Unknown'}</p>
+                                    <p class="text-sm text-gray-600">
+                                        IP: ${session.ip_address || 'N/A'} - 
+                                        ${session.is_current ? '<span class="text-green-600 font-medium">Phiên hiện tại</span>' :
+                                'Đăng nhập: ' + formatDateTime(session.created_at)}
+                                    </p>
+                                </div>
+                                ${!session.is_current ?
+                                `<button onclick="terminateSession(${session.id})" class="text-red-600 hover:text-red-800 text-sm">Đăng xuất</button>` :
+                                '<span class="text-green-600 text-sm">✓ Hiện tại</span>'}
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-gray-500 text-center py-4">Không có phiên nào đang hoạt động</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading sessions:', error);
+                    container.innerHTML = '<div class="text-gray-500 text-center py-4">Không thể tải dữ liệu phiên</div>';
+                }
+            }
+
+            // Load login history
+            async function loadLoginHistory() {
+                const token = window.AuthHelper?.getToken() || sessionStorage.getItem('token');
+                const container = document.getElementById('loginHistoryList');
+
+                try {
+                    const response = await fetch(`${API_BASE}/security/login-history?limit=10`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success && result.data.length > 0) {
+                        container.innerHTML = result.data.map(entry => `
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <span class="${entry.status === 'success' ? 'text-green-600' : 'text-red-600'}">
+                                        ${entry.status === 'success' ? '✓' : '✗'}
+                                    </span>
+                                    <span class="text-sm">
+                                        ${entry.status === 'success' ? 'Đăng nhập' : 'Đăng nhập thất bại'} 
+                                        từ ${entry.os || 'Unknown'} - ${entry.browser || 'Unknown'}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    IP: ${entry.ip_address || 'N/A'} - ${formatDateTime(entry.created_at)}
+                                    ${entry.failure_reason ? ` - ${entry.failure_reason}` : ''}
+                                </p>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-gray-500 text-center py-4">Chưa có lịch sử đăng nhập</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading login history:', error);
+                    container.innerHTML = '<div class="text-gray-500 text-center py-4">Không thể tải lịch sử</div>';
+                }
+            }
+
+            // Terminate a specific session
+            async function terminateSession(sessionId) {
+                if (!confirm('Bạn có chắc muốn đăng xuất phiên này?')) return;
+
+                const token = window.AuthHelper?.getToken() || sessionStorage.getItem('token');
+
+                try {
+                    const response = await fetch(`${API_BASE}/security/sessions/${sessionId}/terminate`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast('Đã đăng xuất phiên thành công', 'success');
+                        loadActiveSessions();
+                    } else {
+                        showToast(result.message || 'Không thể đăng xuất phiên', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error terminating session:', error);
+                    showToast('Lỗi kết nối server', 'error');
+                }
+            }
+
+            // Terminate all other sessions
+            async function terminateAllSessions() {
+                if (!confirm('Bạn có chắc muốn đăng xuất tất cả các thiết bị khác?')) return;
+
+                const token = window.AuthHelper?.getToken() || sessionStorage.getItem('token');
+
+                try {
+                    const response = await fetch(`${API_BASE}/security/sessions/terminate-all`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast(result.message || 'Đã đăng xuất các phiên khác', 'success');
+                        loadActiveSessions();
+                    } else {
+                        showToast(result.message || 'Không thể đăng xuất', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error terminating all sessions:', error);
+                    showToast('Lỗi kết nối server', 'error');
+                }
+            }
+
+            // Format date time for display
+            function formatDateTime(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                return date.toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // Handle logo upload
+            function handleLogoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Validate file type
+                if (!file.type.match('image/png') && !file.type.match('image/jpeg') && !file.type.match('image/jpg')) {
+                    alert('Chỉ chấp nhận file PNG, JPG hoặc JPEG');
+                    return;
+                }
+
+                // Validate file size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File không được vượt quá 2MB');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('logoImage').src = e.target.result;
+                    document.getElementById('logoImage').classList.remove('hidden');
+                    document.getElementById('logoPlaceholder').classList.add('hidden');
+                    document.getElementById('removeLogoBtn').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Remove logo
+            function removeLogo() {
+                VWModal.confirm('Xóa logo', 'Bạn có chắc muốn xóa logo?').then(confirmed => {
+                    if (confirmed) {
+                        document.getElementById('logoImage').src = '';
+                        document.getElementById('logoImage').classList.add('hidden');
+                        document.getElementById('logoPlaceholder').classList.remove('hidden');
+                        document.getElementById('removeLogoBtn').classList.add('hidden');
+                        document.getElementById('logoInput').value = '';
+                    }
+                });
+            }
+
+            // Reset form
+            function resetForm() {
+                VWModal.confirm('Hủy thay đổi', 'Bạn có chắc muốn hủy các thay đổi?').then(confirmed => {
+                    if (confirmed) {
+                        loadCompanySettings();
+                    }
+                });
+            }
+
+            // Toast notification function
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                <svg class="toast-icon ${type === 'success' ? 'text-green-600' : 'text-red-600'}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    ${type === 'success'
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'
+                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />'
+                    }
+                </svg>
+                <span class="flex-1 text-gray-800 font-medium">${message}</span>
+            `;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s ease-out reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Save company settings
+            document.getElementById('companySettingsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Validation
+                const companyName = document.getElementById('companyName').value.trim();
+                if (!companyName) {
+                    showToast('Vui lòng nhập tên công ty', 'error');
+                    document.getElementById('companyName').focus();
+                    return;
+                }
+
+                // Validate email if provided
+                const email = document.getElementById('email').value.trim();
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showToast('Email không hợp lệ', 'error');
+                    document.getElementById('email').focus();
+                    return;
+                }
+
+                // Get website (no strict validation - allow any format)
+                const website = document.getElementById('website').value.trim();
+
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Đang lưu...
+            `;
+
+                const data = {
+                    company_name: companyName,
+                    tax_code: document.getElementById('taxCode').value.trim() || null,
+                    address: document.getElementById('address').value.trim() || null,
+                    phone: document.getElementById('phone').value.trim() || null,
+                    email: email || null,
+                    website: website || null,
+                    default_profit_margin: 20,
+                    quote_validity_days: 30,
+                    signer_name: document.getElementById('signerName').value.trim() || null,
+                    signature_footer: document.getElementById('signatureFooter').value.trim() || null,
+                    terms_conditions: document.getElementById('termsConditions').value.trim() || null,
+                    logo_path: document.getElementById('logoImage').src && !document.getElementById('logoImage').classList.contains('hidden')
+                        ? document.getElementById('logoImage').src
+                        : null,
+                    // === GEOFENCING FIELDS ===
+                    office_lat: document.getElementById('officeLat').value || null,
+                    office_lng: document.getElementById('officeLng').value || null,
+                    office_radius: document.getElementById('officeRadius').value || 200,
+                    allowed_ips: document.getElementById('allowedIps').value.trim() || null,
+                    office_address: document.getElementById('officeAddress').value.trim() || null
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE}/company-settings`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast('Cập nhật thông tin doanh nghiệp thành công!', 'success');
+                        loadCompanySettings();
+                    } else {
+                        showToast('Lỗi: ' + (result.message || 'Không thể cập nhật'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving settings:', error);
+                    showToast('Lỗi kết nối server. Vui lòng thử lại.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
+
+            function switchSettingsTab(tabName, buttonElement) {
+                document.querySelectorAll('.settings-tab-content').forEach(tab => {
+                    tab.classList.add('hidden');
+                });
+                document.querySelectorAll('.settings-tab').forEach(btn => {
+                    btn.classList.remove('active', 'border-b-2', 'border-blue-600', 'text-blue-600');
+                    btn.classList.add('text-gray-600');
+                });
+
+                document.getElementById('tab-' + tabName).classList.remove('hidden');
+                if (buttonElement) {
+                    buttonElement.classList.add('active', 'border-b-2', 'border-blue-600', 'text-blue-600');
+                    buttonElement.classList.remove('text-gray-600');
+                }
+
+                // Load company settings when switching to company tab
+                if (tabName === 'company') {
+                    loadCompanySettings();
+                }
+
+                // Load security data when switching to security tab
+                if (tabName === 'security') {
+                    loadActiveSessions();
+                    loadLoginHistory();
+                }
+            }
+
+            // Load settings on page load
+            window.addEventListener('DOMContentLoaded', () => {
+                loadCompanySettings();
+                loadUserInfo();
+            });
+        </script>
+
+        <style>
+            .icon-square {
+                width: 48px;
+                height: 48px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+            }
+
+            .settings-tab {
+                transition: all 0.3s ease;
+            }
+
+            .settings-tab:hover {
+                background-color: rgba(59, 130, 246, 0.05);
+            }
+
+            .settings-tab.active {
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+
+            /* Toast notification */
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            }
+
+            .toast.success {
+                border-left: 4px solid #10b981;
+            }
+
+            .toast.error {
+                border-left: 4px solid #ef4444;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .toast-icon {
+                width: 24px;
+                height: 24px;
+                flex-shrink: 0;
+            }
+        </style>
+    </div><!-- end main-content -->
+    <script src="js/sidebar-enterprise.js"></script>
+</body>
+
+</html>

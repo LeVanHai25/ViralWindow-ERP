@@ -1,0 +1,332 @@
+{
+    "product_templates": [
+        {
+            "code": "RAILING_GLASS_01",
+            "name": "Lan can kính cường lực 12mm",
+            "product_type": "railing",
+            "category": "glass_railing",
+            "sub_type": "glass",
+            "family": "railing_glass",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 1000,
+            "default_height_mm": 1100,
+            "glass_type": "Kính cường lực 12mm",
+            "description": "Lan can kính cường lực với tay vịn inox",
+            "bom_rules": {
+                "profiles": [
+                    {
+                        "code": "CHAN_DE_INOX",
+                        "name": "Chân đế inox",
+                        "formula": "width_mm",
+                        "unit": "mm",
+                        "qty_per_unit": 1
+                    },
+                    {
+                        "code": "TAY_VIN_INOX",
+                        "name": "Tay vịn inox",
+                        "formula": "width_mm",
+                        "unit": "mm",
+                        "qty_per_unit": 1
+                    }
+                ],
+                "glass": [
+                    {
+                        "code": "KINH_CL_12MM",
+                        "name": "Kính cường lực 12mm",
+                        "formula": "width_mm * height_mm",
+                        "unit": "mm2"
+                    }
+                ],
+                "accessories": [
+                    {
+                        "code": "KEP_KINH_INOX",
+                        "name": "Kẹp kính inox",
+                        "required_per": "per_meter",
+                        "default_quantity": 3
+                    },
+                    {
+                        "code": "TRU_INOX",
+                        "name": "Trụ inox",
+                        "required_per": "per_meter",
+                        "default_quantity": 1
+                    },
+                    {
+                        "code": "OC_VIT_INOX",
+                        "name": "Ốc vít inox",
+                        "required_per": "per_item",
+                        "default_quantity": 20
+                    }
+                ]
+            }
+        },
+        {
+            "code": "RAILING_STEEL_01",
+            "name": "Lan can sắt hộp sơn tĩnh điện",
+            "product_type": "railing",
+            "category": "steel_railing",
+            "sub_type": "steel",
+            "family": "railing_steel",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 1000,
+            "default_height_mm": 1100,
+            "glass_type": null,
+            "description": "Lan can sắt hộp vuông sơn tĩnh điện",
+            "bom_rules": {
+                "profiles": [
+                    {
+                        "code": "SAT_HOP_40x40",
+                        "name": "Sắt hộp 40x40",
+                        "formula": "width_mm + height_mm * 2",
+                        "unit": "mm"
+                    },
+                    {
+                        "code": "SAT_HOP_20x20",
+                        "name": "Sắt hộp 20x20",
+                        "formula": "height_mm * (width_mm / 100)",
+                        "unit": "mm"
+                    }
+                ],
+                "accessories": [
+                    {
+                        "code": "SON_TINH_DIEN",
+                        "name": "Sơn tĩnh điện",
+                        "required_per": "per_m2",
+                        "default_quantity": 0.1
+                    }
+                ]
+            }
+        },
+        {
+            "code": "ROOF_GLASS_01",
+            "name": "Mái kính cường lực 10mm",
+            "product_type": "roof",
+            "category": "glass_roof",
+            "sub_type": "flat",
+            "family": "roof_glass",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 3000,
+            "default_height_mm": 2000,
+            "glass_type": "Kính cường lực 10mm",
+            "description": "Mái kính phẳng với khung nhôm",
+            "bom_rules": {
+                "profiles": [
+                    {
+                        "code": "XA_GO_NHOM",
+                        "name": "Xà gồ nhôm",
+                        "formula": "width_mm * (height_mm / 600)",
+                        "unit": "mm"
+                    },
+                    {
+                        "code": "KHUNG_VIEN",
+                        "name": "Khung viền nhôm",
+                        "formula": "(width_mm + height_mm) * 2",
+                        "unit": "mm"
+                    }
+                ],
+                "glass": [
+                    {
+                        "code": "KINH_CL_10MM",
+                        "name": "Kính cường lực 10mm",
+                        "formula": "width_mm * height_mm",
+                        "unit": "mm2"
+                    }
+                ],
+                "accessories": [
+                    {
+                        "code": "GIOANG_KINH",
+                        "name": "Gioăng kính",
+                        "required_per": "per_meter",
+                        "default_quantity": 4
+                    },
+                    {
+                        "code": "KEO_SILICONE",
+                        "name": "Keo silicone",
+                        "required_per": "per_m2",
+                        "default_quantity": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "code": "ROOF_POLY_01",
+            "name": "Mái lấy sáng polycarbonate",
+            "product_type": "roof",
+            "category": "poly_roof",
+            "sub_type": "wave",
+            "family": "roof_poly",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 3000,
+            "default_height_mm": 2000,
+            "glass_type": "Polycarbonate 6mm",
+            "description": "Mái lấy sáng polycarbonate dạng sóng"
+        },
+        {
+            "code": "STAIR_GLASS_01",
+            "name": "Cầu thang kính cường lực",
+            "product_type": "stair",
+            "category": "glass_stair",
+            "sub_type": "straight",
+            "family": "stair_glass",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 1000,
+            "default_height_mm": 3000,
+            "glass_type": "Kính cường lực 12mm",
+            "description": "Cầu thang có lan can kính cường lực",
+            "bom_rules": {
+                "profiles": [
+                    {
+                        "code": "KHUNG_INOX",
+                        "name": "Khung inox",
+                        "formula": "height_mm * 2",
+                        "unit": "mm"
+                    }
+                ],
+                "glass": [
+                    {
+                        "code": "KINH_CL_12MM",
+                        "name": "Kính cường lực 12mm",
+                        "formula": "width_mm * height_mm * 0.3",
+                        "unit": "mm2"
+                    }
+                ],
+                "accessories": [
+                    {
+                        "code": "KEP_KINH_INOX",
+                        "name": "Kẹp kính inox",
+                        "required_per": "per_meter",
+                        "default_quantity": 2
+                    },
+                    {
+                        "code": "TAY_VIN_GO",
+                        "name": "Tay vịn gỗ",
+                        "required_per": "per_meter",
+                        "default_quantity": 1
+                    }
+                ]
+            }
+        },
+        {
+            "code": "GLASS_WALL_01",
+            "name": "Vách kính văn phòng",
+            "product_type": "glass_wall",
+            "category": "office_partition",
+            "sub_type": "fixed",
+            "family": "glasswall_fixed",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 2000,
+            "default_height_mm": 2800,
+            "glass_type": "Kính cường lực 10mm",
+            "description": "Vách kính ngăn văn phòng với khung nhôm",
+            "bom_rules": {
+                "profiles": [
+                    {
+                        "code": "KHUNG_BAO_DUNG",
+                        "name": "Khung bao đứng",
+                        "formula": "height_mm * 2",
+                        "unit": "mm"
+                    },
+                    {
+                        "code": "KHUNG_BAO_NGANG",
+                        "name": "Khung bao ngang",
+                        "formula": "width_mm * 2",
+                        "unit": "mm"
+                    }
+                ],
+                "glass": [
+                    {
+                        "code": "KINH_CL_10MM",
+                        "name": "Kính cường lực 10mm",
+                        "formula": "(width_mm - 140) * (height_mm - 140)",
+                        "unit": "mm2"
+                    }
+                ],
+                "accessories": [
+                    {
+                        "code": "GIOANG_EPDM",
+                        "name": "Gioăng EPDM",
+                        "required_per": "per_meter",
+                        "default_quantity": 4
+                    }
+                ]
+            }
+        },
+        {
+            "code": "GLASS_WALL_DOOR_01",
+            "name": "Vách kính + cửa đi 1 cánh",
+            "product_type": "glass_wall",
+            "category": "office_partition_door",
+            "sub_type": "with_door",
+            "family": "glasswall_door",
+            "aluminum_system": "XINGFA_55",
+            "default_width_mm": 3000,
+            "default_height_mm": 2800,
+            "glass_type": "Kính cường lực 10mm",
+            "description": "Vách kính văn phòng có cửa đi 1 cánh",
+            "bom_rules": {
+                "profiles": [
+                    {
+                        "code": "KHUNG_BAO_DUNG",
+                        "name": "Khung bao đứng",
+                        "formula": "height_mm * 3",
+                        "unit": "mm"
+                    },
+                    {
+                        "code": "KHUNG_BAO_NGANG",
+                        "name": "Khung bao ngang",
+                        "formula": "width_mm * 2",
+                        "unit": "mm"
+                    },
+                    {
+                        "code": "KHUNG_CANH",
+                        "name": "Khung cánh cửa",
+                        "formula": "(900 + height_mm) * 2",
+                        "unit": "mm"
+                    }
+                ],
+                "glass": [
+                    {
+                        "code": "KINH_CL_10MM",
+                        "name": "Kính cường lực 10mm",
+                        "formula": "width_mm * height_mm * 0.9",
+                        "unit": "mm2"
+                    }
+                ],
+                "accessories": [
+                    {
+                        "code": "BAN_LE_3D",
+                        "name": "Bản lề 3D",
+                        "required_per": "per_item",
+                        "default_quantity": 3
+                    },
+                    {
+                        "code": "KHOA_TAY_GAT",
+                        "name": "Khóa tay gạt",
+                        "required_per": "per_item",
+                        "default_quantity": 1
+                    },
+                    {
+                        "code": "TAY_NAM",
+                        "name": "Tay nắm",
+                        "required_per": "per_item",
+                        "default_quantity": 1
+                    },
+                    {
+                        "code": "GIOANG_EPDM",
+                        "name": "Gioăng EPDM",
+                        "required_per": "per_meter",
+                        "default_quantity": 4
+                    }
+                ]
+            }
+        }
+    ],
+    "product_type_labels": {
+        "door": "Cửa đi",
+        "window": "Cửa sổ",
+        "glass_wall": "Vách kính",
+        "railing": "Lan can",
+        "roof": "Mái kính",
+        "stair": "Cầu thang",
+        "other": "Khác"
+    }
+}
